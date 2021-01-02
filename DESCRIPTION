@@ -1,0 +1,11 @@
+Package: econdatar
+Type: Package
+Title: Automation of time series uploads and downloads
+Version: 0.0.1
+Date: 2021-01-02
+Authors: Byron Botha
+Maintainer: Byron Botha <byron@byrongibby.online>
+Description: Automation of time series uploads and downloads to and from www.econdata.co.za.
+Depends: httr, jsonlite, tcltk, xml2 
+Suggests: zoo, xts
+License: GPL-2
