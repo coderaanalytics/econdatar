@@ -96,5 +96,5 @@ time.edata <- function(x, ...)
 }
 
 as.data.frame.edata <- function(x, row.names = NULL, optional = FALSE, ...) {
-  return( x$observations )
+  return( data.frame(x$observations, "TIME_PERIOD"=time(x), row.names = NULL) )
 }

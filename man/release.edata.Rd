@@ -47,7 +47,7 @@ Optionally, you can also specify: \emph{newest} (boolean), returns only the late
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{spartasave}}
+\code{\link{write.edata}}
 }
 \examples{
 release.edata("ECONDATA", "BA900", "1.0")

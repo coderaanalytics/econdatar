@@ -1,6 +1,6 @@
-{ "spartadata" : {"url" : "http://dev04300.resbank.co.za:8080",
-                  "path" : "SpartaData/sdmxapi/",
-                  "default_provider" : {"agencyid" : "SARB.ERD",
-                                        "id" : "INTERNAL"}},
-  "registry" : {"url" : "http://dev04300.resbank.co.za:8080",
-                "path" : "FusionRegistry/ws/public/sdmxapi/rest/"}}
+{ "repository" : {"url" : "https://www.econdata.co.za",
+                  "path" : "dataapi/",
+		  "default_agency" : "ECONDATA",
+                  "default_provider" : "ECONDATA"},
+  "registry" : {"url" : "https://www.econdata.co.za",
+                "path" : "FusionRegistry/ws/public/sdmxapi/rest/"} }

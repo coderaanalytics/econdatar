@@ -50,10 +50,10 @@ Optionally, you can also specify: \emph{releasedescription}, if specified the da
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{spartaload}}
+\code{\link{read.edata}}
 }
 \examples{
-db <- spartaload("ECONDATA", "BA900", "1.0", nameby="CODE")
+db <- read.edata("ECONDATA", "BA900", "1.0", nameby="CODE")
 
 write.edata(db, "ECONDATA", "BA900", "1.0", file="ba900.json")
 }

@@ -2,7 +2,7 @@ json2edata <- function(data_message, params, series_dims, obs_attrs) {
   database <- list()
   
   if( length(data_message$DataSets) > 1 )
-    stop("Multiple datasets not supported by databotr.")
+    stop("Multiple datasets not supported by econdatar.")
   
   dataset <- data_message$DataSets[[1]]
   

@@ -4,24 +4,17 @@
 read.edata
 }
 \description{
-Returns the dataset of time tables matching the input agency id, the data id, and data version from www.econdata.co.za server. Available data sets can be looked up from the data registry.
+Returns the dataset of time tables matching the input agency id, the data id, and data version from \href{https://www.econdata.co.za}{www.econdata.co.za} server. Available data sets can be looked up from the data registry.
 }
 \usage{
-read.edata(agencyid, id, version, ...)
+read.edata(id, ...)
 }
 \arguments{
-  \item{agencyid}{
-Agency responsible for the data.
-}
   \item{id}{
 Data identifier.
 }
-  \item{version}{
-Version of the data description.
-}
   \item{\dots}{
-Optional arguments include: \emph{dataprovider}, the SDMX data provider (defaults to 'INTERNAL'); \emph{dataprovideragencyid}, the parent agency for the SDMX data 
-provider (defaults to 'SARB.ERD'); \emph{debug}, boolean indicating whether errors should be suppressed; \emph{file}, file name for retrieving to disk; \emph{key}; \emph{metadata}, boolean indicating whether the data set metadata should be included in the output; \emph{nameby}, a string or vector listing the dimensions that should be used to name the returned series; \emph{releasedescription}, a string describing the desired release.
+Optional arguments include:  \strong{\emph{agencyid}}, agency responsible for the data (defaults to \emph{ECONDATA}). \strong{\emph{version}}, version of the data structure definition (defaults to \emph{latest}); \strong{\emph{dataprovideragencyid}}, the parent agency for the SDMX data provider (defaults to \emph{ECONDATA}); \strong{\emph{dataproviderid}}, the SDMX data provider id (defaults to \emph{ECONDATA}); \strong{\emph{debug}}, boolean indicating whether errors should be suppressed; \strong{\emph{file}}, file name for retrieving JSON data from disk; \strong{\emph{metadata}}, boolean indicating whether the data set metadata should be included in the output; \strong{\emph{nameby}}, a string or vector listing the dimensions that should be used to name the returned series; \strong{\emph{releasedescription}}, a string describing the desired release.
 }
 }
 \details{
@@ -48,9 +41,10 @@ provider (defaults to 'SARB.ERD'); \emph{debug}, boolean indicating whether erro
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{write.edata}}
 }
 \examples{
-db <- read.edata("ECONDATA", "BA900", "1.0", nameby="CODE")
+db <- read.edata("BA900", nameby="key")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
