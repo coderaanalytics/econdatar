@@ -2,7 +2,7 @@
 
 ```r
 library("devtools")
-install_git("https://www.github.com/byrongibby/econdatar")
+install_github("byrongibby/econdatar")
 ```
 
 Install from disk
