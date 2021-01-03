@@ -1,4 +1,4 @@
-release.edata <- function(agencyid, id, version, ...) 
+get_release.edata <- function(agencyid, id, version, ...) 
 {
   # PARAMETERS ----
   
@@ -9,6 +9,16 @@ release.edata <- function(agencyid, id, version, ...)
     params$credentials <- NULL
   if( is.null(params$debug) ) 
     params$debug <- FALSE
+  if ( !is.null(params$newest) )
+    query_params$newest <- "true"
+  if ( !is.null(params$oldest) )
+    query_params$oldest <- "true"
+  if ( !is.null(params$before) )
+    query_params$beforeDateTime <- strftime(params$before, "%Y-%m-%dT%H:%M:%S")
+  if ( !is.null(params$after) )
+    query_params$afterDateTime <- strftime(params$after, "%Y-%m-%dT%H:%M:%S")
+  if ( !is.null(params$includestext) )
+    query_params$includesText <- params$includestext
   if ( !is.null(params$releasedescription) )
     query_params$releaseDescription <- params$releasedescription
   
@@ -22,14 +32,14 @@ release.edata <- function(agencyid, id, version, ...)
     credentials = econdata_credentials()
   }
 
-  # ADD RELEASE ----
+  # FETCH RELEASE ----
   
   dataflow <- paste(agencyid,id,version,sep=",")
   
-  response <- POST(env$repository$url, 
-                   path=paste(env$repository$path,"release/data/",dataflow,sep=""), 
-                   query=query_params,
-                   authenticate(credentials[1], credentials[2]))
+  response <- GET(env$repository$url, 
+                  path=paste(env$repository$path,"release/data/",dataflow,sep=""), 
+                  query=query_params,
+                  authenticate(credentials[1], credentials[2]))  
   
   if( response$status_code != 200 && !params$debug )
     stop( content(response, encoding="UTF-8") )
