@@ -15,9 +15,9 @@ asJSON <- function(db, meta=NULL, header=NULL) {
   for( index in 1:length(names(db)) ) {
     series <- names(db)[index]
     
-    # if( class(db[[series]]) != "edata" ) {
-    #   stop("Input must be a list of object of class edata only.")
-    # }
+    if( class(db[[series]]) != "edata" ) {
+      stop("Input must be a list of object of class edata only.")
+    }
     
     dataset$DataSets[[1]]$Series[[index]] <- lapply(summary(db[[series]]), unbox)
     dataset$DataSets[[1]]$Series[[index]]$Obs <- as.data.frame(db[[series]])
