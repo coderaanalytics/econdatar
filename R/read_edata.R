@@ -1,4 +1,4 @@
-read.edata <- function(id, ...) 
+read_edata <- function(id, ...) 
 {
  
   # ---- PARAMETERS ----
@@ -11,16 +11,10 @@ read.edata <- function(id, ...)
     params$credentials <- NULL
   if(is.null(params$debug)) 
     params$debug <- FALSE
-  if(is.null(params$agencyid)) 
-    params$agencyid <- env$repository$default_agency
   if(is.null(params$version)) 
     params$version <- "latest"
   if(is.null(params$key)) 
     params$key <- "all"
-  if(is.null(params$provideragencyid)) 
-    params$dataprovideragencyid <- env$repository$default_agency
-  if(is.null(params$providerid)) 
-    params$dataproviderid <- env$repository$default_provider
   
   query_params <- list()
   
@@ -62,8 +56,7 @@ read.edata <- function(id, ...)
 
   # FETCH DATA ----
   
-  message(paste("\nLoading dataset - urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=",
-                params$agencyid, ":", id, "(", params$version, ").\n", sep=""))
+  message(paste("\nLoading dataset -", id))
   
   if ( !is.null(params[["file"]]) ) 
   {
@@ -82,15 +75,20 @@ read.edata <- function(id, ...)
       credentials = econdata_credentials()
     }
 
-    dataflow <- paste(params$agencyid,id,params$version,sep=",")
-    data_provider <- paste(params$dataprovideragencyid,params$dataproviderid,sep=",")
+    dataflow <- paste(params$agencyid, id, params$version, sep = ",")
+    data_provider <- paste(params$dataprovideragencyid, params$dataproviderid, sep = ",")
+
+    if( length(data_provider) == 0 ) 
+      data_provider <- NULL 
+    else 
+      data_provider <- paste0("/", data_provider)
 
     response <- GET(env$repository$url, 
-                    path=paste(env$repository$path,"data/",dataflow,"/",params$key,"/",data_provider,sep=""), 
+                    path=paste0(env$repository$path, "data/", dataflow, "/", params$key, data_provider), 
                     query=query_params,
                     authenticate(credentials[1], credentials[2]),
                     accept_json())
-    
+
     data_message <- content(response, encoding="UTF-8")
     
     if( response$status_code != 200 && !params$debug )

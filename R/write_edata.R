@@ -1,4 +1,4 @@
-write.edata <- function(db, agencyid, id, version, ...) 
+write.edata <- function(db, agencyid, id, version, provideragencyid, providerid, ...) 
 {
 
   # ---- PARAMETERS ----
@@ -34,16 +34,17 @@ write.edata <- function(db, agencyid, id, version, ...)
     tmp <- tempfile()
     write(doc, file = tmp)
     
-    dataflow <- paste(agencyid,id,version,sep=",")
+    dataflow <- paste(agencyid, id, version, sep=",")
+    data_provider <- paste(provideragencyid, providerid, sep=",")
     
     response <- POST(env$repository$url,
-                     path=paste(env$repository$path,"modify/data/",dataflow,sep=""),
+                     path=paste0(env$repository$path, "modify/data/", dataflow, "/", data_provider),
                      query=query_params, 
                      body=list("file"=upload_file(tmp,"application/json")), 
                      encode="multipart",
                      authenticate(credentials[1], credentials[2]),
                      accept_json())
-    
+
     if( response$status_code == 200 )
       message( content(response, encoding="UTF-8") )
     else
