@@ -1,39 +1,45 @@
-release.edata <- function(agencyid, id, version, ...) 
+write_release <- function(agencyid, id, version, provideragencyid, providerid, releasedescription, ...) 
 {
   # PARAMETERS ----
   
-  params <- list(...)
-  query_params <- list()
-  
-  if(is.null(params$credentials)) 
-    params$credentials <- NULL
-  if( is.null(params$debug) ) 
-    params$debug <- FALSE
-  if ( !is.null(params$releasedescription) )
-    query_params$releaseDescription <- params$releasedescription
   
   env <- fromJSON(system.file("settings.json",package="econdatar"))
   
-  if( !is.null(params$credentials) ) {
-    credentials = params$credentials
-  } else if( Sys.getenv("ECONDATA") != "" ) {
-    credentials = strsplit(Sys.getenv("ECONDATA"), ";")[[1]]
-  } else {
-    credentials = econdata_credentials()
-  }
+  params <- list(...)
+  
+  if( !is.null(params$username) && !is.null(params$password) ) 
+    params$credentials <- paste(params$username, params$password, sep = ";")
+  
+  query_params <- list()
+  
+  query_params$releaseDescription <- releasedescription
+
 
   # ADD RELEASE ----
   
-  dataflow <- paste(agencyid,id,version,sep=",")
+  
+  if( !is.null(params$credentials) ) {
+    credentials = unlist( strsplit(params$credentials, ";") )
+  } else if( Sys.getenv("ECONDATA_CREDENTIALS") != "" ) {
+    credentials = unlist( strsplit(Sys.getenv("ECONDATA_CREDENTIALS"), ";") )
+  } else {
+    credentials = econdata_credentials()
+  }
+  
+  dataflow <- paste(agencyid, id, version, sep = ",")
+  data_provider <- paste(provideragencyid, providerid, sep = ",")
   
   response <- POST(env$repository$url, 
-                   path=paste(env$repository$path,"release/data/",dataflow,sep=""), 
-                   query=query_params,
-                   authenticate(credentials[1], credentials[2]))
+                   path = paste(env$repository$path, "modify/release", 
+                                dataflow,
+                                data_provider, sep = "/"), 
+                   query = query_params,
+                   authenticate(credentials[1], credentials[2]),
+                   accept_json())
   
-  if( response$status_code != 200 && !params$debug )
-    stop( content(response, encoding="UTF-8") )
-  
-  return( content(response, encoding="UTF-8") )
-  
+  if( response$status_code == 200 )
+    message( content(response, encoding="UTF-8")$Result$Success$Message )
+  else
+    tryCatch(stop(content(response, encoding="UTF-8")),
+             error = function(e) { stop(response) })
 }
