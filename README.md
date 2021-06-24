@@ -2,7 +2,7 @@
 
 ```r
 library("devtools")
-install_github("byrongibby/econdatar")
+install_github("coderaanalytics/econdatar")
 ```
 
 Install from disk
@@ -11,8 +11,10 @@ Install from disk
 install.packages("path/to/econdatar",repos=NULL,type="source")
 ```
 
+Please see the [EconData blog](https://randomsample.co.za) for in depth tutorials
+
 # License
 
-Copyright © 2021 Codera (Pty Ltd)
+Copyright © 2021 EconData, supported by Codera (Pty Ltd)
 
 Available under the terms of the Eclipse Public License 2.0, see `LICENSE`.
