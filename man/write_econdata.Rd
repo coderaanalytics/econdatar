@@ -58,10 +58,10 @@ The functionality provided by \emph{write_econdata} is to save the data set desc
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{read.edata}}
+\code{\link{read_econdata}}
 }
 \examples{
-db <- read.edata("BA900", nameby="CODE")
+db <- read_econdata("BA900", nameby="CODE")
 
 write_econdata(db, "ECONDATA", "BA900", "1.0", "ECONDATA", "SARB", file = "ba900.json")
 }

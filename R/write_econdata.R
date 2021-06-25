@@ -21,10 +21,12 @@ write_econdata <- function(db, agencyid, id, version, provideragencyid, provider
   
   Header <- list()
   
-  Header$ID <- unbox(paste0("ECONDATAR-V", sessionInfo()[[7]]$econdatar[[4]]))
+  Header$ID <- unbox(tryCatch( paste0("ECONDATAR-V", sessionInfo()[[7]]$econdatar[[4]]),
+                               error = function(e) "Unknown" ))
   Header$Test <- unbox(FALSE)
   Header$Prepared <- unbox(format(Sys.time(), format = "%Y-%m-%dT%T"))
-  Header$Sender$id <- unbox(Sys.getenv()[["USER"]])
+  Header$Sender$id <- unbox(tryCatch( Sys.getenv()[["USER"]], 
+                                      error = function(e) "Anonymous" ))
   Header$DataStructure <- list(agencyID = unbox(agencyid), 
                                id = unbox(id),
                                version = unbox(version))
