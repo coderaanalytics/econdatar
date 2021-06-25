@@ -24,7 +24,7 @@ read_econdata <- function(id, ...)
   
   if ( !is.null(params$file) ) {
     
-    data_message <- fromJSON(file)
+    data_message <- fromJSON(params$file, simplifyVector = FALSE)
     
     message("Data set successfully retrieved from local storage.\n")
     
