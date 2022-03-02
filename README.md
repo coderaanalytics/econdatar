@@ -15,6 +15,6 @@ Please see the [EconData blog](https://randomsample.co.za) for in depth tutorial
 
 # License
 
-Copyright © 2021 EconData, supported by Codera (Pty Ltd)
+Copyright © 2022 EconData, developed by Codera Pty Ltd
 
 Available under the terms of the Eclipse Public License 2.0, see `LICENSE`.
