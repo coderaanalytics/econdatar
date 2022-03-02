@@ -29,7 +29,7 @@ Provider of the data.
 Description of the new data set vintage.
 }
   \item{\dots}{
-Further options include: \strong{\emph{username}} (character), EconData username; \strong{\emph{password}} (character), EconData password.
+Further options include: \strong{\emph{username}} (character), EconData username; \strong{\emph{password}} (character), EconData password; \strong{\emph{releasedattime}} (character), date and time for historical releases in ISO format.
 }
 }
 \details{
