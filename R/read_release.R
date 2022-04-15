@@ -38,27 +38,46 @@ read_release <- function(id, ...) {
     credentials <- econdata_credentials()
   }
 
-  dataflow <- paste(c(params$agencyid, id, params$version), collapse = ",")
-  data_provider <- paste(c(params$provideragencyid,
-                           params$providerid), collapse = ",")
-
-  if (nchar(data_provider) == 0)
-    data_provider <- NULL
+  query_params_datasets <- list()
+  query_params_datasets[["nested-flow-ref"]] <-
+    paste(c(params$agencyid, id, params$version), collapse = ",")
+  if (!is.null(params$providerid)) {
+    query_params_datasets[["nested-provider-ref"]] <-
+      paste(c(params$provideragencyid,
+              params$providerid), collapse = ",")
+  }
 
   response <- GET(env$repository$url,
-                  path = paste(c(env$repository$path, "release",
-                                 dataflow,
-                                 params$key,
-                                 data_provider), collapse = "/"),
-                  query = query_params,
+                  path = c(env$repository$path, "/datasets"),
+                  query = query_params_datasets,
                   authenticate(credentials[1], credentials[2]),
                   accept_json())
 
-  if (response$status_code == 200)
-    message("Releases successfully retrieved from EconData.\n")
-  else
-    tryCatch(stop(content(response, encoding = "UTF-8")),
-             error = function(e) stop(response))
+  if (response$status_code != 200)
+    stop(content(response, encoding = "UTF-8"))
 
-  return(content(response, encoding = "UTF-8")$Result$Success$Message)
+
+  data_message <- content(response, encoding = "UTF-8")
+
+  releases <- lapply(data_message$DataSets, function(dataset) {
+
+    response <- GET(env$repository$url,
+                    path = paste(env$repository$path,
+                                 "datasets", dataset$DataSetID,
+                                 "releases", sep = "/"),
+                    query = query_params,
+                    authenticate(credentials[1], credentials[2]),
+                    accept_json())
+
+    if (response$status_code == 200) {
+      message("Fetching releases for: ",
+              paste(dataset$DataFlow, collapse = ","), " - ",
+              paste(dataset$DataProvider, collapse = ","), "\n")
+    } else
+      stop(content(response, encoding = "UTF-8"))
+
+    return(content(response, encoding = "UTF-8")$Result$Success$Message)
+  })
+
+  return(releases)
 }

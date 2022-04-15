@@ -1,4 +1,4 @@
-write_econdata <- function(db, agencyid, id, version, provideragencyid, providerid, ...) {
+write_econdata <- function(db, ...) {
 
   # Parameters ---
 
@@ -17,7 +17,6 @@ write_econdata <- function(db, agencyid, id, version, provideragencyid, provider
   # Data message ---
 
 
-  dataset <- list()
 
   Header <- list()
 
@@ -28,38 +27,50 @@ write_econdata <- function(db, agencyid, id, version, provideragencyid, provider
   Header$Prepared <- unbox(format(Sys.time(), format = "%Y-%m-%dT%T"))
   Header$Sender$id <- unbox(tryCatch(Sys.getenv()[["USER"]],
                                       error = function(e) "Anonymous"))
-  Header$DataStructure <- list(agencyID = unbox(agencyid),
-                               id = unbox(id),
-                               version = unbox(version))
-  Header$DataProvider <- list(agencyID = unbox(provideragencyid),
-                              id = unbox(providerid))
 
   dataset$Header <- Header
 
-  dataset$DataSets[[1]] <- lapply(attributes(db)$metadata, unbox)
+  num_datasets <- if (!is.null(attributes(db)$metadata)) 1 else length(db)
 
-  for (index in seq_len(length(names(db)))) {
-    series <- names(db)[index]
+  db_list <- list()
+  if (num_datasets == 1) db_list[[1]] <- db else db_list <- db
 
-    time_period <- row.names(db[[series]])
-    row.names(db[[series]]) <- NULL
+  dataset <- list()
+  for (i in seq_len(num_datasets)) {
 
-    dataset$DataSets[[1]]$Series[[index]] <-
-      lapply(attributes(db[[series]])$metadata, unbox)
-    dataset$DataSets[[1]]$Series[[index]]$Obs <-
-      data.frame(db[[series]], TIME_PERIOD = time_period)
+    dataset$DataSets[[i]] <- lapply(attributes(db_list[[i]])$metadata,
+                                    function(x) {
+                                      if (length(x) == 1) {
+                                        unbox(x)
+                                      } else if (is.list(x)) {
+                                        unlist(x)
+                                      } else {
+                                        return(x)
+                                      }
+                                    })
+
+    for (index in seq_len(length(names(db_list[[i]])))) {
+      series <- names(db_list[[i]])[index]
+
+      time_period <- row.names(db_list[[i]][[series]])
+      row.names(db_list[[i]][[series]]) <- NULL
+
+      dataset$DataSets[[i]]$Series[[index]] <-
+        lapply(attributes(db_list[[i]][[series]])$metadata, unbox)
+      dataset$DataSets[[i]]$Series[[index]]$Obs <-
+        data.frame(db_list[[i]][[series]], TIME_PERIOD = time_period)
+    }
   }
-
-  data_message <- toJSON(dataset, na = "null")
 
 
 
   # Push data message ---
 
 
-  message(paste("\nPushing dataset -", id, "\n"))
 
   if (!is.null(params$file)) {
+
+    data_message <- toJSON(dataset, na = "null")
 
     write(data_message, file = params$file)
 
@@ -75,26 +86,87 @@ write_econdata <- function(db, agencyid, id, version, provideragencyid, provider
       credentials <- econdata_credentials()
     }
 
-    tmp <- tempfile()
-    write(data_message, file = tmp)
 
-    dataflow <- paste(agencyid, id, version, sep = ",")
-    data_provider <- paste(provideragencyid, providerid, sep = ",")
 
-    response <- POST(env$repository$url,
-                     path = paste(env$repository$path, "modify/data",
-                                  dataflow,
-                                  data_provider, sep = "/"),
-                     query = query_params,
-                     body = list("file" = upload_file(tmp, "application/json")),
-                     encode = "multipart",
-                     authenticate(credentials[1], credentials[2]),
-                     accept_json())
+    # Push each data set individually ---
 
-    if (response$status_code == 200)
-      message(content(response, encoding = "UTF-8")$Result$Success$Message)
-    else
-      tryCatch(stop(content(response, encoding = "UTF-8")),
-               error = function(e) stop(response))
+
+    for (i in seq_len(num_datasets)) {
+
+      single_dataset <- list()
+      single_dataset$Header <- dataset$Header
+      single_dataset$DataSets <- list()
+      single_dataset$DataSets[[1]] <- dataset$DataSets[[i]]
+
+      if (!is.null(params$agencyid) &&
+          !is.null(params$id) &&
+          !is.null(params$version) &&
+          !is.null(params$provideragencyid) &&
+          !is.null(params$providerid)) {
+
+        query_params_datasets <- list()
+        query_params_datasets[["nested-flow-ref"]] <-
+          paste(params$agencyid,
+                params$id,
+                params$version, sep = ",")
+        query_params_datasets[["nested-provider-ref"]] <-
+          paste(params$provideragencyid,
+                params$providerid, sep = ",")
+
+        response <- GET(env$repository$url,
+                        path = c(env$repository$path, "/datasets"),
+                        query = query_params_datasets,
+                        authenticate(credentials[1], credentials[2]),
+                        accept_json())
+
+        if (response$status_code != 200)
+          stop(content(response, encoding = "UTF-8"))
+
+        meta_dataset <- content(response, encoding = "UTF-8")
+
+        dataset_id <- meta_dataset$DataSets[[1]]$DataSetID
+
+        dataflow <- paste(meta_dataset$DataSets[[1]]$DataFlow, collapse = ",")
+        dataprovider <- paste(meta_dataset$DataSets[[1]]$DataProvider,
+                              collapse = ",")
+
+        message("Writing dataset: ", dataflow, " - ", dataprovider, "\n")
+
+      } else if (!is.null(single_dataset$DataSets[[1]]$DataSetID)) {
+
+        dataset_id  <- single_dataset$DataSets[[1]]$DataSetID
+
+        dataflow <- paste(single_dataset$DataSets[[1]]$DataFlow, collapse = ",")
+        dataprovider <- paste(single_dataset$DataSets[[1]]$DataProvider,
+                              collapse = ",")
+
+        message("Writing dataset: ", dataflow, " - ", dataprovider, "\n")
+
+      } else {
+        stop(paste("Unable to identify data set,",
+                   "please provide data flow and provider references"))
+      }
+
+      data_message <- toJSON(single_dataset, na = "null")
+
+      tmp <- tempfile()
+      write(data_message, file = tmp)
+
+      response <- PUT(env$repository$url,
+                      path = paste(env$repository$path,
+                                   "datasets",
+                                   dataset_id, sep = "/"),
+                      query = query_params,
+                      body = list("file" = upload_file(tmp,
+                                                       "application/json")),
+                      encode = "multipart",
+                      authenticate(credentials[1], credentials[2]),
+                      accept_json())
+
+      if (response$status_code == 200)
+        message(content(response, encoding = "UTF-8")$Result$Success$Message)
+      else
+        stop(content(response, encoding = "UTF-8"))
+    }
   }
 }

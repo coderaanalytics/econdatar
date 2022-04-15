@@ -1,4 +1,4 @@
-{ "repository" : {"url" : "https://www.econdata.co.za",
-                  "path" : "dataapi"},
+{ "repository" : {"url" : "http://localhost",
+                  "path" : "dataapi/v1"},
   "registry" : {"url" : "https://www.econdata.co.za",
                 "path" : "FusionRegistry/ws/public/sdmxapi/rest"} }

@@ -19,7 +19,7 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
 
 
 
-  # Add release ---
+  # Update data set ---
 
 
   if (!is.null(params$credentials)) {
@@ -30,30 +30,46 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
     credentials <- econdata_credentials()
   }
 
-  dataflow <- paste(agencyid, id, version, sep = ",")
-  data_provider <- paste(provideragencyid, providerid, sep = ",")
+  query_params_datasets <- list()
+  query_params_datasets[["nested-flow-ref"]] <-
+    paste(params$agencyid,
+          params$id,
+          params$version, sep = ",")
+  query_params_datasets[["nested-provider-ref"]] <-
+    paste(params$provideragencyid,
+          params$providerid, sep = ",")
 
-  if (is.null(query_params$releaseDateTime)) {
-    response <- POST(env$repository$url,
-                     path = paste(env$repository$path, "modify/release",
-                                  dataflow, data_provider,
-                                  sep = "/"),
-                     query = query_params,
-                     authenticate(credentials[1], credentials[2]),
-                     accept_json())
-  } else {
-    response <- POST(env$repository$url,
-                     path = paste(env$repository$path, "modify/release",
-                                  dataflow, data_provider,
-                                  "historical", sep = "/"),
-                     query = query_params,
-                     authenticate(credentials[1], credentials[2]),
-                     accept_json())
-  }
+  response <- GET(env$repository$url,
+                  path = c(env$repository$path, "/datasets"),
+                  query = query_params_datasets,
+                  authenticate(credentials[1], credentials[2]),
+                  accept_json())
 
-  if (response$status_code == 200)
+  if (response$status_code != 200)
+    stop(content(response, encoding = "UTF-8"))
+
+  meta_dataset <- content(response, encoding = "UTF-8")
+
+  dataset_id <- meta_dataset$DataSets[[1]]$DataSetID
+
+  dataflow <- paste(meta_dataset$DataSets[[1]]$DataFlow, collapse = ",")
+  dataprovider <- paste(meta_dataset$DataSets[[1]]$DataProvider,
+                        collapse = ",")
+
+  message("Committing release: ", dataflow, " - ", dataprovider, "\n")
+
+  response <- POST(env$repository$url,
+                   path = paste(env$repository$path,
+                                "datasets",
+                                dataset_id,
+                                "releases",
+                                "commit-release", sep = "/"),
+                   query = query_params,
+                   authenticate(credentials[1], credentials[2]),
+                   accept_json())
+
+  if (response$status_code == 201)
     message(content(response, encoding = "UTF-8")$Result$Success$Message)
   else
-    tryCatch(stop(content(response, encoding = "UTF-8")),
-             error = function(e) stop(response))
+    stop(content(response, encoding = "UTF-8"))
 }
