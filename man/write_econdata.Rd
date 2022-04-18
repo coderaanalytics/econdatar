@@ -7,26 +7,26 @@ write_econdata
 Saves the data set for the given dataflow - agencyid:id(version) and data provider - agencyid:id, as a list. Available data sets can be looked up from the data registry (http://www.econdata.co.za/FusionRegistry).
 }
 \usage{
-write_econdata(db, agencyid, id, version, provideragencyid, providerid, ...)
+write_econdata(db, ...)
 }
 \arguments{
   \item{db}{
 Data set to upload.
 }
   \item{agencyid}{
-Agency responsible for the data definition.
+Agency responsible for the data definition. \emph{Optional, if encoded in database metadata.}
 }
   \item{id}{
-Data identifier.
+Data identifier. \emph{Optional, if encoded in database metadata.}
 }
   \item{version}{
-Version of the data definition.
+Version of the data definition. \emph{Optional, if encoded in database metadata.}
 }
   \item{provideragencyid}{
-Agency responsible for making the data available.
+Agency responsible for making the data available. \emph{Optional, if encoded in database metadata.}
 }
   \item{providerid}{
-Provider of the data.
+Provider of the data. \emph{Optional, if encoded in database metadata.}
 }
   \item{\dots}{
 Further options include: \strong{\emph{file}} (character), file name for saving data set as JSON data to disk; \strong{\emph{username}} (character), EconData username; \strong{\emph{password}} (character), EconData password..
