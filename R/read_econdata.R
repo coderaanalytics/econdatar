@@ -17,6 +17,9 @@ read_econdata <- function(id, ...) {
   if (!is.null(params$releasedescription))
     query_params$releaseDescription <- params$releasedescription
 
+  credentials <- NULL
+
+
 
   # Fetch dataset(s) ---
 
@@ -72,6 +75,9 @@ read_econdata <- function(id, ...) {
 
     # Fetch data structure (metadata) ---
 
+   if (is.null(dataset$DataFlow))
+     stop("Dataset data flow reference not available, ",
+          "unable to fetch data set metadata")
 
     dataflow <- paste(dataset$DataFlow, collapse = "/")
 
@@ -109,23 +115,29 @@ read_econdata <- function(id, ...) {
     # Fetch data set ---
 
 
-    response <- GET(env$repository$url,
-                    path = paste(env$repository$path,
-                                 "datasets",
-                                 dataset$DataSetID, sep = "/"),
-                    query = query_params,
-                    authenticate(credentials[1], credentials[2]),
-                    accept_json())
+    if (!is.null(params$file)) {
+      dataset_1 <- dataset
+    } else {
+      response <- GET(env$repository$url,
+                      path = paste(env$repository$path,
+                                   "datasets",
+                                   dataset$DataSetID, sep = "/"),
+                      query = query_params,
+                      authenticate(credentials[1], credentials[2]),
+                      accept_json())
 
 
-    if (response$status_code == 200) {
-      message("Processing data set: ",
-              paste(dataset$DataFlow, collapse = ","), " - ",
-              paste(dataset$DataProvider, collapse = ","), "\n")
-    } else
-      stop(content(response, encoding = "UTF-8"))
+      if (response$status_code == 200) {
+        message("Processing data set: ",
+                paste(dataset$DataFlow, collapse = ","), " - ",
+                paste(dataset$DataProvider, collapse = ","), "\n")
+      } else
+        stop(content(response, encoding = "UTF-8"))
 
-    data_message_1 <- content(response, encoding = "UTF-8")
+      data_message_1 <- content(response, encoding = "UTF-8")
+
+      dataset_1 <- data_message_1$DataSets[[1]]
+    }
 
 
 
@@ -133,12 +145,6 @@ read_econdata <- function(id, ...) {
 
 
     out <- list()
-
-    if (length(data_message_1$DataSets) > 1)
-      stop("Multiple datasets returned when only one was expected.")
-
-
-    dataset_1 <- data_message_1$DataSets[[1]]
 
     for (series in dataset_1$Series) {
       obs <- series$Obs
