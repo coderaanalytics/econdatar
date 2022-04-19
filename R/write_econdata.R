@@ -28,6 +28,8 @@ write_econdata <- function(db, ...) {
   Header$Sender$id <- unbox(tryCatch(Sys.getenv()[["USER"]],
                                       error = function(e) "Anonymous"))
 
+  dataset <- list()
+
   dataset$Header <- Header
 
   num_datasets <- if (!is.null(attributes(db)$metadata)) 1 else length(db)
@@ -35,7 +37,6 @@ write_econdata <- function(db, ...) {
   db_list <- list()
   if (num_datasets == 1) db_list[[1]] <- db else db_list <- db
 
-  dataset <- list()
   for (i in seq_len(num_datasets)) {
 
     dataset$DataSets[[i]] <- lapply(attributes(db_list[[i]])$metadata,

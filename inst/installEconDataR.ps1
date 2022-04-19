@@ -1,3 +1,20 @@
+Write-Output "Checking R installation"
+Write-Output ""
+
+If (Test-Path -Path "C:\Program Files\R") {
+  Write-Output "Found R installation."
+  Write-Output ""
+} Else {
+  Write-Output "No R installation found."
+  Write-Output "Please download and install R from www.r-project.org before continuing."
+  Write-Output ""
+  Write-Output "Press any key to exit..."
+
+  [Console]::ReadKey()
+  
+  Exit
+}
+
 Write-Output "Downloading package from GitHub.com"
 Write-Output ""
 
