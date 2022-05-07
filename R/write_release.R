@@ -32,12 +32,9 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
 
   query_params_datasets <- list()
   query_params_datasets[["nested-flow-ref"]] <-
-    paste(params$agencyid,
-          params$id,
-          params$version, sep = ",")
+    paste(agencyid, id, version, sep = ",")
   query_params_datasets[["nested-provider-ref"]] <-
-    paste(params$provideragencyid,
-          params$providerid, sep = ",")
+    paste(provideragencyid, providerid, sep = ",")
 
   response <- GET(env$repository$url,
                   path = c(env$repository$path, "/datasets"),
