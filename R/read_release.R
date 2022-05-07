@@ -13,9 +13,9 @@ read_release <- function(id, ...) {
   query_params <- list()
 
   if (!is.null(params$newest))
-    query_params$newest <- "true"
+    query_params$newest <- if (params$newest) "true" else "false"
   if (!is.null(params$oldest))
-    query_params$oldest <- "true"
+    query_params$oldest <- if (params$oldest) "true" else "false"
   if (!is.null(params$before))
     query_params$beforeDateTime <- strftime(params$before, "%Y-%m-%dT%H:%M:%S")
   if (!is.null(params$after))
@@ -24,7 +24,8 @@ read_release <- function(id, ...) {
     query_params$includesText <- params$includestext
   if (!is.null(params$releasedescription))
     query_params$releaseDescription <- params$releasedescription
-
+  if (!is.null(params$returnrange))
+    query_params$returnRange <- if (params$returnrange) "true" else "false"
 
 
   # Fetch release ---
