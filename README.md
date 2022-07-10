@@ -1,7 +1,7 @@
 # Quick start
 
 ```r
-library("devtools")
+library("remotes")
 install_github("coderaanalytics/econdatar")
 ```
 
