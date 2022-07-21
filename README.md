@@ -11,7 +11,7 @@ Install from disk
 install.packages("path/to/econdatar",repos=NULL,type="source")
 ```
 
-Re-install - start a new session after running
+Re-install (when new versions are available) - **start a new session after running**
 
 ```r
 library("remotes")
