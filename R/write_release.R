@@ -49,7 +49,7 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
 
   dataset_id <- meta_dataset$DataSets[[1]]$DataSetID
 
-  dataflow <- paste(meta_dataset$DataSets[[1]]$DataFlow, collapse = ",")
+  dataflow <- paste(meta_dataset$DataSets[[1]]$Dataflow, collapse = ",")
   dataprovider <- paste(meta_dataset$DataSets[[1]]$DataProvider,
                         collapse = ",")
 

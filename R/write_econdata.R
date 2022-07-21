@@ -127,7 +127,7 @@ write_econdata <- function(db, ...) {
 
         dataset_id <- meta_dataset$DataSets[[1]]$DataSetID
 
-        dataflow <- paste(meta_dataset$DataSets[[1]]$DataFlow, collapse = ",")
+        dataflow <- paste(meta_dataset$DataSets[[1]]$Dataflow, collapse = ",")
         dataprovider <- paste(meta_dataset$DataSets[[1]]$DataProvider,
                               collapse = ",")
 
@@ -137,7 +137,7 @@ write_econdata <- function(db, ...) {
 
         dataset_id  <- single_dataset$DataSets[[1]]$DataSetID
 
-        dataflow <- paste(single_dataset$DataSets[[1]]$DataFlow, collapse = ",")
+        dataflow <- paste(single_dataset$DataSets[[1]]$Dataflow, collapse = ",")
         dataprovider <- paste(single_dataset$DataSets[[1]]$DataProvider,
                               collapse = ",")
 

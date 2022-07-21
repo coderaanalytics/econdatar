@@ -75,11 +75,11 @@ read_econdata <- function(id, ...) {
 
     # Fetch data structure (metadata) ---
 
-   if (is.null(dataset$DataFlow))
+   if (is.null(dataset$Dataflow))
      stop("Dataset data flow reference not available, ",
           "unable to fetch data set metadata")
 
-    dataflow <- paste(dataset$DataFlow, collapse = "/")
+    dataflow <- paste(dataset$Dataflow, collapse = "/")
 
     response <- GET(env$registry$url,
                     path = paste(c(env$registry$path,
@@ -90,7 +90,7 @@ read_econdata <- function(id, ...) {
 
     if (response$status_code == 200) {
       message("Data structure successfully retrieved for data flow: ",
-              paste(dataset$DataFlow, collapse = ","), "\n")
+              paste(dataset$Dataflow, collapse = ","), "\n")
     } else
       stop(content(response, encoding = "UTF-8"))
 
@@ -129,7 +129,7 @@ read_econdata <- function(id, ...) {
 
       if (response$status_code == 200) {
         message("Processing data set: ",
-                paste(dataset$DataFlow, collapse = ","), " - ",
+                paste(dataset$Dataflow, collapse = ","), " - ",
                 paste(dataset$DataProvider, collapse = ","), "\n")
       } else
         stop(content(response, encoding = "UTF-8"))

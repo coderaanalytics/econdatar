@@ -72,7 +72,7 @@ read_release <- function(id, ...) {
 
     if (response$status_code == 200) {
       message("Fetching releases for: ",
-              paste(dataset$DataFlow, collapse = ","), " - ",
+              paste(dataset$Dataflow, collapse = ","), " - ",
               paste(dataset$DataProvider, collapse = ","), "\n")
     } else
       stop(content(response, encoding = "UTF-8"))
