@@ -11,6 +11,14 @@ Install from disk
 install.packages("path/to/econdatar",repos=NULL,type="source")
 ```
 
+Re-install - start a new session after running
+
+```r
+library("remotes")
+remove.packages("econdatar")
+install_github("coderaanalytics/econdatar")
+```
+
 Please see the [EconData blog](https://randomsample.co.za) for in depth tutorials
 
 # License
