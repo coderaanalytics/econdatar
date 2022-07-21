@@ -88,10 +88,10 @@ read_econdata <- function(id, ...) {
                     query = list(references = "children",
                                  format = "sdmx-2.0"))
 
-    if (response$status_code == 200) {
+    if (response$status_code == 200)
       message("Data structure successfully retrieved for data flow: ",
               paste(dataset$Dataflow, collapse = ","), "\n")
-    } else
+    else
       stop(content(response, encoding = "UTF-8"))
 
     datastructure <- content(response,
@@ -118,6 +118,10 @@ read_econdata <- function(id, ...) {
     if (!is.null(params$file)) {
       dataset_1 <- dataset
     } else {
+
+      query_params[["nested-flow-ref"]] <- paste(dataset$Dataflow,
+                                                 collapse = ",")
+
       response <- GET(env$repository$url,
                       path = paste(env$repository$path,
                                    "datasets",
@@ -127,11 +131,11 @@ read_econdata <- function(id, ...) {
                       accept_json())
 
 
-      if (response$status_code == 200) {
+      if (response$status_code == 200)
         message("Processing data set: ",
                 paste(dataset$Dataflow, collapse = ","), " - ",
                 paste(dataset$DataProvider, collapse = ","), "\n")
-      } else
+      else
         stop(content(response, encoding = "UTF-8"))
 
       data_message_1 <- content(response, encoding = "UTF-8")
