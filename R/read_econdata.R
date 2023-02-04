@@ -42,6 +42,8 @@ read_econdata <- function(id, ...) {
       credentials <- econdata_credentials()
     }
 
+    params$version <- paste0(params$version, ".0")
+
     query_params_datasets <- list()
     query_params_datasets[["nested-flow-ref"]] <-
       paste(c(params$agencyid, id, params$version), collapse = ",")
@@ -118,6 +120,8 @@ read_econdata <- function(id, ...) {
     if (!is.null(params$file)) {
       dataset_1 <- dataset
     } else {
+
+      dataset$Dataflow[3] <- paste0(dataset$Dataflow[3], ".0")
 
       query_params[["nested-flow-ref"]] <- paste(dataset$Dataflow,
                                                  collapse = ",")

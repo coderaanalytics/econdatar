@@ -39,6 +39,8 @@ read_release <- function(id, ...) {
     credentials <- econdata_credentials()
   }
 
+  params$version <- paste0(params$version, ".0")
+
   query_params_datasets <- list()
   query_params_datasets[["nested-flow-ref"]] <-
     paste(c(params$agencyid, id, params$version), collapse = ",")
@@ -56,7 +58,6 @@ read_release <- function(id, ...) {
 
   if (response$status_code != 200)
     stop(content(response, encoding = "UTF-8"))
-
 
   data_message <- content(response, encoding = "UTF-8")
 

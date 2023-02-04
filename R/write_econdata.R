@@ -105,6 +105,8 @@ write_econdata <- function(db, ...) {
           !is.null(params$provideragencyid) &&
           !is.null(params$providerid)) {
 
+        params$version <- paste0(params$version, ".0")
+
         query_params_datasets <- list()
         query_params_datasets[["nested-flow-ref"]] <-
           paste(params$agencyid,

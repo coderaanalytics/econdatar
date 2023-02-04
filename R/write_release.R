@@ -30,6 +30,8 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
     credentials <- econdata_credentials()
   }
 
+  version <- paste0(version, ".0")
+
   query_params_datasets <- list()
   query_params_datasets[["nested-flow-ref"]] <-
     paste(agencyid, id, version, sep = ",")
