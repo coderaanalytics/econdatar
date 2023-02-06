@@ -42,7 +42,8 @@ read_econdata <- function(id, ...) {
       credentials <- econdata_credentials()
     }
 
-    params$version <- paste0(params$version, ".0")
+    if (!is.null(params$version))
+      params$version <- paste0(params$version, ".0")
 
     query_params_datasets <- list()
     query_params_datasets[["nested-flow-ref"]] <-
