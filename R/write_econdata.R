@@ -41,7 +41,7 @@ write_econdata <- function(db, ...) {
     dataset$DataSets[[i]] <- lapply(attributes(db_list[[i]])$metadata,
                                     function(x) {
                                       if (length(x) == 1) {
-                                        httr::unbox(x)
+                                        jsonlite::unbox(x)
                                       } else if (is.list(x)) {
                                         unlist(x)
                                       } else {
@@ -56,7 +56,7 @@ write_econdata <- function(db, ...) {
       row.names(db_list[[i]][[series]]) <- NULL
 
       dataset$DataSets[[i]]$Series[[index]] <-
-        lapply(attributes(db_list[[i]][[series]])$metadata, httr::unbox)
+        lapply(attributes(db_list[[i]][[series]])$metadata, jsonlite::unbox)
       dataset$DataSets[[i]]$Series[[index]]$Obs <-
         data.frame(db_list[[i]][[series]], TIME_PERIOD = time_period)
     }

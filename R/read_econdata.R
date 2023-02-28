@@ -42,7 +42,8 @@ read_econdata <- function(id, ...) {
       credentials <- econdata_credentials()
     }
 
-    if (!is.null(params$version) && params$version != "latest")
+    if (!is.null(params$version) &&
+        (params$version != "latest" || params$version != "all"))
       params$version <- paste0(params$version, ".0")
 
     query_params_datasets <- list()
