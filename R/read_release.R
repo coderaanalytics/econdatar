@@ -3,7 +3,7 @@ read_release <- function(id, ...) {
   # Parameters ---
 
 
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))
+  env <- jsonlite::fromJSON(system.file("settings.json", package = "econdatar"))
 
   params <- list(...)
 
@@ -51,35 +51,36 @@ read_release <- function(id, ...) {
               params$providerid), collapse = ",")
   }
 
-  response <- GET(env$repository$url,
-                  path = c(env$repository$path, "/datasets"),
-                  query = query_params_datasets,
-                  authenticate(credentials[1], credentials[2]),
-                  accept_json())
+  response <- httr::GET(env$repository$url,
+                        path = c(env$repository$path, "/datasets"),
+                        query = query_params_datasets,
+                        httr::authenticate(credentials[1], credentials[2]),
+                        httr::accept_json())
 
   if (response$status_code != 200)
-    stop(content(response, encoding = "UTF-8"))
+    stop(httr::content(response, encoding = "UTF-8"))
 
-  data_message <- content(response, encoding = "UTF-8")
+  data_message <- httr::content(response, encoding = "UTF-8")
 
   releases <- lapply(data_message$DataSets, function(dataset) {
 
-    response <- GET(env$repository$url,
-                    path = paste(env$repository$path,
-                                 "datasets", dataset$DataSetID,
-                                 "releases", sep = "/"),
-                    query = query_params,
-                    authenticate(credentials[1], credentials[2]),
-                    accept_json())
+    response <- httr::GET(env$repository$url,
+                          path = paste(env$repository$path,
+                                       "datasets", dataset$DataSetID,
+                                       "releases", sep = "/"),
+                          query = query_params,
+                          httr::authenticate(credentials[1], credentials[2]),
+                          httr::accept_json())
 
     if (response$status_code == 200) {
       message("Fetching releases for: ",
               paste(dataset$Dataflow, collapse = ","), " - ",
               paste(dataset$DataProvider, collapse = ","), "\n")
-    } else
-      stop(content(response, encoding = "UTF-8"))
+    } else {
+      stop(httr::content(response, encoding = "UTF-8"))
+    }
 
-    return(content(response, encoding = "UTF-8")$Result$Success$Message)
+    return(httr::content(response, encoding = "UTF-8")$Result$Success$Message)
   })
 
   return(releases)

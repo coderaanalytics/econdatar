@@ -1,34 +1,38 @@
 econdata_credentials <- function() {
+  if (!requireNamespace("tcltk", quietly = TRUE)) {
+    stop("Package \"tcltk\" needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
 
-  username   <- tclVar(Sys.info()["user"])
-  password   <- tclVar("")
+  username   <- tcltk::tclVar(Sys.info()["user"])
+  password   <- tcltk::tclVar("")
 
-  tt <- tktoplevel()
-  tkwm.title(tt, "www.econdata.co.za credentials")
-  user.entry <- tkentry(tt, textvariable = username)
-  pswd.entry <- tkentry(tt, textvariable = password, show = "*")
+  tt <- tcltk::tktoplevel()
+  tcltk::tkwm.title(tt, "www.econdata.co.za credentials")
+  user.entry <- tcltk::tkentry(tt, textvariable = username)
+  pswd.entry <- tcltk::tkentry(tt, textvariable = password, show = "*")
 
   reset <- function() {
-    tclvalue(username)   <- Sys.info()["user"]
-    tclvalue(password)   <- ""
+    tcltk::tclvalue(username)   <- Sys.info()["user"]
+    tcltk::tclvalue(password)   <- ""
   }
-  reset.but <- tkbutton(tt, text = "Reset", command = reset)
+  reset.but <- tcltk::tkbutton(tt, text = "Reset", command = reset)
 
   submit <- function() {
-    user <- tclvalue(username)
-    pswd <- tclvalue(password)
+    user <- tcltk::tclvalue(username)
+    pswd <- tcltk::tclvalue(password)
     e <- parent.env(environment())
     e$user <- user
     e$pswd <- pswd
-    tkdestroy(tt)
+    tcltk::tkdestroy(tt)
   }
-  submit.but <- tkbutton(tt, text = "submit", command = submit)
+  submit.but <- tcltk::tkbutton(tt, text = "submit", command = submit)
 
-  tkgrid(tklabel(tt, text = "Enter User Details"), columnspan = 2)
-  tkgrid(tklabel(tt, text = "Username"), user.entry, pady = 10, padx = 10)
-  tkgrid(tklabel(tt, text = "Password"), pswd.entry, pady = 10, padx = 10)
-  tkgrid(submit.but, reset.but, pady = 10, padx = 50)
+  tcltk::tkgrid(tcltk::tklabel(tt, text = "Enter User Details"), columnspan = 2)
+  tcltk::tkgrid(tcltk::tklabel(tt, text = "Username"), user.entry, pady = 10, padx = 10)
+  tcltk::tkgrid(tcltk::tklabel(tt, text = "Password"), pswd.entry, pady = 10, padx = 10)
+  tcltk::tkgrid(submit.but, reset.but, pady = 10, padx = 50)
 
-  tkwait.window(tt)
+  tcltk::tkwait.window(tt)
   return(c(user, pswd))
 }

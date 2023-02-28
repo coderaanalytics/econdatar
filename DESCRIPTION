@@ -1,10 +1,11 @@
 Package: econdatar
 Type: Package
 Title: Automation of time series uploads and downloads
-Version: 1.1.4
-Date: 2022-04-14
+Version: 1.1.5
+Date: 2023-02-28
 Authors: Byron Botha
 Maintainer: Byron Botha <byron@codera.co.za>
 Description: Automation of time series uploads and downloads to and from www.econdata.co.za.
-Depends: httr, jsonlite, xml2, tcltk
+Imports: httr, jsonlite, xml2
+Suggests: tcltk
 License: GPL-2

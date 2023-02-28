@@ -3,7 +3,7 @@ read_econdata <- function(id, ...) {
   # Parameters ---
 
 
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))
+  env <- jsonlite::fromJSON(system.file("settings.json", package = "econdatar"))
 
   params <- list(...)
 
@@ -28,7 +28,7 @@ read_econdata <- function(id, ...) {
 
   if (!is.null(params$file)) {
 
-    data_message <- fromJSON(params$file, simplifyVector = FALSE)
+    data_message <- jsonlite::fromJSON(params$file, simplifyVector = FALSE)
 
     message("Data set(s) successfully retrieved from local storage.\n")
 
@@ -54,19 +54,19 @@ read_econdata <- function(id, ...) {
                 params$providerid), collapse = ",")
     }
 
-    response <- GET(env$repository$url,
-                    path = c(env$repository$path, "/datasets"),
-                    query = query_params_datasets,
-                    authenticate(credentials[1], credentials[2]),
-                    accept_json())
+    response <- httr::GET(env$repository$url,
+                          path = c(env$repository$path, "/datasets"),
+                          query = query_params_datasets,
+                          httr::authenticate(credentials[1], credentials[2]),
+                          httr::accept_json())
 
     if (response$status_code == 200) {
       message("Data set(s) successfully retrieved from EconData.\n")
+    } else {
+      stop(httr::content(response, encoding = "UTF-8"))
     }
-    else
-      stop(content(response, encoding = "UTF-8"))
 
-    data_message <- content(response, encoding = "UTF-8")
+    data_message <- httr::content(response, encoding = "UTF-8")
   }
 
 
@@ -76,7 +76,7 @@ read_econdata <- function(id, ...) {
 
   database <- lapply(data_message$DataSets, function(dataset) {
 
-    # Fetch data structure (metadata) ---
+   # Fetch data structure (metadata) ---
 
    if (is.null(dataset$Dataflow))
      stop("Dataset data flow reference not available, ",
@@ -84,33 +84,33 @@ read_econdata <- function(id, ...) {
 
     dataflow <- paste(dataset$Dataflow, collapse = "/")
 
-    response <- GET(env$registry$url,
-                    path = paste(c(env$registry$path,
-                                   "dataflow",
-                                   dataflow), collapse = "/"),
-                    query = list(references = "children",
-                                 format = "sdmx-2.0"))
+    response <- httr::GET(env$registry$url,
+                          path = paste(c(env$registry$path,
+                                         "dataflow",
+                                         dataflow), collapse = "/"),
+                          query = list(references = "children",
+                                       format = "sdmx-2.0"))
 
     if (response$status_code == 200)
       message("Data structure successfully retrieved for data flow: ",
               paste(dataset$Dataflow, collapse = ","), "\n")
     else
-      stop(content(response, encoding = "UTF-8"))
+      stop(httr::content(response, encoding = "UTF-8"))
 
-    datastructure <- content(response,
-                             type = "application/xml",
-                             encoding = "UTF-8")
+    datastructure <- httr::content(response,
+                                   type = "application/xml",
+                                   encoding = "UTF-8")
 
     series_dims <- NULL
-    all_dimensions <- xml_find_all(datastructure, "//str:Dimension")
+    all_dimensions <- xml2::xml_find_all(datastructure, "//str:Dimension")
     for (dimension in all_dimensions)
-      series_dims <- c(series_dims, xml_attr(dimension, "conceptRef"))
+      series_dims <- c(series_dims, xml2::xml_attr(dimension, "conceptRef"))
 
-    all_attributes <- xml_find_all(datastructure, "//str:Attribute")
+    all_attributes <- xml2::xml_find_all(datastructure, "//str:Attribute")
     obs_attrs <- NULL
     for (attribute in all_attributes) {
-      if (xml_attr(attribute, "attachmentLevel") == "Observation")
-        obs_attrs <- c(obs_attrs, xml_attr(attribute, "conceptRef"))
+      if (xml2::xml_attr(attribute, "attachmentLevel") == "Observation")
+        obs_attrs <- c(obs_attrs, xml2::xml_attr(attribute, "conceptRef"))
     }
 
 
@@ -127,13 +127,13 @@ read_econdata <- function(id, ...) {
       query_params[["nested-flow-ref"]] <- paste(dataset$Dataflow,
                                                  collapse = ",")
 
-      response <- GET(env$repository$url,
-                      path = paste(env$repository$path,
-                                   "datasets",
-                                   dataset$DataSetID, sep = "/"),
-                      query = query_params,
-                      authenticate(credentials[1], credentials[2]),
-                      accept_json())
+      response <- httr::GET(env$repository$url,
+                            path = paste(env$repository$path,
+                                         "datasets",
+                                         dataset$DataSetID, sep = "/"),
+                            query = query_params,
+                            httr::authenticate(credentials[1], credentials[2]),
+                            httr::accept_json())
 
 
       if (response$status_code == 200)
@@ -141,9 +141,9 @@ read_econdata <- function(id, ...) {
                 paste(dataset$Dataflow, collapse = ","), " - ",
                 paste(dataset$DataProvider, collapse = ","), "\n")
       else
-        stop(content(response, encoding = "UTF-8"))
+        stop(httr::content(response, encoding = "UTF-8"))
 
-      data_message_1 <- content(response, encoding = "UTF-8")
+      data_message_1 <- httr::content(response, encoding = "UTF-8")
 
       dataset_1 <- data_message_1$DataSets[[1]]
     }
