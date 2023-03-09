@@ -3,7 +3,7 @@ econdata_credentials <- function() {
     stop("Package \"tcltk\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
-
+  user <- pswd <- NULL # Need to add global bindings for variables
   username   <- tcltk::tclVar(Sys.info()["user"])
   password   <- tcltk::tclVar("")
 
