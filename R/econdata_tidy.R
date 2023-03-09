@@ -50,11 +50,11 @@ econdata_wide <- function(x, codelabel = FALSE, ...) {
 
 null2NA <- function(x) if(is.null(x)) NA_character_ else x
 
-econdata_extract_metadata <- function(x, allmeta) {
+econdata_extract_metadata <- function(x, allmeta, origmeta) {
   if(!allmeta && length(x) == 0L) return(NULL) # Omits non-observed series.
+  if(origmeta) return(attr(x, "metadata"))
   m <- attr(x, "metadata")
   PROVINCE <- if(length(m$PROVINCE)) m$PROVINCE else m$REGION
-
   return(list(source_code = null2NA(m$SOURCE_IDENTIFIER),
               frequency = null2NA(m$FREQ),
               label = null2NA(m$LABEL),
@@ -67,7 +67,7 @@ econdata_extract_metadata <- function(x, allmeta) {
               comment = null2NA(m$COMMENT)))
 }
 
-econdata_long <- function(x, combine = FALSE, allmeta = FALSE, ...) {
+econdata_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, ...) {
   if(is.null(attributes(x))) {
     res <- lapply(add_version_names(x), econdata_long, combine, allmeta)
     return(if(combine) rbindlist(res, fill = TRUE) else res)
@@ -76,14 +76,16 @@ econdata_long <- function(x, combine = FALSE, allmeta = FALSE, ...) {
        fmutate(date = as.Date(date), code = qF(code)) |>
        frename(OBS_VALUE = "value")
   m <- attr(x, "metadata")
-  meta <- lapply(x, econdata_extract_metadata, allmeta && !combine) |> rbindlist(use.names = FALSE)
+  meta <- lapply(x, econdata_extract_metadata, allmeta && !combine, origmeta) |>
+          rbindlist(use.names = origmeta, fill = origmeta)
+  if(origmeta) names(meta) <- tolower(names(meta))
   meta$code <- if(allmeta && !combine) names(x) else names(x)[names(x) %in% levels(d$code)]
   meta$source <- null2NA(m$DataProvider[[2L]])
   meta$dataset <- null2NA(m$Dataflow[[2L]])
   meta$source_dataset <- null2NA(m$SOURCE_DATASET)
   meta$version <- null2NA(m$Dataflow[[3L]])
-  setcolorder(meta, c("source", "dataset", "source_dataset", "version", "code", "source_code"))
-  get_vars(meta, fnobs(meta) == 0L) <- NULL
+  setcolorder(meta, c("source", "dataset", "source_dataset", "version", "code", if(!origmeta) "source_code"))
+  if(!allmeta) get_vars(meta, fnobs(meta) == 0L) <- NULL
   if(combine) {
     meta_fct <- dapply(meta, qF, drop = FALSE) # Factors for efficient storage
     code <- d$code
