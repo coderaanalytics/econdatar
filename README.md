@@ -1,4 +1,4 @@
-# **econdatar**: EconData R API
+# econdatar
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/coderaanalytics/econdatar/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/coderaanalytics/econdatar/actions/workflows/check-standard.yaml)
 <!-- badges: end -->
