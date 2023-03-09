@@ -1,4 +1,4 @@
-read_econdata <- function(id, ...) {
+read_econdata <- function(id, ..., tidy = FALSE) {
 
   # Parameters ---
 
@@ -185,8 +185,6 @@ read_econdata <- function(id, ...) {
     return(out)
   })
 
-  if (length(database) == 1)
-    return(database[[1]])
-  else
-    return(database)
+  if(length(database) == 1) database <- database[[1]]
+  return(if(tidy) econdata_tidy(database, ...) else database)
 }
