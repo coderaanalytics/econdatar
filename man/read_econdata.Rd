@@ -30,15 +30,15 @@ econdata_tidy(x, \dots)
 
 \item{tidy}{logical. Return data and metadata in tidy \emph{data.table}'s (see Value), by passing the result through \code{econdata_tidy}. If \code{TRUE}, \code{read_econdata()/econdata_tidy()} admit the following additional arguments:
   \tabular{llll}{
-    \code{wide} \tab\tab logical, default: \code{TRUE}. Returns data in a column-based format, with \code{"label"} and \code{"source.code"} attributes to columns and an overall "metadata" attribute to the table, otherwise a long-format is returned. See Value. \cr\cr
+    \code{wide} \tab\tab logical, default: \code{TRUE}. Returns data in a column-based format, with \code{"label"} and \code{"source.code"} attributes to columns and an overall "metadata" attribute to the table, otherwise a long-format is returned. See Value. \cr\cr\cr\cr
 
-    \code{codelabel} \tab\tab logical, default: \code{FALSE}. If \code{wide = TRUE}, setting \code{codelabel = TRUE} will add the source identifier at the beginning of the \code{"label"}, in addition to being attached as a \code{"source.code"} attribute. \cr\cr
+    \code{codelabel} \tab\tab logical, default: \code{FALSE}. If \code{wide = TRUE}, setting \code{codelabel = TRUE} will add the source identifier at the beginning of the \code{"label"}, in addition to being attached as a \code{"source.code"} attribute. \cr\cr\cr\cr
 
-    \code{combine} \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{combine = TRUE} will combine all data and metadata into a single long table, whereas the default \code{FALSE} will return data and metadata in separate tables, for more efficient storage. \cr\cr
+    \code{combine} \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{combine = TRUE} will combine all data and metadata into a single long table, whereas the default \code{FALSE} will return data and metadata in separate tables, for more efficient storage. \cr\cr\cr\cr
 
-    \code{origmeta}  \tab\tab logical, default: \code{FALSE}. \code{TRUE} will combine all metadata fields attached to the series in the dataset as they are. The default is to construct a standardized set of metadata variables, and then drop those not observed. See also \code{allmeta}. Only applicable in combination with \code{wide = FALSE}. \cr\cr
+    \code{origmeta}  \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{origmeta = TRUE} will combine all metadata fields attached to the series in the dataset as they are. The default is to construct a standardized set of metadata variables, and then drop those not observed. See also \code{allmeta}. \cr\cr\cr\cr
 
-    \code{allmeta} \tab\tab logical, default: \code{FALSE}. \code{TRUE} always returns the full set of metadata fields, regardless of whether they are recorded for the given dataset. Only applicable in combination with \code{wide = FALSE}. It is also possible that there are series with zero observations in a dataset. Such series are usually dropped in tidy output, but if \code{combine = FALSE}, setting \code{allmeta = TRUE} retains metadata for those series in the metadata table. \cr\cr
+    \code{allmeta} \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{allmeta = TRUE} always returns the full set of metadata fields, regardless of whether they are recorded for the given dataset. It is also possible that there are series with zero observations in a dataset. Such series are dropped in tidy output, but if \code{combine = FALSE}, \code{allmeta = TRUE} retains their metadata in the metadata table. \cr\cr\cr\cr
 
    \code{release} \tab\tab logical, default: \code{FALSE}. \code{TRUE} allows you to apply \code{econdata_tidy()} to objects returned by \code{read_release()}.
 }
