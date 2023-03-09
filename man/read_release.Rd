@@ -55,8 +55,9 @@ If \code{tidy = FALSE}, a nested lists containing metadata and release desciptio
 # Ids see: https://www.econdata.co.za/FusionRegistry/data/datastructure.html
 
 # Bank Balance Sheet (institutional)
-read_release(id = "BA900")
-read_release(id = "BA900", tidy = TRUE)
+BA900_RELEASE <- read_release(id = "BA900")
+# Same as: read_release(id = "BA900", tidy = TRUE)
+econdata_tidy(BA900_RELEASE, release = TRUE)      # No further options supported.
 
 # Releases for all CPI Revisions
 read_econdata(id = "CPI_ANL_SERIES", tidy = TRUE)

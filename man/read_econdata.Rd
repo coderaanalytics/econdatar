@@ -37,6 +37,8 @@ econdata_tidy(x, \dots)
     \code{combine} \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{combine = TRUE} will combine all data and metadata into a single long table, whereas the default \code{FALSE} will return data and metadata in separate tables, for more efficient storage. \cr\cr
 
     \code{allmeta} \tab\tab logical, default: \code{FALSE}. It is possible that there are series with zero observations in a dataset. Such series are usually dropped in tidy output, but if \code{wide = FALSE} and \code{combine = FALSE}, setting \code{allmeta = TRUE} will add the metadata for those series to the metadata table. \cr\cr
+
+   \code{release} \tab\tab logical, default: \code{FALSE}. \code{TRUE} allows you to apply \code{econdata_tidy()} to objects returned by \code{read_release()}.
 }
 }
 }

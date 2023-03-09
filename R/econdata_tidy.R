@@ -45,7 +45,7 @@ econdata_wide <- function(x, codelabel = FALSE, ...) {
   vlabels(d) <- c("Date", labs[1L, nam])
   vlabels(d, "source.code")[-1L] <- labs[2L, nam]
   attr(d, "metadata") <- attr(x, "metadata")
-  return(d)
+  return(qDT(d))
 }
 
 econdata_extract_metadata <- function(x, allmeta) {
@@ -92,16 +92,11 @@ econdata_long <- function(x, combine = FALSE, allmeta = FALSE, ...) {
   return(list(data = d, metadata = meta))
 }
 
-# This is just needed to get rid of the wide argument for documenting this together with read_econdata()
-econdata_tidy_core <- function(x, wide = TRUE, ...) if(wide) econdata_wide(x, ...) else econdata_long(x, ...)
-
-econdata_tidy <- function(x, ...) econdata_tidy_core(x, ...)
-
-
-econdata_tidy_release <- function(x, ...) {
+# Tidying the output of read_release()
+econdata_tidy_release <- function(x) {
   axnull <- is.null(attributes(x))
   if(axnull && length(x) > 1L) {
-    res <- lapply(x, econdata_tidy_release, ...)
+    res <- lapply(x, econdata_tidy_release)
     return(add_version_names(res, elem = "Flowref"))
   }
   if(axnull) x <- x[[1L]]
@@ -109,5 +104,11 @@ econdata_tidy_release <- function(x, ...) {
   res$Date <- as.POSIXct(res$Date)
   names(res) <- tolower(names(res))
   attr(res, "metadata") <- x$DataSet
-  return(res)
+  return(qDT(res))
 }
+
+# This is just needed to get rid of the wide argument for documenting this together with read_econdata()
+econdata_tidy_core <- function(x, wide = TRUE, release = FALSE, ...)
+  if(release) econdata_tidy_release(x) else if(wide) econdata_wide(x, ...) else econdata_long(x, ...)
+
+econdata_tidy <- function(x, ...) econdata_tidy_core(x, ...)
