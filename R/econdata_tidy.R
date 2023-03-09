@@ -69,7 +69,7 @@ econdata_extract_metadata <- function(x, allmeta, origmeta) {
 
 econdata_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, ...) {
   if(is.null(attributes(x))) {
-    res <- lapply(add_version_names(x), econdata_long, combine, allmeta)
+    res <- lapply(add_version_names(x), econdata_long, combine, allmeta, origmeta)
     return(if(combine) rbindlist(res, fill = TRUE) else res)
   }
   d <- unlist2d(x, "code", row.names = "date", DT = TRUE) |>
