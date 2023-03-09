@@ -48,21 +48,23 @@ econdata_wide <- function(x, codelabel = FALSE, ...) {
   return(qDT(d, keep.attr = TRUE))
 }
 
+null2NA <- function(x) if(is.null(x)) NA_character_ else x
+
 econdata_extract_metadata <- function(x, allmeta) {
   if(!allmeta && length(x) == 0L) return(NULL) # Omits non-observed series.
   m <- attr(x, "metadata")
   PROVINCE <- if(length(m$PROVINCE)) m$PROVINCE else m$REGION
 
-  return(list(source_code = m$SOURCE_IDENTIFIER,
-              frequency = m$FREQ,
-              label = m$LABEL,
+  return(list(source_code = null2NA(m$SOURCE_IDENTIFIER),
+              frequency = null2NA(m$FREQ),
+              label = null2NA(m$LABEL),
               province = if(length(PROVINCE)) province_switch(PROVINCE) else NA_character_,
-              district = m$DISTRICT,
-              unit_measure = m$UNIT_MEASURE,
+              district = null2NA(m$DISTRICT),
+              unit_measure = null2NA(m$UNIT_MEASURE),
               unit_mult = if(length(m$UNIT_MULT)) unit_mult_switch(m$UNIT_MULT) else NA_character_,
-              base_period = m$BASE_PER,
-              seas_adjust = m$SEASONAL_ADJUST,
-              comment = m$COMMENT))
+              base_period = null2NA(m$BASE_PER),
+              seas_adjust = null2NA(m$SEASONAL_ADJUST),
+              comment = null2NA(m$COMMENT)))
 }
 
 econdata_long <- function(x, combine = FALSE, allmeta = FALSE, ...) {
@@ -74,16 +76,16 @@ econdata_long <- function(x, combine = FALSE, allmeta = FALSE, ...) {
        fmutate(date = as.Date(date), code = qF(code)) |>
        frename(OBS_VALUE = "value")
   m <- attr(x, "metadata")
-  meta <- lapply(x, econdata_extract_metadata, allmeta && !combine) |> rbindlist() |> suppressWarnings()
+  meta <- lapply(x, econdata_extract_metadata, allmeta && !combine) |> rbindlist(use.names = FALSE)
   meta$code <- if(allmeta && !combine) names(x) else names(x)[names(x) %in% levels(d$code)]
-  meta$source <- m$DataProvider[[2L]]
-  meta$dataset <- m$Dataflow[[2L]]
-  meta$source_dataset <- m$SOURCE_DATASET
-  meta$version <- m$Dataflow[[3L]]
+  meta$source <- null2NA(m$DataProvider[[2L]])
+  meta$dataset <- null2NA(m$Dataflow[[2L]])
+  meta$source_dataset <- null2NA(m$SOURCE_DATASET)
+  meta$version <- null2NA(m$Dataflow[[3L]])
   setcolorder(meta, c("source", "dataset", "source_dataset", "version", "code", "source_code"))
   get_vars(meta, fnobs(meta) == 0L) <- NULL
   if(combine) {
-    meta_fct <- dapply(meta, qF) # Factors for efficient storage
+    meta_fct <- dapply(meta, qF, drop = FALSE) # Factors for efficient storage
     code <- d$code
     d$code <- NULL
     add_vars(d, "front") <- ss(meta_fct, ckmatch(code, meta_fct$code), check = FALSE)
