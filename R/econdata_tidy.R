@@ -29,8 +29,8 @@ econdata_make_label <- function(x, codelabel) {
 }
 
 # (Optional) list names for multi-version calls
-add_version_names <- function(x) {
-  versions <- sapply(x, function(z) attr(z, "metadata")$Dataflow[[3L]])
+add_version_names <- function(x, elem = "Dataflow") {
+  versions <- sapply(x, function(z) attr(z, "metadata")[[elem]][[3L]])
   if(length(versions) == length(x) && !anyDuplicated(versions)) names(x) <- paste0("v", versions)
   return(x)
 }
@@ -97,3 +97,17 @@ econdata_tidy_core <- function(x, wide = TRUE, ...) if(wide) econdata_wide(x, ..
 
 econdata_tidy <- function(x, ...) econdata_tidy_core(x, ...)
 
+
+econdata_tidy_release <- function(x, ...) {
+  axnull <- is.null(attributes(x))
+  if(axnull && length(x) > 1L) {
+    res <- lapply(x, econdata_tidy_release, ...)
+    return(add_version_names(res, elem = "Flowref"))
+  }
+  if(axnull) x <- x[[1L]]
+  res <- rbindlist(x$Releases)
+  res$Date <- as.POSIXct(res$Date)
+  names(res) <- tolower(names(res))
+  attr(res, "metadata") <- x$DataSet
+  return(res)
+}

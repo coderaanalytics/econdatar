@@ -7,7 +7,7 @@ read_release
 Returns the dataset releases for the given dataflow - agencyid:id(version) and data provider - agencyid:id, as a list. A number of utilities are provided to filter only the releases of interest, detailed below.
 }
 \usage{
-read_release(id, ...)
+read_release(id, ..., tidy = FALSE)
 }
 \arguments{
   \item{id}{Data identifier.}
@@ -31,6 +31,8 @@ read_release(id, ...)
   }
 }
 
+\item{tidy}{logical. Return releases in a tidy \emph{data.table} (see Value) with \code{"metadata"} attached in an attribute.}
+
 }
 \details{
 Specifying the full dataflow and data provider details (as opposed to only using the data id) allows more fine-grained control over the data set being queried. This is not necessary if there is only a single definition of the data and a single provider, which is typically the case.
@@ -38,6 +40,9 @@ Specifying the full dataflow and data provider details (as opposed to only using
 An EconData account (http://app.econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password". If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
+\value{
+If \code{tidy = FALSE}, a nested lists containing metadata and release desciption and dates. If \code{tidy = TRUE}, a (list of) \emph{data.table}(s) providing release information, with metadata attached as an attribute.
+}
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
@@ -45,7 +50,16 @@ An EconData account (http://app.econdata.co.za) is required to use this function
 }
 \examples{
 \dontrun{
-read_release("BA900")
+# library(econdatar)
+# Sys.setenv(ECONDATA_CREDENTIALS="username;password")
+# Ids see: https://www.econdata.co.za/FusionRegistry/data/datastructure.html
+
+# Bank Balance Sheet (institutional)
+read_release(id = "BA900")
+read_release(id = "BA900", tidy = TRUE)
+
+# Releases for all CPI Revisions
+read_econdata(id = "CPI_ANL_SERIES", tidy = TRUE)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -1,4 +1,4 @@
-read_release <- function(id, ...) {
+read_release <- function(id, ..., tidy = FALSE) {
 
   # Parameters ---
 
@@ -84,6 +84,8 @@ read_release <- function(id, ...) {
 
     return(httr::content(response, encoding = "UTF-8")$Result$Success$Message)
   })
+
+  if(tidy) return(econdata_tidy_release(releases))
 
   return(releases)
 }
