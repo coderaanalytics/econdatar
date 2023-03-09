@@ -8,6 +8,7 @@ province_switch <- function(x) switch(x,
       LM = "Limpopo", MP = "Mpumalanga", NC = "Northern Cape", NW = "North West",
       AU = "All urban areas", TC = "Total country", PU = "Primary urban", SU = "Secondary Urban", x)
 
+null2NA <- function(x) if(is.null(x)) NA_character_ else x
 
 # Check using app: https://www.econdata.co.za/app
 econdata_make_label <- function(x, codelabel) {
@@ -24,8 +25,7 @@ econdata_make_label <- function(x, codelabel) {
                 if(length(m$BASE_PER)) paste(", Base =", m$BASE_PER) else "",
                 if(length(m$SEASONAL_ADJUST) && m$SEASONAL_ADJUST == "S") ", Seasonally Adjusted)" else ")")
 
-  lab <- c(lab, if(length(m$SOURCE_IDENTIFIER)) m$SOURCE_IDENTIFIER else NA_character_)
-  return(lab)
+  return(c(lab, null2NA(m$SOURCE_IDENTIFIER)))
 }
 
 # (Optional) list names for multi-version calls
@@ -48,7 +48,6 @@ econdata_wide <- function(x, codelabel = FALSE, ...) {
   return(qDT(d, keep.attr = TRUE))
 }
 
-null2NA <- function(x) if(is.null(x)) NA_character_ else x
 
 econdata_extract_metadata <- function(x, allmeta, origmeta) {
   if(!allmeta && length(x) == 0L) return(NULL) # Omits non-observed series.
@@ -70,7 +69,7 @@ econdata_extract_metadata <- function(x, allmeta, origmeta) {
 econdata_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, ...) {
   if(is.null(attributes(x))) {
     res <- lapply(add_version_names(x), econdata_long, combine, allmeta, origmeta)
-    return(if(combine) rbindlist(res, fill = TRUE) else res)
+    return(if(combine) rbindlist(res, use.names = TRUE, fill = TRUE) else res)
   }
   d <- unlist2d(x, "code", row.names = "date", DT = TRUE) |>
        fmutate(date = as.Date(date), code = qF(code)) |>
