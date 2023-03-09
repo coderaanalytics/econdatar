@@ -45,7 +45,7 @@ econdata_wide <- function(x, codelabel = FALSE, ...) {
   vlabels(d) <- c("Date", labs[1L, nam])
   vlabels(d, "source.code")[-1L] <- labs[2L, nam]
   attr(d, "metadata") <- attr(x, "metadata")
-  return(qDT(d))
+  return(qDT(d, keep.attr = TRUE))
 }
 
 econdata_extract_metadata <- function(x, allmeta) {
@@ -104,7 +104,7 @@ econdata_tidy_release <- function(x) {
   res$Date <- as.POSIXct(res$Date)
   names(res) <- tolower(names(res))
   attr(res, "metadata") <- x$DataSet
-  return(qDT(res))
+  return(qDT(res, keep.attr = TRUE))
 }
 
 # This is just needed to get rid of the wide argument for documenting this together with read_econdata()
