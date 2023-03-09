@@ -3,7 +3,7 @@ write_econdata <- function(db, ...) {
   # Parameters ---
 
 
-  env <- jsonlite::fromJSON(system.file("settings.json", package = "econdatar"))
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
   params <- list(...)
 
@@ -20,11 +20,11 @@ write_econdata <- function(db, ...) {
 
   Header <- list()
 
-  Header$ID <- jsonlite::unbox(tryCatch(paste0("ECONDATAR-V", sessionInfo()[[7]]$econdatar[[4]]),
+  Header$ID <- unbox(tryCatch(paste0("ECONDATAR-V", sessionInfo()[[7]]$econdatar[[4]]),
                                         error = function(e) "Unknown"))
-  Header$Test <- jsonlite::unbox(FALSE)
-  Header$Prepared <- jsonlite::unbox(format(Sys.time(), format = "%Y-%m-%dT%T"))
-  Header$Sender$id <- jsonlite::unbox(tryCatch(Sys.getenv()[["USER"]],
+  Header$Test <- unbox(FALSE)
+  Header$Prepared <- unbox(format(Sys.time(), format = "%Y-%m-%dT%T"))
+  Header$Sender$id <- unbox(tryCatch(Sys.getenv()[["USER"]],
                                                error = function(e) "Anonymous"))
 
   dataset <- list()
@@ -41,7 +41,7 @@ write_econdata <- function(db, ...) {
     dataset$DataSets[[i]] <- lapply(attributes(db_list[[i]])$metadata,
                                     function(x) {
                                       if (length(x) == 1) {
-                                        jsonlite::unbox(x)
+                                        unbox(x)
                                       } else if (is.list(x)) {
                                         unlist(x)
                                       } else {
@@ -56,7 +56,7 @@ write_econdata <- function(db, ...) {
       row.names(db_list[[i]][[series]]) <- NULL
 
       dataset$DataSets[[i]]$Series[[index]] <-
-        lapply(attributes(db_list[[i]][[series]])$metadata, jsonlite::unbox)
+        lapply(attributes(db_list[[i]][[series]])$metadata, unbox)
       dataset$DataSets[[i]]$Series[[index]]$Obs <-
         data.frame(db_list[[i]][[series]], TIME_PERIOD = time_period)
     }
@@ -70,7 +70,7 @@ write_econdata <- function(db, ...) {
 
   if (!is.null(params$file)) {
 
-    data_message <- jsonlite::toJSON(dataset, na = "null")
+    data_message <- toJSON(dataset, na = "null")
 
     write(data_message, file = params$file)
 
@@ -115,16 +115,16 @@ write_econdata <- function(db, ...) {
           paste(params$provideragencyid,
                 params$providerid, sep = ",")
 
-        response <- httr::GET(env$repository$url,
+        response <- GET(env$repository$url,
                               path = c(env$repository$path, "/datasets"),
                               query = query_params_datasets,
-                              httr::authenticate(credentials[1], credentials[2]),
-                              httr::accept_json())
+                              authenticate(credentials[1], credentials[2]),
+                              accept_json())
 
         if (response$status_code != 200)
-          stop(httr::content(response, encoding = "UTF-8"))
+          stop(content(response, encoding = "UTF-8"))
 
-        meta_dataset <- httr::content(response, encoding = "UTF-8")
+        meta_dataset <- content(response, encoding = "UTF-8")
 
         dataset_id <- meta_dataset$DataSets[[1]]$DataSetID
 
@@ -149,25 +149,25 @@ write_econdata <- function(db, ...) {
                    "please provide data flow and provider references"))
       }
 
-      data_message <- jsonlite::toJSON(single_dataset, na = "null")
+      data_message <- toJSON(single_dataset, na = "null")
 
       tmp <- tempfile()
       write(data_message, file = tmp)
 
-      response <- httr::PUT(env$repository$url,
+      response <- PUT(env$repository$url,
                             path = paste(env$repository$path,
                                          "datasets",
                                          dataset_id, sep = "/"),
                             query = query_params,
-                            body = list("file" = httr::upload_file(tmp, "application/json")),
+                            body = list("file" = upload_file(tmp, "application/json")),
                             encode = "multipart",
-                            httr::authenticate(credentials[1], credentials[2]),
-                            httr::accept_json())
+                            authenticate(credentials[1], credentials[2]),
+                            accept_json())
 
       if (response$status_code == 200)
-        message(httr::content(response, encoding = "UTF-8")$Result$Success$Message)
+        message(content(response, encoding = "UTF-8")$Result$Success$Message)
       else
-        stop(httr::content(response, encoding = "UTF-8"))
+        stop(content(response, encoding = "UTF-8"))
     }
   }
 }
