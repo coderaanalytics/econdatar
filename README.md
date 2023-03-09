@@ -1,4 +1,9 @@
-# Quick start
+# **econdatar**: EconData R API
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/coderaanalytics/econdatar/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/coderaanalytics/econdatar/actions/workflows/check-standard.yaml)
+<!-- badges: end -->
+
+## Quick start
 
 ```r
 install.packages(c("remotes", "tcltk"), repos = "https://cran.mirror.ac.za")
@@ -30,7 +35,7 @@ install_github("coderaanalytics/econdatar", ref = "1.1.6")
 
 Please see the [EconData blog](https://randomsample.co.za) for in depth tutorials
 
-# License
+## License
 
 Copyright © 2022 EconData, developed by Codera Pty Ltd
 
