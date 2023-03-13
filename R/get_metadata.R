@@ -40,10 +40,7 @@ get_metadata <- function(x) {
                   query = list(references = "children",
                                format = "sdmx-2.1"))
 
-  if (response$status_code == 200)
-    message("Data structure successfully retrieved for dataflow: ",
-            paste(attr(x, "metadata")$Dataflow, collapse = ","), "\n")
-  else
+  if (response$status_code != 200)
     stop(content(response, encoding = "UTF-8"))
 
   structures <- content(response,
@@ -59,14 +56,26 @@ get_metadata <- function(x) {
 
   for (d in xml_find_all(structures, "//str:DimensionList/str:Dimension")) {
     metadata[[xml_attr(d, "id")]] <-
-      list(concept = as.list(xml_attrs(xml_find_first(d, "./str:ConceptIdentity/Ref"))),
-           codelist = as.list(xml_attrs(xml_find_first(d, "./str:LocalRepresentation/str:Enumeration/Ref"))))
+      list(is_dimension = TRUE,
+           concept = xml_find_first(d, "./str:ConceptIdentity/Ref") |>
+                       xml_attrs() |>
+                       as.list(),
+           codelist = xml_find_first(d, paste0("./str:LocalRepresentation",
+                                               "/str:Enumeration/Ref")) |>
+                        xml_attrs() |>
+                        as.list())
   }
 
   for (a in xml_find_all(structures, "//str:AttributeList/str:Attribute")) {
     metadata[[xml_attr(a, "id")]] <-
-      list(concept = as.list(xml_attrs(xml_find_first(a, "./str:ConceptIdentity/Ref"))),
-           codelist = as.list(xml_attrs(xml_find_first(a, "./str:LocalRepresentation/str:Enumeration/Ref"))))
+      list(is_dimension = FALSE,
+           concept = xml_find_first(a, "./str:ConceptIdentity/Ref") |>
+                       xml_attrs() |>
+                       as.list(),
+           codelist = xml_find_first(a, paste0("./str:LocalRepresentation",
+                                               "/str:Enumeration/Ref")) |>
+                        xml_attrs() |>
+                        as.list())
   }
 
 
@@ -91,6 +100,8 @@ get_metadata <- function(x) {
     concept <- xml_find_first(concept_scheme,
                               paste0("./str:Concept[@id='",
                                      metadata[[p]]$concept$id, "']"))
+
+    out[[p]]$is_dimension <- metadata[[p]]$is_dimension
 
     out[[p]]$concept <-
       list(name = xml_text(xml_find_first(concept, "./com:Name")),

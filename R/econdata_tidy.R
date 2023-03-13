@@ -1,29 +1,25 @@
-
-
-unit_mult_switch <- function(x) switch(x, "3" = " Thousand", "6" = " Million", "9" = " Billion", "12" = " Trillion", x)
-
-# http://www.southafrica-canada.ca/south-africas-nine-provinces/
-province_switch <- function(x) switch(x,
-      WC = "Western Cape", EC = "Eastern Cape", FS = "Free State", GP = "Gauteng", KZN = "KwaZulu-Natal",
-      LM = "Limpopo", MP = "Mpumalanga", NC = "Northern Cape", NW = "North West",
-      AU = "All urban areas", TC = "Total country", PU = "Primary urban", SU = "Secondary Urban", x)
-
 null2NA <- function(x) if(is.null(x)) NA_character_ else x
 
-# Check using app: https://www.econdata.co.za/app
-econdata_make_label <- function(x, codelabel) {
+econdata_make_label <- function(x, codelabel, meta) {
   m <- attr(x, "metadata")
-  PROVINCE <- if(length(m$PROVINCE)) m$PROVINCE else m$REGION
 
-  lab <- paste0(if(codelabel && length(m$SOURCE_IDENTIFIER)) paste0(m$SOURCE_IDENTIFIER, ":= ") else "",
-                m$LABEL,
-                if(length(m$COMMENT) && nchar(m$COMMENT) < 80L) paste0(": ", m$COMMENT) else "",
-                if(length(PROVINCE)) paste0(": ", province_switch(PROVINCE)) else "",
-                if(length(m$DISTRICT)) paste0(": ", m$DISTRICT) else ""," (",
-                m$UNIT_MEASURE,
-                if(length(m$UNIT_MULT)) unit_mult_switch(m$UNIT_MULT) else "",
-                if(length(m$BASE_PER)) paste(", Base =", m$BASE_PER) else "",
-                if(length(m$SEASONAL_ADJUST) && m$SEASONAL_ADJUST == "S") ", Seasonally Adjusted)" else ")")
+  lab <- NULL
+  if(!is.null(meta))
+    for (l in names(m)) {
+      if (meta[[l]]$is_dimension) {
+        cl <- meta[[l]]$codelist
+        lab <- c(lab, cl$codes[which(cl$codes[,1]  == m[[l]]), 2])
+      }
+    }
+
+  if(codelabel && !is.null(meta))
+    lab <- paste(lab, collapse = " - ")
+  else if(length(m$LABEL))
+    lab <- m$LABEL 
+  else if(!is.null(meta))
+    lab <- paste(lab, collapse = " - ")
+  else
+    lab <- NA
 
   return(c(lab, null2NA(m$SOURCE_IDENTIFIER)))
 }
@@ -35,61 +31,66 @@ add_version_names <- function(x, elem = "Dataflow") {
   return(x)
 }
 
-econdata_wide <- function(x, codelabel = FALSE, ...) {
-  if(is.null(attributes(x))) return(lapply(add_version_names(x), econdata_wide, codelabel))
-  d <- unlist2d(x, "code", row.names = "date", DT = TRUE) |>
-    dcast(date ~ code, value.var = "OBS_VALUE") |>
-    fmutate(date = as.Date(date))
-  labs <- sapply(x, econdata_make_label, codelabel)
+econdata_wide <- function(x, codelabel = FALSE, prettymeta = NULL, ...) {
+  if(is.null(names(x))) return(lapply(add_version_names(x), econdata_wide, codelabel))
+  d <- unlist2d(x, "data_key", row.names = "period", DT = TRUE) |>
+    dcast(period ~ data_key, value.var = "OBS_VALUE") |>
+    fmutate(period = as.Date(period))
+  labs <- sapply(x, econdata_make_label, codelabel, prettymeta)
   nam <- names(d)[-1L]
   vlabels(d) <- c("Date", labs[1L, nam])
-  vlabels(d, "source.code")[-1L] <- labs[2L, nam]
+  vlabels(d, "source_identifier")[-1L] <- labs[2L, nam]
   attr(d, "metadata") <- attr(x, "metadata")
   return(qDT(d, keep.attr = TRUE))
 }
 
 
-econdata_extract_metadata <- function(x, allmeta, origmeta) {
+econdata_extract_metadata <- function(x, allmeta, origmeta, meta) {
   if(!allmeta && length(x) == 0L) return(NULL) # Omits non-observed series.
   if(origmeta) return(attr(x, "metadata"))
-  m <- attr(x, "metadata")
-  PROVINCE <- if(length(m$PROVINCE)) m$PROVINCE else m$REGION
-  return(list(source_code = null2NA(m$SOURCE_IDENTIFIER),
-              frequency = null2NA(m$FREQ),
-              label = null2NA(m$LABEL),
-              province = if(length(PROVINCE)) province_switch(PROVINCE) else NA_character_,
-              district = null2NA(m$DISTRICT),
-              unit_measure = null2NA(m$UNIT_MEASURE),
-              unit_mult = if(length(m$UNIT_MULT)) unit_mult_switch(m$UNIT_MULT) else NA_character_,
-              base_period = null2NA(m$BASE_PER),
-              seas_adjust = null2NA(m$SEASONAL_ADJUST),
-              comment = null2NA(m$COMMENT)))
+  if (!is.null(meta)) {
+    m <- attr(x, "metadata")
+    out <- list()
+    for (p in names(m)) {
+      if (!is.null(meta[[p]]$codelist)) {
+        cc <- meta[[p]]$concept
+        cl <- meta[[p]]$codelist
+        out[[gsub(" ", "_", tolower(cc$name))]] <-
+          cl$codes[which(cl$codes[,1]  == m[[p]]), 2] 
+      } else {
+        cc <- meta[[p]]$concept
+        out[[gsub(" ", "_", tolower(cc$name))]] <- m[[p]] 
+      }
+    }
+    return(out)
+  }
+ return(attr(x, "metadata"))
 }
 
-econdata_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, ...) {
-  if(is.null(attributes(x))) {
+econdata_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, prettymeta = NULL, ...) {
+  if(is.null(names(x))) {
     res <- lapply(add_version_names(x), econdata_long, combine, allmeta, origmeta)
     return(if(combine) rbindlist(res, use.names = TRUE, fill = TRUE) else res)
   }
-  d <- unlist2d(x, "code", row.names = "date", DT = TRUE) |>
-       fmutate(date = as.Date(date), code = qF(code)) |>
+  d <- unlist2d(x, "data_key", row.names = "period", DT = TRUE) |>
+       fmutate(period = as.Date(period), data_key = qF(data_key)) |>
        frename(OBS_VALUE = "value")
   m <- attr(x, "metadata")
-  meta <- lapply(x, econdata_extract_metadata, allmeta && !combine, origmeta) |>
-          rbindlist(use.names = origmeta, fill = origmeta)
+  meta <- lapply(x, econdata_extract_metadata, allmeta && !combine, origmeta, prettymeta) |>
+          rbindlist(use.names = TRUE, fill = TRUE)
   if(origmeta) names(meta) <- tolower(names(meta))
-  meta$code <- if(allmeta && !combine) names(x) else names(x)[names(x) %in% levels(d$code)]
+  meta$data_key <- if(allmeta && !combine) names(x) else names(x)[names(x) %in% levels(d$data_key)]
   meta$source <- null2NA(m$DataProvider[[2L]])
   meta$dataset <- null2NA(m$Dataflow[[2L]])
   meta$source_dataset <- null2NA(m$SOURCE_DATASET)
   meta$version <- null2NA(m$Dataflow[[3L]])
-  setcolorder(meta, c("source", "dataset", "source_dataset", "version", "code", if(!origmeta) "source_code"))
+  setcolorder(meta, c("source", "dataset", "source_dataset", "version", "data_key"))
   if(!allmeta) get_vars(meta, fnobs(meta) == 0L) <- NULL
   if(combine) {
     meta_fct <- dapply(meta, qF, drop = FALSE) # Factors for efficient storage
-    code <- d$code
-    d$code <- NULL
-    add_vars(d, "front") <- ss(meta_fct, ckmatch(code, meta_fct$code), check = FALSE)
+    data_key <- d$data_key
+    d$data_key <- NULL
+    add_vars(d, "front") <- ss(meta_fct, ckmatch(data_key, meta_fct$data_key), check = FALSE)
     return(d)
   }
   return(list(data = d, metadata = meta))
@@ -111,7 +112,19 @@ econdata_tidy_release <- function(x) {
 }
 
 # This is just needed to get rid of the wide argument for documenting this together with read_econdata()
-econdata_tidy_core <- function(x, wide = TRUE, release = FALSE, ...)
-  if(release) econdata_tidy_release(x) else if(wide) econdata_wide(x, ...) else econdata_long(x, ...)
+econdata_tidy_core <- function(x, wide = TRUE, release = FALSE, prettymeta = TRUE, ...) {
+  meta = NULL
+  
+  if (prettymeta && !is.null(names(x)))
+    meta = get_metadata(x)
+
+  if (release)
+    econdata_tidy_release(x)
+  else
+    if (wide)
+      econdata_wide(x, prettymeta = meta, ...)
+    else
+      econdata_long(x, prettymeta = meta, ...)
+}
 
 econdata_tidy <- function(x, ...) econdata_tidy_core(x, ...)
