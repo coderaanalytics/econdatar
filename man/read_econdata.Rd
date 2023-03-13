@@ -17,7 +17,7 @@ econdata_tidy(x, \dots)
   \item{x}{A raw API return object to be tidied. Can also be done directly in \code{read_econdata()} by setting \code{tidy = TRUE}. See \code{tidy} below for tidying options.}
 
 \item{\dots}{Further \emph{Optional} arguments:
-  \tabular{llll}{
+  \tabular{lll}{
     \code{agencyid} \tab\tab Agency responsible for the data definition. \cr\cr
     \code{version} \tab\tab Version of the data definition. \cr\cr
     \code{provideragencyid} \tab\tab Agency responsible for making the data available. \cr\cr
@@ -29,7 +29,7 @@ econdata_tidy(x, \dots)
 }
 
 \item{tidy}{logical. Return data and metadata in tidy \emph{data.table}'s (see Value), by passing the result through \code{econdata_tidy}. If \code{TRUE}, \code{read_econdata()/econdata_tidy()} admit the following additional arguments:
-  \tabular{l}{
+  \tabular{lll}{
     \code{wide} \tab\tab logical, default: \code{TRUE}. Returns data in a column-based format, with \code{"label"} and \code{"source_identifier"} attributes to columns (when available) and an overall "metadata" attribute to the table, otherwise a long-format is returned. See Value. \cr
 
     \code{codelabel} \tab\tab logical, default: \code{FALSE}. If \code{wide = TRUE}, setting \code{codelabel = TRUE} the data key will be used to generate the \code{"label"}, when available. \cr

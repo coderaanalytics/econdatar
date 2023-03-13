@@ -9,4 +9,4 @@ Imports: httr, jsonlite, xml2, collapse, data.table
 Suggests: tcltk
 URL: https://www.econdata.co.za/
 BugReports: https://github.com/coderaanalytics/econdatar/issues
-License: EPL-2 + file LICENSE
+License: MIT + file LICENSE
