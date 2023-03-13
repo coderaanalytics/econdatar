@@ -7,7 +7,8 @@ write_release
 Release data set vintage for the given dataflow - agencyid:id(version) and data provider - agencyid:id, as a list.
 }
 \usage{
-write_release(agencyid, id, version, provideragencyid, providerid, releasedescription, ...)
+write_release(agencyid, id, version, provideragencyid,
+              providerid, releasedescription, ...)
 }
 \arguments{
   \item{agencyid}{
@@ -37,22 +38,7 @@ An EconData account (http://app.econdata.co.za) is required to use this function
 
 The functionality provided by \emph{write_release} is to release a new vintage of the data set described by the function arguments. As this makes modifications to the database the user calling this function requires higher privileges than needed for other \emph{econdatar} functions - determined by the correct data set role (owner). You can look up user roles for a given data set on the EconData app.
 }
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
+
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -61,8 +47,10 @@ The functionality provided by \emph{write_release} is to release a new vintage o
 \code{\link{read_release}}
 }
 \examples{
-write_release("ECONDATA", "BA900", "1.0", "ECONDATA", "SARB", 
+\dontrun{
+write_release("ECONDATA", "BA900", "1.0", "ECONDATA", "SARB",
               releasedescription = paste0("Vintage - ", Sys.Date()))
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

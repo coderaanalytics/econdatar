@@ -1,9 +1,9 @@
-read_release <- function(id, ...) {
+read_release <- function(id, ..., tidy = FALSE) {
 
   # Parameters ---
 
 
-  env <- jsonlite::fromJSON(system.file("settings.json", package = "econdatar"))
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
   params <- list(...)
 
@@ -53,37 +53,39 @@ read_release <- function(id, ...) {
               params$providerid), collapse = ",")
   }
 
-  response <- httr::GET(env$repository$url,
+  response <- GET(env$repository$url,
                         path = c(env$repository$path, "/datasets"),
                         query = query_params_datasets,
-                        httr::authenticate(credentials[1], credentials[2]),
-                        httr::accept_json())
+                        authenticate(credentials[1], credentials[2]),
+                        accept_json())
 
   if (response$status_code != 200)
-    stop(httr::content(response, encoding = "UTF-8"))
+    stop(content(response, encoding = "UTF-8"))
 
-  data_message <- httr::content(response, encoding = "UTF-8")
+  data_message <- content(response, encoding = "UTF-8")
 
   releases <- lapply(data_message$DataSets, function(dataset) {
 
-    response <- httr::GET(env$repository$url,
+    response <- GET(env$repository$url,
                           path = paste(env$repository$path,
                                        "datasets", dataset$DataSetID,
                                        "releases", sep = "/"),
                           query = query_params,
-                          httr::authenticate(credentials[1], credentials[2]),
-                          httr::accept_json())
+                          authenticate(credentials[1], credentials[2]),
+                          accept_json())
 
     if (response$status_code == 200) {
       message("Fetching releases for: ",
               paste(dataset$Dataflow, collapse = ","), " - ",
               paste(dataset$DataProvider, collapse = ","), "\n")
     } else {
-      stop(httr::content(response, encoding = "UTF-8"))
+      stop(content(response, encoding = "UTF-8"))
     }
 
-    return(httr::content(response, encoding = "UTF-8")$Result$Success$Message)
+    return(content(response, encoding = "UTF-8")$Result$Success$Message)
   })
+
+  if(tidy) return(econdata_tidy_release(releases))
 
   return(releases)
 }

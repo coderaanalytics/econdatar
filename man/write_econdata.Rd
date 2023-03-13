@@ -10,48 +10,33 @@ Saves the data set for the given dataflow - agencyid:id(version) and data provid
 write_econdata(db, ...)
 }
 \arguments{
-  \item{db}{
-Data set to upload.
+  \item{db}{Data set to upload.}
+
+\item{\dots}{Further \emph{Optional} arguments, \emph{if encoded in database metadata}:
+  \tabular{llll}{
+
+  \code{agencyid} \tab\tab Agency responsible for the data definition. \cr\cr
+
+  \code{id} \tab\tab Data identifier. \cr\cr
+
+  \code{version} \tab\tab Version of the data definition. \cr\cr
+
+  \code{provideragencyid} \tab\tab Agency responsible for making the data available. \cr\cr
+
+  \code{providerid} \tab\tab Provider of the data. \cr\cr
+
+  \code{file} \tab\tab character. File name for saving data set as JSON data to disk. \cr\cr
+
+  \code{username} \tab\tab character. EconData username. \cr\cr
+
+  \code{password} \tab\tab character. EconData password. \cr\cr
 }
-  \item{agencyid}{
-Agency responsible for the data definition. \emph{Optional, if encoded in database metadata.}
-}
-  \item{id}{
-Data identifier. \emph{Optional, if encoded in database metadata.}
-}
-  \item{version}{
-Version of the data definition. \emph{Optional, if encoded in database metadata.}
-}
-  \item{provideragencyid}{
-Agency responsible for making the data available. \emph{Optional, if encoded in database metadata.}
-}
-  \item{providerid}{
-Provider of the data. \emph{Optional, if encoded in database metadata.}
-}
-  \item{\dots}{
-Further options include: \strong{\emph{file}} (character), file name for saving data set as JSON data to disk; \strong{\emph{username}} (character), EconData username; \strong{\emph{password}} (character), EconData password..
 }
 }
 \details{
 An EconData account (http://app.econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password". If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
 
 The functionality provided by \emph{write_econdata} is to save the data set described by the function arguments. As this makes modifications to the database the user calling this function requires higher privileges than needed for other \emph{econdatar} functions - determined by the correct data set role (owner). You can look up user roles for a given data set on the EconData app.
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
@@ -61,9 +46,11 @@ The functionality provided by \emph{write_econdata} is to save the data set desc
 \code{\link{read_econdata}}
 }
 \examples{
+\dontrun{
 db <- read_econdata("BA900", nameby="CODE")
 
 write_econdata(db, "ECONDATA", "BA900", "1.0", "ECONDATA", "SARB", file = "ba900.json")
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

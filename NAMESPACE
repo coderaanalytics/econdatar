@@ -1,4 +1,14 @@
+
+importFrom("httr", "POST", "GET", "PUT", "authenticate", "accept_json", "content", "upload_file")
+importFrom("jsonlite", "fromJSON", "toJSON", "unbox")
+importFrom("xml2", "xml_find_all", "xml_attr")
+importFrom("collapse", "add_vars<-", "ckmatch", "dapply", "fmutate", "qDT",
+           "fnobs", "frename", "get_vars<-", "qF", "ss", "unlist2d", "vlabels", "vlabels<-")
+importFrom("data.table", "dcast", "rbindlist", "setcolorder")
+importFrom("utils", "sessionInfo")
+
 export(read_econdata)
 export(read_release)
 export(write_econdata)
 export(write_release)
+export(econdata_tidy)

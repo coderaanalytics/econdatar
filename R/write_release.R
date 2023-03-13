@@ -3,7 +3,7 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
   # Parameters ---
 
 
-  env <- jsonlite::fromJSON(system.file("settings.json", package = "econdatar"))
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
   params <- list(...)
 
@@ -38,16 +38,16 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
   query_params_datasets[["nested-provider-ref"]] <-
     paste(provideragencyid, providerid, sep = ",")
 
-  response <- httr::GET(env$repository$url,
+  response <- GET(env$repository$url,
                   path = c(env$repository$path, "/datasets"),
                   query = query_params_datasets,
-                  httr::authenticate(credentials[1], credentials[2]),
-                  httr::accept_json())
+                  authenticate(credentials[1], credentials[2]),
+                  accept_json())
 
   if (response$status_code != 200)
-    stop(httr::content(response, encoding = "UTF-8"))
+    stop(content(response, encoding = "UTF-8"))
 
-  meta_dataset <- httr::content(response, encoding = "UTF-8")
+  meta_dataset <- content(response, encoding = "UTF-8")
 
   dataset_id <- meta_dataset$DataSets[[1]]$DataSetID
 
@@ -57,18 +57,18 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
 
   message("Committing release: ", dataflow, " - ", dataprovider, "\n")
 
-  response <- httr::POST(env$repository$url,
+  response <- POST(env$repository$url,
                          path = paste(env$repository$path,
                                       "datasets",
                                       dataset_id,
                                       "releases",
                                       "commit-release", sep = "/"),
                          query = query_params,
-                         httr::authenticate(credentials[1], credentials[2]),
-                         httr::accept_json())
+                         authenticate(credentials[1], credentials[2]),
+                         accept_json())
 
   if (response$status_code == 201)
-    message(httr::content(response, encoding = "UTF-8")$Result$Success$Message)
+    message(content(response, encoding = "UTF-8")$Result$Success$Message)
   else
-    stop(httr::content(response, encoding = "UTF-8"))
+    stop(content(response, encoding = "UTF-8"))
 }
