@@ -13,7 +13,7 @@
 The DESCRIPTION file:
 \packageDESCRIPTION{econdatar}
 \packageIndices{econdatar}
-This package provides and interface to the EconData database (http://app.econdata.co.za).
+This package provides and interface to the EconData database (http://www..econdata.co.za).
 
 In short, EconData provides a single source for South African Macroeconomic Data. There exists a wealth of economic data spread over the public domain. This service aims to bring these disparate sources of data together into a single centralised repository. In order to make the data useful an open API and this package for R are also provided, allowing for automatable workflows.
 
@@ -31,7 +31,7 @@ Maintainer: \packageMaintainer{econdatar}
 %%~~ the R documentation directory ~~
 \keyword{ package }
 \seealso{
-http://app.econdata.co.za
+http://www.econdata.co.za
 http://www.randomsample.co.za
 }
 %\examples{
