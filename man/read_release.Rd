@@ -4,7 +4,7 @@
 read_release
 }
 \description{
-Returns the dataset releases for the given dataflow - agencyid:id(version) and data provider - agencyid:id, as a list. A number of utilities are provided to filter only the releases of interest, detailed below.
+Returns the dataset releases for the given dataflow - ECONDATA:id(version) and data provider - ECONDATA:id, as a list. A number of utilities are provided to filter only the releases of interest, detailed below.
 }
 \usage{
 read_release(id, ..., tidy = FALSE)
@@ -14,9 +14,7 @@ read_release(id, ..., tidy = FALSE)
 
 \item{\dots}{Further \emph{Optional} arguments:
   \tabular{llll}{
-    \code{agencyid} \tab\tab Agency responsible for the data definition. \cr\cr
     \code{version} \tab\tab Version of the data definition. \cr\cr
-    \code{provideragencyid} \tab\tab Agency responsible for making the data available. \cr\cr
     \code{providerid} \tab\tab Provider of the data. \cr\cr
 
     \code{newest} \tab\tab logical. Returns only the latest release in the results. \cr\cr

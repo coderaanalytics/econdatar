@@ -4,7 +4,7 @@
 write_econdata
 }
 \description{
-Saves the data set for the given dataflow - agencyid:id(version) and data provider - agencyid:id, as a list. Available data sets can be looked up from the data registry (http://www.econdata.co.za/FusionRegistry).
+Saves the data set for the given dataflow - ECONDATA:id(version) and data provider - ECONDATA:id, as a list. Available data sets can be looked up from the data registry (http://www.econdata.co.za/FusionRegistry).
 }
 \usage{
 write_econdata(db, ...)
@@ -15,13 +15,9 @@ write_econdata(db, ...)
 \item{\dots}{Further \emph{Optional} arguments, \emph{if encoded in database metadata}:
   \tabular{llll}{
 
-  \code{agencyid} \tab\tab Agency responsible for the data definition. \cr\cr
-
   \code{id} \tab\tab Data identifier. \cr\cr
 
   \code{version} \tab\tab Version of the data definition. \cr\cr
-
-  \code{provideragencyid} \tab\tab Agency responsible for making the data available. \cr\cr
 
   \code{providerid} \tab\tab Provider of the data. \cr\cr
 

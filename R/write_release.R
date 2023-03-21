@@ -1,4 +1,4 @@
-write_release <- function(agencyid, id, version, provideragencyid, providerid, releasedescription, ...)  {
+write_release <- function(agencyid = "ECONDATA", id, version, provideragencyid = "ECONDATA", providerid, releasedescription, ...)  {
 
   # Parameters ---
 

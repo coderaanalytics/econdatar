@@ -1,4 +1,4 @@
-read_release <- function(id, ..., tidy = FALSE) {
+read_release <- function(agencyid = "ECONDATA", id, provideragencyid = "ECONDATA", ..., tidy = FALSE) {
 
   # Parameters ---
 

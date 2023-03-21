@@ -1,4 +1,4 @@
-write_econdata <- function(db, ...) {
+write_econdata <- function(db, agencyid = "ECONDATA", provideragencyid = "ECONDATA", ...) {
 
   # Parameters ---
 

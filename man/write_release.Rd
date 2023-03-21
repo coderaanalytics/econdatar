@@ -4,24 +4,17 @@
 write_release
 }
 \description{
-Release data set vintage for the given dataflow - agencyid:id(version) and data provider - agencyid:id, as a list.
+Release data set vintage for the given dataflow - ECONDATA:id(version) and data provider - ECONDATA:id, as a list.
 }
 \usage{
-write_release(agencyid, id, version, provideragencyid,
-              providerid, releasedescription, ...)
+write_release(id, version, providerid, releasedescription, ...)
 }
 \arguments{
-  \item{agencyid}{
-Agency responsible for the data definition.
-}
   \item{id}{
 Data identifier.
 }
   \item{version}{
 Version of the data definition.
-}
-  \item{provideragencyid}{
-Agency responsible for making the data available.
 }
   \item{providerid}{
 Provider of the data.
