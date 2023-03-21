@@ -22,13 +22,8 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
   # Update data set ---
 
 
-  if (!is.null(params$credentials)) {
-    credentials <- unlist(strsplit(params$credentials, ";"))
-  } else if (Sys.getenv("ECONDATA_CREDENTIALS") != "") {
-    credentials <- unlist(strsplit(Sys.getenv("ECONDATA_CREDENTIALS"), ";"))
-  } else {
-    credentials <- econdata_credentials()
-  }
+  if (!exists("econdata_session") || (NROW(get("econdata_session")) == 0))
+    login_helper(params$credentials, env$repository$url)
 
   version <- paste0(version, ".0")
 
@@ -41,7 +36,7 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
   response <- GET(env$repository$url,
                   path = c(env$repository$path, "/datasets"),
                   query = query_params_datasets,
-                  authenticate(credentials[1], credentials[2]),
+                  set_cookies(.cookies = get("econdata_session")),
                   accept_json())
 
   if (response$status_code != 200)
@@ -64,7 +59,7 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
                                       "releases",
                                       "commit-release", sep = "/"),
                          query = query_params,
-                         authenticate(credentials[1], credentials[2]),
+                         set_cookies(.cookies = get("econdata_session")),
                          accept_json())
 
   if (response$status_code == 201)

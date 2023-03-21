@@ -1,4 +1,5 @@
-importFrom("httr", "POST", "GET", "PUT", "authenticate", "accept_json", "content", "upload_file")
+importFrom("httr", "POST", "GET", "PUT", "authenticate", "accept_json", "content",
+           "upload_file", "cookies", "set_cookies")
 importFrom("jsonlite", "fromJSON", "toJSON", "unbox")
 importFrom("xml2", "xml_find_all", "xml_find_first", "xml_attrs", "xml_attr", "xml_text")
 importFrom("collapse", "add_vars<-", "ckmatch", "dapply", "fmutate", "qDT",

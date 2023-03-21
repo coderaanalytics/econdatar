@@ -78,13 +78,8 @@ write_econdata <- function(db, ...) {
 
   } else {
 
-    if (!is.null(params$credentials)) {
-      credentials <- unlist(strsplit(params$credentials, ";"))
-    } else if (Sys.getenv("ECONDATA_CREDENTIALS") != "") {
-      credentials <- unlist(strsplit(Sys.getenv("ECONDATA_CREDENTIALS"), ";"))
-    } else {
-      credentials <- econdata_credentials()
-    }
+    if (!exists("econdata_session") || (NROW(get("econdata_session")) == 0))
+      login_helper(params$credentials, env$repository$url)
 
 
 
@@ -118,7 +113,7 @@ write_econdata <- function(db, ...) {
         response <- GET(env$repository$url,
                               path = c(env$repository$path, "/datasets"),
                               query = query_params_datasets,
-                              authenticate(credentials[1], credentials[2]),
+                              set_cookies(.cookies = get("econdata_session")),
                               accept_json())
 
         if (response$status_code != 200)
@@ -161,7 +156,7 @@ write_econdata <- function(db, ...) {
                             query = query_params,
                             body = list("file" = upload_file(tmp, "application/json")),
                             encode = "multipart",
-                            authenticate(credentials[1], credentials[2]),
+                            set_cookies(.cookies = get("econdata_session")),
                             accept_json())
 
       if (response$status_code == 200)

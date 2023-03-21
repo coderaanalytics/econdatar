@@ -31,13 +31,8 @@ read_release <- function(id, ..., tidy = FALSE) {
   # Fetch release ---
 
 
-  if (!is.null(params$credentials)) {
-    credentials <- unlist(strsplit(params$credentials, ";"))
-  } else if (Sys.getenv("ECONDATA_CREDENTIALS") != "") {
-    credentials <- unlist(strsplit(Sys.getenv("ECONDATA_CREDENTIALS"), ";"))
-  } else {
-    credentials <- econdata_credentials()
-  }
+  if (!exists("econdata_session") || (NROW(get("econdata_session")) == 0))
+    login_helper(params$credentials, env$repository$url)
 
   if (!is.null(params$version) &&
       params$version != "latest" &&
@@ -56,7 +51,7 @@ read_release <- function(id, ..., tidy = FALSE) {
   response <- GET(env$repository$url,
                         path = c(env$repository$path, "/datasets"),
                         query = query_params_datasets,
-                        authenticate(credentials[1], credentials[2]),
+                        set_cookies(.cookies = get("econdata_session")),
                         accept_json())
 
   if (response$status_code != 200)
@@ -71,7 +66,7 @@ read_release <- function(id, ..., tidy = FALSE) {
                                        "datasets", dataset$DataSetID,
                                        "releases", sep = "/"),
                           query = query_params,
-                          authenticate(credentials[1], credentials[2]),
+                          set_cookies(.cookies = get("econdata_session")),
                           accept_json())
 
     if (response$status_code == 200) {

@@ -1,4 +1,4 @@
-read_econdata <- function(id, ..., tidy = FALSE) {
+read_econdata <- function(agencyid = "ECONDATA", id, provideragencyid = "ECONDATA", ..., tidy = FALSE) {
 
   # Parameters ---
 
@@ -34,13 +34,8 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
   } else {
 
-    if (!is.null(params$credentials)) {
-      credentials <- unlist(strsplit(params$credentials, ";"))
-    } else if (Sys.getenv("ECONDATA_CREDENTIALS") != "") {
-      credentials <- unlist(strsplit(Sys.getenv("ECONDATA_CREDENTIALS"), ";"))
-    } else {
-      credentials <- econdata_credentials()
-    }
+    if (!exists("econdata_session") || (NROW(econdata_session) == 0))
+      login_helper(params$credentials, env$repository$url)
 
     if (!is.null(params$version) &&
         params$version != "latest" &&
@@ -49,18 +44,18 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
     query_params_datasets <- list()
     query_params_datasets[["nested-flow-ref"]] <-
-      paste(c(params$agencyid, id, params$version), collapse = ",")
+      paste(c(agencyid, id, params$version), collapse = ",")
     if (!is.null(params$providerid)) {
       query_params_datasets[["nested-provider-ref"]] <-
-        paste(c(params$provideragencyid,
+        paste(c(provideragencyid,
                 params$providerid), collapse = ",")
     }
 
     response <- GET(env$repository$url,
-                          path = c(env$repository$path, "/datasets"),
-                          query = query_params_datasets,
-                          authenticate(credentials[1], credentials[2]),
-                          accept_json())
+                    path = c(env$repository$path, "/datasets"),
+                    query = query_params_datasets,
+                    set_cookies(.cookies = as.character(econdata_session)),
+                    accept_json())
 
     if (response$status_code == 200) {
       message("Data set(s) successfully retrieved from EconData.\n")
@@ -87,11 +82,11 @@ read_econdata <- function(id, ..., tidy = FALSE) {
     dataflow <- paste(dataset$Dataflow, collapse = "/")
 
     response <- GET(env$registry$url,
-                          path = paste(c(env$registry$path,
-                                         "dataflow",
-                                         dataflow), collapse = "/"),
-                          query = list(references = "children",
-                                       format = "sdmx-2.0"))
+                    path = paste(c(env$registry$path,
+                                   "dataflow",
+                                   dataflow), collapse = "/"),
+                    query = list(references = "children",
+                                 format = "sdmx-2.0"))
 
     if (response$status_code == 200)
       message("Data structure successfully retrieved for data flow: ",
@@ -130,13 +125,12 @@ read_econdata <- function(id, ..., tidy = FALSE) {
                                                  collapse = ",")
 
       response <- GET(env$repository$url,
-                            path = paste(env$repository$path,
-                                         "datasets",
-                                         dataset$DataSetID, sep = "/"),
-                            query = query_params,
-                            authenticate(credentials[1], credentials[2]),
-                            accept_json())
-
+                      path = paste(env$repository$path,
+                                   "datasets",
+                                   dataset$DataSetID, sep = "/"),
+                      query = query_params,
+                      set_cookies(.cookies = as.character(econdata_session)),
+                      accept_json())
 
       if (response$status_code == 200)
         message("Processing data set: ",
