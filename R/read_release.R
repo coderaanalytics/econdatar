@@ -41,10 +41,10 @@ read_release <- function(agencyid = "ECONDATA", id, provideragencyid = "ECONDATA
 
   query_params_datasets <- list()
   query_params_datasets[["nested-flow-ref"]] <-
-    paste(c(params$agencyid, id, params$version), collapse = ",")
+    paste(c(agencyid, id, params$version), collapse = ",")
   if (!is.null(params$providerid)) {
     query_params_datasets[["nested-provider-ref"]] <-
-      paste(c(params$provideragencyid,
+      paste(c(provideragencyid,
               params$providerid), collapse = ",")
   }
 

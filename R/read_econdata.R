@@ -1,4 +1,4 @@
-read_econdata <- function(agencyid = "ECONDATA", id, provideragencyid = "ECONDATA", ..., tidy = FALSE) {
+read_econdata <- function(agencyid = "ECONDATA", provideragencyid = "ECONDATA", id, ..., tidy = FALSE) {
 
   # Parameters ---
 

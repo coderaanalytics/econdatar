@@ -94,21 +94,21 @@ write_econdata <- function(db, agencyid = "ECONDATA", provideragencyid = "ECONDA
       single_dataset$DataSets <- list()
       single_dataset$DataSets[[1]] <- dataset$DataSets[[i]]
 
-      if (!is.null(params$agencyid) &&
+      if (!is.null(agencyid) &&
           !is.null(params$id) &&
           !is.null(params$version) &&
-          !is.null(params$provideragencyid) &&
+          !is.null(provideragencyid) &&
           !is.null(params$providerid)) {
 
         params$version <- paste0(params$version, ".0")
 
         query_params_datasets <- list()
         query_params_datasets[["nested-flow-ref"]] <-
-          paste(params$agencyid,
+          paste(agencyid,
                 params$id,
                 params$version, sep = ",")
         query_params_datasets[["nested-provider-ref"]] <-
-          paste(params$provideragencyid,
+          paste(provideragencyid,
                 params$providerid, sep = ",")
 
         response <- GET(env$repository$url,
