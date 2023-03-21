@@ -1,3 +1,5 @@
+.pkgenv <- new.env(parent=emptyenv())
+
 login_helper <- function(credentials, login_url) {
   if (!is.null(credentials)) {
     creds <- unlist(strsplit(credentials, ";"))
@@ -20,8 +22,6 @@ login_helper <- function(credentials, login_url) {
   domain <- substr(login_url, 9, nchar(login_url))
   session <- cookie_jar[which(cookie_jar[, 1] == paste0("#HttpOnly_", domain) &
                               cookie_jar[, 6] == "ring-session"), ]
-  assign("econdata_session",
-         as.character(session),
-         envir = globalenv())
-  lockBinding("econdata_session", globalenv())
+  assign("econdata_session", as.character(session), envir = .pkgenv)
+  lockBinding("econdata_session", .pkgenv)
 }

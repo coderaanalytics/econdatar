@@ -78,7 +78,8 @@ write_econdata <- function(db, ...) {
 
   } else {
 
-    if (!exists("econdata_session") || (NROW(get("econdata_session")) == 0))
+    if (!exists("econdata_session") ||
+        (NROW(get("econdata_session", envir = .pkgenv)) == 0))
       login_helper(params$credentials, env$repository$url)
 
 
@@ -113,7 +114,7 @@ write_econdata <- function(db, ...) {
         response <- GET(env$repository$url,
                               path = c(env$repository$path, "/datasets"),
                               query = query_params_datasets,
-                              set_cookies(.cookies = get("econdata_session")),
+                              set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                               accept_json())
 
         if (response$status_code != 200)
@@ -156,7 +157,7 @@ write_econdata <- function(db, ...) {
                             query = query_params,
                             body = list("file" = upload_file(tmp, "application/json")),
                             encode = "multipart",
-                            set_cookies(.cookies = get("econdata_session")),
+                            set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                             accept_json())
 
       if (response$status_code == 200)

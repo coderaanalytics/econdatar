@@ -5,7 +5,7 @@
 read_econdata
 }
 \description{
-Returns the data set for the given dataflow - agencyid:id(version) and data provider - agencyid:id, as a list, or as tidy \emph{data.table}'s. Available data sets can be looked up from the data registry (http://www.econdata.co.za/FusionRegistry). Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{econdata_tidy()}.
+Returns the data set for the given dataflow - ECONDATA:id(version) and data provider - ECONDATA:id, as a list, or as tidy \emph{data.table}'s. Available data sets can be looked up from the data registry (http://www.econdata.co.za/FusionRegistry). Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{econdata_tidy()}.
 }
 \usage{
 read_econdata(id, \dots, tidy = FALSE)
@@ -18,9 +18,7 @@ econdata_tidy(x, \dots)
 
 \item{\dots}{Further \emph{Optional} arguments:
   \tabular{llll}{
-    \code{agencyid} \tab\tab Agency responsible for the data definition. \cr\cr
     \code{version} \tab\tab Version of the data definition. \cr\cr
-    \code{provideragencyid} \tab\tab Agency responsible for making the data available. \cr\cr
     \code{providerid} \tab\tab Provider of the data. \cr\cr
     \code{file} \tab\tab character. File name for retrieving JSON data from disk. \cr\cr
     \code{username} \tab\tab character. EconData username. \cr\cr
@@ -87,7 +85,7 @@ CPI_ANL_WIDE <- econdata_tidy(CPI_ANL)
 CPI_ANL_LONG <- econdata_tidy(CPI_ANL, wide = FALSE, combine = TRUE)
 CPI_ANL_ALLMETA <- econdata_tidy(CPI_ANL, wide = FALSE, allmeta = TRUE) # v2.0 has some 0-obs series
 
-# Can query a specific version by adding e.g. agencyid = "ECONDATA" and version = "2.0" to the call
+# Can query a specific version by adding e.g. version = "2.0" to the call
 
 }
 }

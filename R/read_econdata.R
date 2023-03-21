@@ -34,7 +34,8 @@ read_econdata <- function(agencyid = "ECONDATA", id, provideragencyid = "ECONDAT
 
   } else {
 
-    if (!exists("econdata_session") || (NROW(econdata_session) == 0))
+    if (!exists("econdata_session") ||
+        (NROW(get("econdata_session", envir = .pkgenv)) == 0))
       login_helper(params$credentials, env$repository$url)
 
     if (!is.null(params$version) &&
@@ -54,7 +55,7 @@ read_econdata <- function(agencyid = "ECONDATA", id, provideragencyid = "ECONDAT
     response <- GET(env$repository$url,
                     path = c(env$repository$path, "/datasets"),
                     query = query_params_datasets,
-                    set_cookies(.cookies = as.character(econdata_session)),
+                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                     accept_json())
 
     if (response$status_code == 200) {
@@ -129,7 +130,7 @@ read_econdata <- function(agencyid = "ECONDATA", id, provideragencyid = "ECONDAT
                                    "datasets",
                                    dataset$DataSetID, sep = "/"),
                       query = query_params,
-                      set_cookies(.cookies = as.character(econdata_session)),
+                      set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                       accept_json())
 
       if (response$status_code == 200)

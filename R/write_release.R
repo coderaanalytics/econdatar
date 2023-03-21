@@ -22,7 +22,8 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
   # Update data set ---
 
 
-  if (!exists("econdata_session") || (NROW(get("econdata_session")) == 0))
+  if (!exists("econdata_session") ||
+      (NROW(get("econdata_session", envir = .pkgenv)) == 0))
     login_helper(params$credentials, env$repository$url)
 
   version <- paste0(version, ".0")
@@ -36,7 +37,7 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
   response <- GET(env$repository$url,
                   path = c(env$repository$path, "/datasets"),
                   query = query_params_datasets,
-                  set_cookies(.cookies = get("econdata_session")),
+                  set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                   accept_json())
 
   if (response$status_code != 200)
@@ -59,7 +60,7 @@ write_release <- function(agencyid, id, version, provideragencyid, providerid, r
                                       "releases",
                                       "commit-release", sep = "/"),
                          query = query_params,
-                         set_cookies(.cookies = get("econdata_session")),
+                         set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                          accept_json())
 
   if (response$status_code == 201)

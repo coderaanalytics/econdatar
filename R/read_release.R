@@ -51,7 +51,7 @@ read_release <- function(id, ..., tidy = FALSE) {
   response <- GET(env$repository$url,
                         path = c(env$repository$path, "/datasets"),
                         query = query_params_datasets,
-                        set_cookies(.cookies = get("econdata_session")),
+                        set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                         accept_json())
 
   if (response$status_code != 200)
@@ -66,7 +66,7 @@ read_release <- function(id, ..., tidy = FALSE) {
                                        "datasets", dataset$DataSetID,
                                        "releases", sep = "/"),
                           query = query_params,
-                          set_cookies(.cookies = get("econdata_session")),
+                          set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                           accept_json())
 
     if (response$status_code == 200) {
@@ -80,7 +80,7 @@ read_release <- function(id, ..., tidy = FALSE) {
     return(content(response, encoding = "UTF-8")$Result$Success$Message)
   })
 
-  if(tidy) return(econdata_tidy_release(releases))
+  if (tidy) return(econdata_tidy_release(releases))
 
   return(releases)
 }
