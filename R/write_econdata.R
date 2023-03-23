@@ -78,8 +78,7 @@ write_econdata <- function(db, agencyid = "ECONDATA", provideragencyid = "ECONDA
 
   } else {
 
-    if (!exists("econdata_session") ||
-        (NROW(get("econdata_session", envir = .pkgenv)) == 0))
+    if (!exists("econdata_session", envir = .pkgenv))
       login_helper(params$credentials, env$repository$url)
 
 

@@ -22,8 +22,7 @@ write_release <- function(agencyid = "ECONDATA", id, version, provideragencyid =
   # Update data set ---
 
 
-  if (!exists("econdata_session") ||
-      (NROW(get("econdata_session", envir = .pkgenv)) == 0))
+  if (!exists("econdata_session", envir = .pkgenv))
     login_helper(params$credentials, env$repository$url)
 
   version <- paste0(version, ".0")

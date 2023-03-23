@@ -34,8 +34,7 @@ read_econdata <- function(agencyid = "ECONDATA", provideragencyid = "ECONDATA", 
 
   } else {
 
-    if (!exists("econdata_session") ||
-        (NROW(get("econdata_session", envir = .pkgenv)) == 0))
+    if (!exists("econdata_session", envir = .pkgenv))
       login_helper(params$credentials, env$repository$url)
 
     if (!is.null(params$version) &&

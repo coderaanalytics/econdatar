@@ -31,7 +31,7 @@ read_release <- function(agencyid = "ECONDATA", id, provideragencyid = "ECONDATA
   # Fetch release ---
 
 
-  if (!exists("econdata_session") || (NROW(get("econdata_session")) == 0))
+  if (!exists("econdata_session", envir = .pkgenv))
     login_helper(params$credentials, env$repository$url)
 
   if (!is.null(params$version) &&
