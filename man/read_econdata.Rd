@@ -77,7 +77,7 @@ ELECTRICITY <- read_econdata(id = "ELECTRICITY")
 ELECTRICITY_WIDE <- econdata_tidy(ELECTRICITY) # Or: read_econdata("ELECTRICITY", tidy = TRUE)
 ELECTRICITY_LONG <- econdata_tidy(ELECTRICITY, wide = FALSE)
 # Same as econdata_tidy(ELECTRICITY, wide = FALSE, combine = TRUE):
-with(ELECTRICITY_LONG, metadata[data, on = "code"])
+with(ELECTRICITY_LONG, metadata[data, on = "data_key"])
 
 # CPI Analytical Series: Different Revisions
 CPI_ANL <- read_econdata(id = "CPI_ANL_SERIES")
