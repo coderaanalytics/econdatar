@@ -6,16 +6,16 @@ econdata_make_label <- function(x, codelabel, meta) {
   lab <- NULL
   if(!is.null(meta))
     for (l in names(m)) {
-      if (meta[[l]]$is_dimension) {
-        cl <- meta[[l]]$codelist
-        lab <- c(lab, cl$codes[which(cl$codes[,1]  == m[[l]]), 2])
+      if(meta[[l]]$is_dimension) {
+        cl <- unclass(meta[[l]]$codelist$codes)
+        lab <- c(lab, cl[[2L]][which(cl[[1L]] == m[[l]])])
       }
     }
 
   if(codelabel && !is.null(meta))
     lab <- paste(lab, collapse = " - ")
   else if(length(m$LABEL))
-    lab <- m$LABEL 
+    lab <- m$LABEL
   else if(!is.null(meta))
     lab <- paste(lab, collapse = " - ")
   else
@@ -31,12 +31,13 @@ add_version_names <- function(x, elem = "Dataflow") {
   return(x)
 }
 
-econdata_wide <- function(x, codelabel = FALSE, prettymeta = NULL, ...) {
-  if(is.null(names(x))) return(lapply(add_version_names(x), econdata_wide, codelabel))
+econdata_wide <- function(x, codelabel = FALSE, prettymeta = TRUE, ...) {
+  if(is.null(names(x))) return(lapply(add_version_names(x), econdata_wide, codelabel, prettymeta))
+  meta <- if(prettymeta) get_metadata(x) else NULL
   d <- unlist2d(x, "data_key", row.names = "period", DT = TRUE) |>
     dcast(period ~ data_key, value.var = "OBS_VALUE") |>
     fmutate(period = as.Date(period))
-  labs <- sapply(x, econdata_make_label, codelabel, prettymeta)
+  labs <- sapply(x, econdata_make_label, codelabel, meta)
   nam <- names(d)[-1L]
   vlabels(d) <- c("Date", labs[1L, nam])
   vlabels(d, "source_identifier")[-1L] <- labs[2L, nam]
@@ -47,36 +48,36 @@ econdata_wide <- function(x, codelabel = FALSE, prettymeta = NULL, ...) {
 
 econdata_extract_metadata <- function(x, allmeta, origmeta, meta) {
   if(!allmeta && length(x) == 0L) return(NULL) # Omits non-observed series.
-  if(origmeta) return(attr(x, "metadata"))
+  m <- attr(x, "metadata")
+  if(origmeta) return(m)
   if (!is.null(meta)) {
-    m <- attr(x, "metadata")
     out <- list()
     for (p in names(m)) {
-      if (!is.null(meta[[p]]$codelist)) {
-        cc <- meta[[p]]$concept
-        cl <- meta[[p]]$codelist
-        out[[gsub(" ", "_", tolower(cc$name))]] <-
-          cl$codes[which(cl$codes[,1]  == m[[p]]), 2] 
+      cc_nam <- meta[[p]]$concept$name
+      cl <- meta[[p]]$codelist
+      if(!is.null(cl)) {
+        cl <- unclass(cl$codes)
+        out[[gsub(" ", "_", tolower(cc_nam))]] <- cl[[2L]][which(cl[[1L]] == m[[p]])]
       } else {
-        cc <- meta[[p]]$concept
-        out[[gsub(" ", "_", tolower(cc$name))]] <- m[[p]] 
+        out[[gsub(" ", "_", tolower(cc_nam))]] <- m[[p]]
       }
     }
     return(out)
   }
- return(attr(x, "metadata"))
+ return(m)
 }
 
-econdata_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, prettymeta = NULL, ...) {
+econdata_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, prettymeta = TRUE, ...) {
   if(is.null(names(x))) {
-    res <- lapply(add_version_names(x), econdata_long, combine, allmeta, origmeta)
+    res <- lapply(add_version_names(x), econdata_long, combine, allmeta, origmeta, prettymeta)
     return(if(combine) rbindlist(res, use.names = TRUE, fill = TRUE) else res)
   }
+  meta <- if(prettymeta) get_metadata(x) else NULL
   d <- unlist2d(x, "data_key", row.names = "period", DT = TRUE) |>
        fmutate(period = as.Date(period), data_key = qF(data_key)) |>
        frename(OBS_VALUE = "value")
   m <- attr(x, "metadata")
-  meta <- lapply(x, econdata_extract_metadata, allmeta && !combine, origmeta, prettymeta) |>
+  meta <- lapply(x, econdata_extract_metadata, allmeta && !combine, origmeta, meta) |>
           rbindlist(use.names = TRUE, fill = TRUE)
   if(origmeta) names(meta) <- tolower(names(meta))
   meta$data_key <- if(allmeta && !combine) names(x) else names(x)[names(x) %in% levels(d$data_key)]
@@ -112,19 +113,7 @@ econdata_tidy_release <- function(x) {
 }
 
 # This is just needed to get rid of the wide argument for documenting this together with read_econdata()
-econdata_tidy_core <- function(x, wide = TRUE, release = FALSE, prettymeta = TRUE, ...) {
-  meta = NULL
-  
-  if (prettymeta && !is.null(names(x)))
-    meta = get_metadata(x)
-
-  if (release)
-    econdata_tidy_release(x)
-  else
-    if (wide)
-      econdata_wide(x, prettymeta = meta, ...)
-    else
-      econdata_long(x, prettymeta = meta, ...)
-}
+econdata_tidy_core <- function(x, wide = TRUE, release = FALSE, ...)
+  if(release) econdata_tidy_release(x) else if(wide) econdata_wide(x, ...) else econdata_long(x, ...)
 
 econdata_tidy <- function(x, ...) econdata_tidy_core(x, ...)

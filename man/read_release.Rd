@@ -58,7 +58,7 @@ BA900_RELEASE <- read_release(id = "BA900")
 econdata_tidy(BA900_RELEASE, release = TRUE)      # No further options supported.
 
 # Releases for all CPI Revisions
-read_econdata(id = "CPI_ANL_SERIES", tidy = TRUE)
+read_release(id = "CPI_ANL_SERIES", tidy = TRUE)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
