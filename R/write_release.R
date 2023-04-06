@@ -9,10 +9,16 @@ write_release <- function(id, version, providerid, releasedescription, ...)  {
 
   if (!is.null(params$username) && !is.null(params$password))
     credentials <- paste(params$username, params$password, sep = ";")
+  else
+    credentials <- NULL
   if (!is.null(params$agencyid))
     agencyid  <- params$agencyid
+  else
+    agencyid <- "ECONDATA"
   if (!is.null(params$provideragencyid))
     provideragencyid <- params$provideragencyid
+  else
+    provideragencyid <- "ECONDATA"
 
   query_params <- list()
 
