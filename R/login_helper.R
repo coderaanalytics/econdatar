@@ -1,4 +1,4 @@
-.pkgenv <- new.env(parent=emptyenv())
+.pkgenv <- new.env(parent = emptyenv())
 
 login_helper <- function(credentials, login_url) {
   if (!is.null(credentials)) {

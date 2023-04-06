@@ -22,12 +22,16 @@ Provider of the data.
   \item{releasedescription}{
 Description of the new data set vintage.
 }
-  \item{\dots}{
-Further options include: \strong{\emph{username}} (character), EconData username; \strong{\emph{password}} (character), EconData password; \strong{\emph{releasedattime}} (character), date and time for historical releases in ISO format.
-}
+  \item{\dots}{Further \emph{Optional} arguments:
+    \tabular{llll}{
+      \code{username} \tab\tab character. EconData username. \cr\cr
+      \code{password} \tab\tab character. EconData password. \cr\cr
+      \code{releasedatetime} \tab\tab Date and time for historical releases in ISO format. \cr\cr
+    }
+  }
 }
 \details{
-An EconData account (http://app.econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password". If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
+An EconData account (http://www.econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password". If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
 
 The functionality provided by \emph{write_release} is to release a new vintage of the data set described by the function arguments. As this makes modifications to the database the user calling this function requires higher privileges than needed for other \emph{econdatar} functions - determined by the correct data set role (owner). You can look up user roles for a given data set on the EconData app.
 }

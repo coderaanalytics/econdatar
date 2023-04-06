@@ -1,4 +1,4 @@
-write_release <- function(agencyid = "ECONDATA", id, version, provideragencyid = "ECONDATA", providerid, releasedescription, ...)  {
+write_release <- function(id, version, providerid, releasedescription, ...)  {
 
   # Parameters ---
 
@@ -8,7 +8,11 @@ write_release <- function(agencyid = "ECONDATA", id, version, provideragencyid =
   params <- list(...)
 
   if (!is.null(params$username) && !is.null(params$password))
-    params$credentials <- paste(params$username, params$password, sep = ";")
+    credentials <- paste(params$username, params$password, sep = ";")
+  if (!is.null(params$agencyid))
+    agencyid  <- params$agencyid
+  if (!is.null(params$provideragencyid))
+    provideragencyid <- params$provideragencyid
 
   query_params <- list()
 
@@ -23,7 +27,7 @@ write_release <- function(agencyid = "ECONDATA", id, version, provideragencyid =
 
 
   if (!exists("econdata_session", envir = .pkgenv))
-    login_helper(params$credentials, env$repository$url)
+    login_helper(credentials, env$repository$url)
 
   version <- paste0(version, ".0")
 

@@ -18,7 +18,9 @@ econdata_tidy(x, \dots)
 
 \item{\dots}{Further \emph{Optional} arguments:
   \tabular{llll}{
+    \code{agencyid} \tab\tab Agency responsible for the data definition. \cr\cr
     \code{version} \tab\tab Version of the data definition. \cr\cr
+    \code{provideragencyid} \tab\tab Agency responsible for making the data available. \cr\cr
     \code{providerid} \tab\tab Provider of the data. \cr\cr
     \code{file} \tab\tab character. File name for retrieving JSON data from disk. \cr\cr
     \code{username} \tab\tab character. EconData username. \cr\cr
@@ -47,7 +49,7 @@ econdata_tidy(x, \dots)
 \details{
 Specifying the full dataflow and data provider details (as opposed to only using the data id) allows more fine-grained control over the data set being queried. This is not necessary if there is only a single definition of the data and a single provider, which is typically the case.
 
-An EconData account (http://app.econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="username;password")}. If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
+An EconData account (http://www.econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="username;password")}. If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
 }
 \value{
 %%  ~Describe the value returned

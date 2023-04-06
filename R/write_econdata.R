@@ -1,4 +1,4 @@
-write_econdata <- function(db, agencyid = "ECONDATA", provideragencyid = "ECONDATA", ...) {
+write_econdata <- function(db, ...) {
 
   # Parameters ---
 
@@ -8,14 +8,17 @@ write_econdata <- function(db, agencyid = "ECONDATA", provideragencyid = "ECONDA
   params <- list(...)
 
   if (!is.null(params$username) && !is.null(params$password))
-    params$credentials <- paste(params$username, params$password, sep = ";")
+    credentials <- paste(params$username, params$password, sep = ";")
+  if (!is.null(params$agencyid))
+    agencyid  <- params$agencyid
+  if (!is.null(params$provideragencyid))
+    provideragencyid <- params$provideragencyid
 
   query_params <- list()
 
 
 
   # Data message ---
-
 
 
   Header <- list()
@@ -67,7 +70,6 @@ write_econdata <- function(db, agencyid = "ECONDATA", provideragencyid = "ECONDA
   # Push data message ---
 
 
-
   if (!is.null(params$file)) {
 
     data_message <- toJSON(dataset, na = "null")
@@ -79,7 +81,7 @@ write_econdata <- function(db, agencyid = "ECONDATA", provideragencyid = "ECONDA
   } else {
 
     if (!exists("econdata_session", envir = .pkgenv))
-      login_helper(params$credentials, env$repository$url)
+      login_helper(credentials, env$repository$url)
 
 
 
