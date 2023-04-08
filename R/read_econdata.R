@@ -18,7 +18,7 @@ read_econdata <- function(id, ..., tidy = FALSE) {
   if (!is.null(params$provideragencyid))
     provideragencyid <- params$provideragencyid
   else
-    agencyid <- "ECONDATA"
+    provideragencyid <- "ECONDATA"
 
   query_params <- list()
 
