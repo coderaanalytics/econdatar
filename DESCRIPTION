@@ -1,6 +1,6 @@
 Package: econdatar
 Title: Automation of time series uploads and downloads
-Version: 1.2.5
+Version: 1.2.6
 Date: 2023-03-13
 Authors@R: c(person("Byron", "Botha", role = c("aut", "cre"), email = "byron@codera.co.za"),
              person("Sebastian", "Krantz", role = "ctb"))

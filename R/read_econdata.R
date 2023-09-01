@@ -166,8 +166,9 @@ read_econdata <- function(id, ..., tidy = FALSE) {
       series$Obs <- NULL
 
       series_name <- NULL
-      for (dimension in series_dims)
+      for (dimension in series_dims) {
         series_name <- c(series_name, series[[dimension]])
+      }
       s <- paste(series_name, collapse = ".")
 
       if (length(obs) == 0) {
@@ -175,8 +176,10 @@ read_econdata <- function(id, ..., tidy = FALSE) {
       } else {
         obs_fields <- list()
         obs_fields$OBS_VALUE <- sapply(obs, function(x) as.numeric(x$OBS_VALUE))
-        for (field in obs_attrs)
-          obs_fields[[field]] <- sapply(obs, function(x) x[[field]])
+        for (field in obs_attrs) {
+          obs_fields[[field]] <-
+            sapply(obs, function(x) ifelse(is.null(x[[field]]), NA, x[[field]]))
+        }
         time_periods <- sapply(obs, function(x) x$TIME_PERIOD)
         out[[s]] <- data.frame(obs_fields, row.names = time_periods)
       }
