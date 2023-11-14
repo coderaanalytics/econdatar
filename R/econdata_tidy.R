@@ -3,23 +3,25 @@ null2NA <- function(x) if(is.null(x)) NA_character_ else x
 econdata_make_label <- function(x, codelabel, meta) {
   m <- attr(x, "metadata")
 
-  lab <- NULL
-  if(!is.null(meta))
+  
+
+  if (codelabel && !is.null(meta)) {
+    lab <- NULL
     for (l in names(m)) {
-      if(meta[[l]]$is_dimension) {
-        cl <- unclass(meta[[l]]$codelist$codes)
-        lab <- c(lab, cl[[2L]][which(cl[[1L]] == m[[l]])])
+      if(meta[[l]]$type == "#sdmx.infomodel.datastructure.Dimension") {
+        cl <- sapply(meta[[l]]$codelist$codes,
+                     function(x) c(x[[2]]$id, x[[2]]$name[[2]]))
+        lab <- c(lab, cl[2L, which(cl[1L, ] == m[[l]])])
       }
     }
-
-  if(codelabel && !is.null(meta))
     lab <- paste(lab, collapse = " - ")
-  else if(length(m$LABEL))
+  } else if (length(m$LABEL)) {
     lab <- m$LABEL
-  else if(!is.null(meta))
+  } else if (!is.null(meta)) {
     lab <- paste(lab, collapse = " - ")
-  else
+  } else {
     lab <- NA
+  }
 
   return(c(lab, null2NA(m$SOURCE_IDENTIFIER)))
 }
@@ -53,11 +55,12 @@ econdata_extract_metadata <- function(x, allmeta, origmeta, meta) {
   if (!is.null(meta)) {
     out <- list()
     for (p in names(m)) {
-      cc_nam <- meta[[p]]$concept$name
+      cc_nam <- meta[[p]]$concept$name[[2]]
       cl <- meta[[p]]$codelist
       if(!is.null(cl)) {
-        cl <- unclass(cl$codes)
-        out[[gsub(" ", "_", tolower(cc_nam))]] <- cl[[2L]][which(cl[[1L]] == m[[p]])]
+        cl <- sapply(meta[[p]]$codelist$codes,
+                     function(x) c(x[[2]]$id, x[[2]]$name[[2]]))
+        out[[gsub(" ", "_", tolower(cc_nam))]] <- cl[2L, which(cl[1L, ] == m[[p]])]
       } else {
         out[[gsub(" ", "_", tolower(cc_nam))]] <- m[[p]]
       }
@@ -113,7 +116,14 @@ econdata_tidy_release <- function(x) {
 }
 
 # This is just needed to get rid of the wide argument for documenting this together with read_econdata()
-econdata_tidy_core <- function(x, wide = TRUE, release = FALSE, ...)
-  if(release) econdata_tidy_release(x) else if(wide) econdata_wide(x, ...) else econdata_long(x, ...)
+econdata_tidy_core <- function(x, wide = TRUE, release = FALSE, ...) {
+  if (release) {
+    econdata_tidy_release(x) 
+  } else if (wide) {
+    econdata_wide(x, ...) 
+  } else {
+    econdata_long(x, ...) 
+  }
+}
 
 econdata_tidy <- function(x, ...) econdata_tidy_core(x, ...)
