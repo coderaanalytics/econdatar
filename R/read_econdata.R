@@ -242,9 +242,16 @@ read_econdata <- function(id, ..., tidy = FALSE) {
     data_set$series <- NULL
     attr(out, "metadata") <- data_set
 
-    return(out)
+    if (tidy) {
+      econdata_tidy(out, ...)
+    } else {
+      return(out)
+    }
   })
 
-  if (length(database) == 1) database <- database[[1]]
-  return(if (tidy) econdata_tidy(database, ...) else database)
+  if (length(database) == 1) {
+    return(database[[1]])
+  } else {
+    return(list("data-sets", database[[1]]))
+  }
 }
