@@ -7,20 +7,23 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
   params <- list(...)
 
-  if (!is.null(params$username) && !is.null(params$password))
+  if (!is.null(params$username) && !is.null(params$password)) {
     credentials <- paste(params$username, params$password, sep = ";")
-  else
+  } else {
     credentials <- NULL
+  }
 
-  if (!is.null(params$agencyid))
+  if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
-  else
+  } else {
     agencyid <- "ECONDATA"
+  }
 
-  if (!is.null(params$version))
+  if (!is.null(params$version)) {
     version  <- params$version
-  else
+  } else {
     version <- "latest"
+  }
 
 
 
@@ -37,8 +40,9 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
   } else {
 
-    if (!exists("econdata_session", envir = .pkgenv))
+    if (!exists("econdata_session", envir = .pkgenv)) {
       login_helper(credentials, env$repository$url)
+    }
 
     query_params <- list()
 
@@ -82,8 +86,9 @@ read_econdata <- function(id, ..., tidy = FALSE) {
                     set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
 
-    if (response$status_code != 200)
+    if (response$status_code != 200) {
       stop(content(response, type = "application/json", encoding = "UTF-8"))
+    }
 
     data_message <- content(response, type = "application/json", encoding = "UTF-8")
 
@@ -102,8 +107,9 @@ read_econdata <- function(id, ..., tidy = FALSE) {
                     set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
 
-    if (response$status_code != 200)
+    if (response$status_code != 200) {
       stop(content(response, type = "application/json", encoding = "UTF-8"))
+    }
 
     data_message <- content(response, type = "application/json", encoding = "UTF-8")
 

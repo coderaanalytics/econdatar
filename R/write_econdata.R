@@ -70,7 +70,24 @@ write_econdata <- function(db, stage = TRUE, update = FALSE, reset = FALSE, ...)
                            attr(dataset, "metadata")$version, sep = "-")
 
       if (reset) {
+        message("Resetting release: ", dataset_ref, "\n")
 
+        response <- POST(env$repository$url,
+                         path = paste(env$repository$path,
+                                      "datasets",
+                                      dataset_ref,
+                                      "reset", sep = "/"),
+                         body = toJSON(data_message, na = "null"),
+                         set_cookies(.cookies = get("econdata_session",
+                                                    envir = .pkgenv)),
+                         content_type("application/vnd.sdmx-codera.data+json"),
+                         accept_json())
+
+          if (response$status_code == 200) {
+            message(content(response, encoding = "UTF-8")$success)
+          } else {
+            stop(content(response, encoding = "UTF-8"))
+          }
       } else {
         d <- lapply(attr(dataset, "metadata"),
                     function(x) if (length(x) == 1) unbox(x) else return(x))
@@ -78,9 +95,43 @@ write_econdata <- function(db, stage = TRUE, update = FALSE, reset = FALSE, ...)
 
         for (index in seq_len(length(dataset))) {
           series <- lapply(attr(dataset[[index]], "metadata"), unbox)
-          series$obs <- data.frame(TIME_PERIOD = rownames(dataset[[index]]),
-                                   dataset[[index]],
-                                   row.names = NULL)
+
+          freq <- series$FREQ
+
+          x <- dataset[[index]]
+
+          y <- rownames(x)
+
+          if (all(grepl("^\\d{4}-\\d{2}-\\d{2}$", y, perl = TRUE))) {
+            z <- tryCatch(as.Date(y), error = function(e) {
+                      stop("Unable to coerce some row names to as.Date\n",
+                           "Error in data set ", dataset_ref,
+                           " at index ", index)
+                    })
+            if (!is.null(freq) && any(freq == c("A", "S", "Q"))) {
+              month <- as.integer(substr(y, 6, 7))
+            }
+            if (!is.null(freq) && any(freq == c("A", "S", "Q", "M"))) {
+              day <- as.integer(substr(y, 9, 10))
+            }
+            periods_valid <-
+              switch(freq,
+                     "A" = all(month == 1) && all(day == 1),
+                     "S" = all(month %in% c(1, 7)) && all(day == 1),
+                     "Q" = all(month %in% c(1, 4, 7, 10)) && all(day == 1),
+                     "M" = all(day == 1),
+                     "B" = !any(weekdays(z, TRUE) %in% c("Sat", "Sun")))
+            if (!is.null(periods_valid) && !periods_valid) {
+              stop("Some dates (row names) are not valid\n",
+                   "Error in data set ", dataset_ref, " at index ", index)
+            }
+          } else {
+            stop("Row names must have format: '%Y-%m-%d'\n",
+                 "Error in data set ", dataset_ref, " at index ", index)
+          }
+
+          series$obs <- data.frame(TIME_PERIOD = y, x, row.names = NULL)
+
           d$series[[index]] <- series
         }
 
@@ -94,6 +145,21 @@ write_econdata <- function(db, stage = TRUE, update = FALSE, reset = FALSE, ...)
         if (update) {
           message("Updating data set: ", dataset_ref, "\n")
 
+          response <- PUT(env$repository$url,
+                          path = paste(env$repository$path,
+                                       "datasets",
+                                       dataset_ref, sep = "/"),
+                          body = toJSON(data_message, na = "null"),
+                          set_cookies(.cookies = get("econdata_session",
+                                                     envir = .pkgenv)),
+                          content_type("application/vnd.sdmx-codera.data+json"),
+                          accept_json())
+
+          if (response$status_code == 200) {
+            message(content(response, encoding = "UTF-8")$success)
+          } else {
+            stop(content(response, encoding = "UTF-8"))
+          }
         }
 
         if (stage) {
@@ -111,7 +177,7 @@ write_econdata <- function(db, stage = TRUE, update = FALSE, reset = FALSE, ...)
                            accept_json())
 
           if (response$status_code == 200) {
-            message(content(response, encoding = "UTF-8"))
+            message(content(response, encoding = "UTF-8")$success)
           } else {
             stop(content(response, encoding = "UTF-8"))
           }

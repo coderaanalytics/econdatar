@@ -34,8 +34,9 @@ write_release <- function(id, version, providerid, description, rollback = FALSE
   # Commit data set release ---
 
 
-  if (!exists("econdata_session", envir = .pkgenv))
+  if (!exists("econdata_session", envir = .pkgenv)) {
     login_helper(credentials, env$repository$url)
+  }
 
   dataset_ref <- paste(agencyid, id, version, sep = "-")
 
