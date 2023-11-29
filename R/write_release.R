@@ -1,4 +1,4 @@
-write_release <- function(id, version, providerid, releasedescription, ...)  {
+write_release <- function(id, version, providerid, description, rollback = FALSE, ...)  {
 
   # Parameters ---
 
@@ -7,73 +7,73 @@ write_release <- function(id, version, providerid, releasedescription, ...)  {
 
   params <- list(...)
 
-  if (!is.null(params$username) && !is.null(params$password))
+  if (!is.null(params$username) && !is.null(params$password)) {
     credentials <- paste(params$username, params$password, sep = ";")
-  else
+  } else {
     credentials <- NULL
-  if (!is.null(params$agencyid))
+  }
+
+  if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
-  else
+  } else {
     agencyid <- "ECONDATA"
-  if (!is.null(params$provideragencyid))
-    provideragencyid <- params$provideragencyid
-  else
-    provideragencyid <- "ECONDATA"
+  }
 
   query_params <- list()
 
-  query_params$releaseDescription <- releasedescription
+  query_params$description <- description
 
-  if (!is.null(params$releasedatetime))
-    query_params$releaseDateTime <- params$releasedatetime
+  if (!is.null(params$release)) {
+    query_params$release <- release
+  } else {
+    query_params$release <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
+  }
 
 
 
-  # Update data set ---
+  # Commit data set release ---
 
 
-  if (!exists("econdata_session", envir = .pkgenv))
+  if (!exists("econdata_session", envir = .pkgenv)) {
     login_helper(credentials, env$repository$url)
+  }
 
-  version <- paste0(version, ".0")
+  dataset_ref <- paste(agencyid, id, version, sep = "-")
 
-  query_params_datasets <- list()
-  query_params_datasets[["nested-flow-ref"]] <-
-    paste(agencyid, id, version, sep = ",")
-  query_params_datasets[["nested-provider-ref"]] <-
-    paste(provideragencyid, providerid, sep = ",")
+  if (rollback) {
 
-  response <- GET(env$repository$url,
-                  path = c(env$repository$path, "/datasets"),
-                  query = query_params_datasets,
-                  set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
-                  accept_json())
+    message("Rolling back release: ", dataset_ref, "\n")
 
-  if (response$status_code != 200)
-    stop(content(response, encoding = "UTF-8"))
+    response <- POST(env$repository$url,
+                     path = paste(env$repository$path,
+                                  "datasets",
+                                  dataset_ref,
+                                  "rollback", sep = "/"),
+                     set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                     accept_json())
 
-  meta_dataset <- content(response, encoding = "UTF-8")
+    if (response$status_code == 200) {
+      message(content(response, encoding = "UTF-8")$success)
+    } else {
+      stop(content(response, encoding = "UTF-8"))
+    }
+  } else {
 
-  dataset_id <- meta_dataset$DataSets[[1]]$DataSetID
+    message("Committing release: ", dataset_ref, "\n")
 
-  dataflow <- paste(meta_dataset$DataSets[[1]]$Dataflow, collapse = ",")
-  dataprovider <- paste(meta_dataset$DataSets[[1]]$DataProvider,
-                        collapse = ",")
+    response <- POST(env$repository$url,
+                     path = paste(env$repository$path,
+                                  "datasets",
+                                  dataset_ref,
+                                  "commit", sep = "/"),
+                     query = query_params,
+                     set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                     accept_json())
 
-  message("Committing release: ", dataflow, " - ", dataprovider, "\n")
-
-  response <- POST(env$repository$url,
-                         path = paste(env$repository$path,
-                                      "datasets",
-                                      dataset_id,
-                                      "releases",
-                                      "commit-release", sep = "/"),
-                         query = query_params,
-                         set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
-                         accept_json())
-
-  if (response$status_code == 201)
-    message(content(response, encoding = "UTF-8")$Result$Success$Message)
-  else
-    stop(content(response, encoding = "UTF-8"))
+    if (response$status_code == 200) {
+      message(content(response, encoding = "UTF-8")$success)
+    } else {
+      stop(content(response, encoding = "UTF-8"))
+    }
+  }
 }

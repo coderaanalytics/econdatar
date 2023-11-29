@@ -7,87 +7,98 @@ read_release <- function(id, ..., tidy = FALSE) {
 
   params <- list(...)
 
-  if (!is.null(params$username) && !is.null(params$password))
+  if (!is.null(params$username) && !is.null(params$password)) {
     credentials <- paste(params$username, params$password, sep = ";")
-  else
+  } else {
     credentials <- NULL
-  if (!is.null(params$agencyid))
+  }
+
+  if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
-  else
+  } else {
     agencyid <- "ECONDATA"
-  if (!is.null(params$provideragencyid))
-    provideragencyid <- params$provideragencyid
-  else
-    provideragencyid <- "ECONDATA"
+  }
+
+  if (!is.null(params$version)) {
+    version  <- params$version
+  } else {
+    version <- "latest"
+  }
+
 
   query_params <- list()
 
-  if (!is.null(params$newest))
-    query_params$newest <- if (params$newest) "true" else "false"
-  if (!is.null(params$oldest))
-    query_params$oldest <- if (params$oldest) "true" else "false"
-  if (!is.null(params$before))
-    query_params$beforeDateTime <- strftime(params$before, "%Y-%m-%dT%H:%M:%S")
-  if (!is.null(params$after))
-    query_params$afterDateTime <- strftime(params$after, "%Y-%m-%dT%H:%M:%S")
-  if (!is.null(params$includestext))
-    query_params$includesText <- params$includestext
-  if (!is.null(params$releasedescription))
-    query_params$releaseDescription <- params$releasedescription
-  if (!is.null(params$returnrange))
-    query_params$returnRange <- if (params$returnrange) "true" else "false"
+  if (!is.null(params$newest)) {
+    query_params$latest <- ifelse(params$latest, "true", "false")
+  }
+
+  if (!is.null(params$before)) {
+    query_params[["before-date-time"]] <- strftime(params$before,
+                                                   "%Y-%m-%dT%H:%M:%S")
+  }
+
+  if (!is.null(params$after)) {
+    query_params[["after-date-time"]] <- strftime(params$after,
+                                                  "%Y-%m-%dT%H:%M:%S")
+  }
+
+  if (!is.null(params$releasedescription)) {
+    query_params$description <- params$description
+  }
+
 
 
   # Fetch release ---
 
 
-  if (!exists("econdata_session", envir = .pkgenv))
+  if (!exists("econdata_session", envir = .pkgenv)) {
     login_helper(credentials, env$repository$url)
-
-  if (!is.null(params$version) &&
-      params$version != "latest" &&
-      params$version != "all")
-    params$version <- paste0(params$version, ".0")
-
-  query_params_datasets <- list()
-  query_params_datasets[["nested-flow-ref"]] <-
-    paste(c(agencyid, id, params$version), collapse = ",")
-  if (!is.null(params$providerid)) {
-    query_params_datasets[["nested-provider-ref"]] <-
-      paste(c(provideragencyid,
-              params$providerid), collapse = ",")
   }
 
+  dataset_ref <- paste(agencyid, id, version, sep = "-")
+
   response <- GET(env$repository$url,
-                        path = c(env$repository$path, "/datasets"),
-                        query = query_params_datasets,
-                        set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
-                        accept_json())
+                  path = c(env$repository$path, "/datasets"),
+                  query = list(agencyids = paste(agencyid, collapse = ","),
+                               ids = paste(id, collapse = ","),
+                               versions = paste(version, collapse = ",")),
+                  set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                  accept_json())
 
   if (response$status_code != 200)
     stop(content(response, encoding = "UTF-8"))
 
   data_message <- content(response, encoding = "UTF-8")
 
-  releases <- lapply(data_message$DataSets, function(dataset) {
+  releases <- lapply(data_message[["data-sets"]], function(dataset) {
+
+    dataset_ref <- paste(dataset$agencyid,
+                         dataset$id,
+                         dataset$version, sep = "-")
 
     response <- GET(env$repository$url,
-                          path = paste(env$repository$path,
-                                       "datasets", dataset$DataSetID,
-                                       "releases", sep = "/"),
-                          query = query_params,
-                          set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
-                          accept_json())
+                    path = paste(env$repository$path,
+                                 "datasets", dataset_ref,
+                                 "release", sep = "/"),
+                    query = query_params,
+                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code == 200) {
-      message("Fetching releases for: ",
-              paste(dataset$Dataflow, collapse = ","), " - ",
-              paste(dataset$DataProvider, collapse = ","), "\n")
+      message("Fetching releases for: ", dataset_ref, "\n")
     } else {
       stop(content(response, encoding = "UTF-8"))
     }
 
-    return(content(response, encoding = "UTF-8")$Result$Success$Message)
+    release <- content(response, type = "application/json", encoding = "UTF-8")
+
+    release$releases <- lapply(release$releases, function(r) {
+        list("release" = strptime(r$release, "%Y-%m-%dT%H:%M:%S%z"),
+             "start-period" = strptime(r[["start-period"]], "%Y-%m-%dT%H:%M:%S%z"),
+             "end-period" = strptime(r[["end-period"]], "%Y-%m-%dT%H:%M:%S%z"))
+      })
+
+    return(release)
   })
 
   if (tidy) return(econdata_tidy_release(releases))
