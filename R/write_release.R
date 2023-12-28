@@ -1,4 +1,4 @@
-write_release <- function(id, version, providerid, description, rollback = FALSE, ...)  {
+write_release <- function(id, version, providerid, description, reset = FALSE, rollback = FALSE, ...)  {
 
   # Parameters ---
 
@@ -24,7 +24,7 @@ write_release <- function(id, version, providerid, description, rollback = FALSE
   query_params$description <- description
 
   if (!is.null(params$release)) {
-    query_params$release <- release
+    query_params$release <- params$release
   } else {
     query_params$release <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
   }
@@ -40,7 +40,23 @@ write_release <- function(id, version, providerid, description, rollback = FALSE
 
   dataset_ref <- paste(agencyid, id, version, sep = "-")
 
-  if (rollback) {
+  if (reset) {
+    message("Resetting release: ", dataset_ref, "\n")
+
+    response <- POST(env$repository$url,
+                     path = paste(env$repository$path,
+                                  "datasets",
+                                  dataset_ref,
+                                  "reset", sep = "/"),
+                     set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                     accept_json())
+
+    if (response$status_code == 200) {
+      message(content(response, encoding = "UTF-8")$success)
+    } else {
+      stop(content(response, encoding = "UTF-8"))
+    }
+  } else if (rollback) {
 
     message("Rolling back release: ", dataset_ref, "\n")
 

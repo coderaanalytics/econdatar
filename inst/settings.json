@@ -1,4 +1,4 @@
-{ "repository" : {"url" : "http://localhost:3000",
+{ "repository" : {"url" : "https://www.econdata.co.za",
                   "path" : "sdmx-codera/v1"},
-  "registry" : {"url" : "http://localhost:3000",
+  "registry" : {"url" : "https://www.econdata.co.za",
                 "path" : "sdmx-codera/v1"} }
