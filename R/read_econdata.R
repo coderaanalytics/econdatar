@@ -7,34 +7,30 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
   params <- list(...)
 
-  if (!is.null(params$username) && !is.null(params$password))
+  if (!is.null(params$username) && !is.null(params$password)) {
     credentials <- paste(params$username, params$password, sep = ";")
-  else
+  } else {
     credentials <- NULL
-  if (!is.null(params$agencyid))
+  }
+
+  if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
-  else
+  } else {
     agencyid <- "ECONDATA"
-  if (!is.null(params$provideragencyid))
-    provideragencyid <- params$provideragencyid
-  else
-    provideragencyid <- "ECONDATA"
+  }
 
-  query_params <- list()
-
-  if (!is.null(params$key))
-    query_params$key <- params$key
-  if (!is.null(params$releasedescription))
-    query_params$releaseDescription <- params$releasedescription
-
-  credentials <- NULL
+  if (!is.null(params$version)) {
+    version  <- params$version
+  } else {
+    version <- "latest"
+  }
 
 
 
-  # Fetch dataset(s) ---
+  # Fetch data set(s) ---
 
 
-  message(paste("\nFetching dataset(s) -", id, "\n"))
+  message(paste("\nFetching data set(s) -", id, "\n"))
 
   if (!is.null(params$file)) {
 
@@ -44,36 +40,29 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
   } else {
 
-    if (!exists("econdata_session", envir = .pkgenv))
+    if (!exists("econdata_session", envir = .pkgenv)) {
       login_helper(credentials, env$repository$url)
-
-    if (!is.null(params$version) &&
-        params$version != "latest" &&
-        params$version != "all")
-      params$version <- paste0(params$version, ".0")
-
-    query_params_datasets <- list()
-    query_params_datasets[["nested-flow-ref"]] <-
-      paste(c(agencyid, id, params$version), collapse = ",")
-    if (!is.null(params$providerid)) {
-      query_params_datasets[["nested-provider-ref"]] <-
-        paste(c(provideragencyid,
-                params$providerid), collapse = ",")
     }
+
+    query_params <- list()
+
+    query_params$agencyids <- paste(agencyid, collapse = ",")
+
+    query_params$ids <- paste(id, collapse = ",")
+
+    query_params$versions <- paste(version, collapse = ",")
 
     response <- GET(env$repository$url,
                     path = c(env$repository$path, "/datasets"),
-                    query = query_params_datasets,
+                    query = query_params,
                     set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
-                    accept_json())
+                    accept("application/vnd.sdmx-codera.data+json"))
 
-    if (response$status_code == 200) {
-      message("Data set(s) successfully retrieved from EconData.\n")
-    } else {
+    if (response$status_code != 200) {
       stop(content(response, encoding = "UTF-8"))
     }
 
-    data_message <- content(response, encoding = "UTF-8")
+    data_message <- content(response, type = "application/json", encoding = "UTF-8")
   }
 
 
@@ -81,77 +70,146 @@ read_econdata <- function(id, ..., tidy = FALSE) {
   # Process data sets ---
 
 
-  database <- lapply(data_message$DataSets, function(dataset) {
+  database <- lapply(data_message[[2]][["data-sets"]], function(data_set) {
 
    # Fetch data structure (metadata) ---
 
-   if (is.null(dataset$Dataflow))
-     stop("Dataset data flow reference not available, ",
-          "unable to fetch data set metadata")
-
-    dataflow <- paste(dataset$Dataflow, collapse = "/")
+   provision_agreement_ref <- paste(data_set[[2]][["provision-agreement"]][[2]]$agencyid,
+                                    data_set[[2]][["provision-agreement"]][[2]]$id,
+                                    data_set[[2]][["provision-agreement"]][[2]]$version,
+                                    sep = "-")
 
     response <- GET(env$registry$url,
                     path = paste(c(env$registry$path,
-                                   "dataflow",
-                                   dataflow), collapse = "/"),
-                    query = list(references = "children",
-                                 format = "sdmx-2.0"))
+                                   "provisionagreements",
+                                   provision_agreement_ref), collapse = "/"),
+                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
 
-    if (response$status_code == 200)
-      message("Data structure successfully retrieved for data flow: ",
-              paste(dataset$Dataflow, collapse = ","), "\n")
-    else
-      stop(content(response, encoding = "UTF-8"))
-
-    datastructure <- content(response,
-                                   type = "application/xml",
-                                   encoding = "UTF-8")
-
-    series_dims <- NULL
-    all_dimensions <- xml_find_all(datastructure, "//str:Dimension")
-    for (dimension in all_dimensions)
-      series_dims <- c(series_dims, xml_attr(dimension, "conceptRef"))
-
-    all_attributes <- xml_find_all(datastructure, "//str:Attribute")
-    obs_attrs <- NULL
-    for (attribute in all_attributes) {
-      if (xml_attr(attribute, "attachmentLevel") == "Observation")
-        obs_attrs <- c(obs_attrs, xml_attr(attribute, "conceptRef"))
+    if (response$status_code != 200) {
+      stop(content(response, type = "application/json", encoding = "UTF-8"))
     }
+
+    data_message <- content(response, type = "application/json", encoding = "UTF-8")
+
+    provision_agreement <- data_message[[2]]$structures[["provision-agreements"]][[1]]
+
+    dataflow_ref <- paste(provision_agreement[[2]][["dataflow"]][[2]]$agencyid,
+                          provision_agreement[[2]][["dataflow"]][[2]]$id,
+                          provision_agreement[[2]][["dataflow"]][[2]]$version,
+                          sep = "-") 
+
+    response <- GET(env$registry$url,
+                    path = paste(c(env$registry$path,
+                                   "dataflows",
+                                   dataflow_ref), collapse = "/"),
+                    query = list(relations = "references"),
+                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
+
+    if (response$status_code != 200) {
+      stop(content(response, type = "application/json", encoding = "UTF-8"))
+    }
+
+    data_message <- content(response, type = "application/json", encoding = "UTF-8")
+
+    data_structure <- data_message[[2]]$structures[["data-structures"]][[1]][[2]]
+
+    series_dims <- sapply(data_structure$components, function(component) {
+        if (component[[1]] == "#sdmx.infomodel.datastructure.Dimension") {
+          component[[2]][["concept-identity"]][[2]]$id
+        } else {
+          NA
+        }
+      }) |>
+      na.omit()
+
+    obs_attrs <- sapply(data_structure$components, function(component) {
+        if (component[[1]] == "#sdmx.infomodel.datastructure.Attribute") {
+          if (component[[2]][["attachment-level"]] == "observation") {
+            component[[2]][["concept-identity"]][[2]]$id
+          } else {
+            NA
+          }
+        } else {
+          NA
+        }
+      }) |>
+      na.omit()
 
 
 
     # Fetch data set ---
 
 
-    if (!is.null(params$file)) {
-      dataset_1 <- dataset
-    } else {
+    if (is.null(params$file)) {
 
-      dataset$Dataflow[3] <- paste0(dataset$Dataflow[3], ".0")
+      data_set_ref <- paste(data_set[[2]]$agencyid,
+                            data_set[[2]]$id,
+                            data_set[[2]]$version,
+                            sep = "-")
 
-      query_params[["nested-flow-ref"]] <- paste(dataset$Dataflow,
-                                                 collapse = ",")
+      query_params <- list()
+
+      if (is.null(params$release) || params$release != "unreleased") {
+
+        response <- GET(env$repository$url,
+                        path = paste(env$repository$path,
+                                     "datasets",
+                                     data_set_ref,
+                                     "release", sep = "/"),
+                        query = query_params,
+                        set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                        accept_json())
+
+        if (response$status_code != 200) {
+          stop(content(response, type = "application/json", encoding = "UTF-8"))
+        }
+
+        data_message <- content(response, type = "application/json", encoding = "UTF-8")
+
+        if (is.null(params$release)) {
+          query_params$release <- tail(data_message$releases, n = 1)[[1]]$release
+        } else {
+          release <- sapply(data_message$releases, function(release) {
+              if(grepl(params$release, release$description, perl = TRUE)) {
+                release$release
+              } else {
+                NA
+              }
+            }) |>
+          na.omit() |>
+          head(n = 1)
+
+          if (length(release) != 0) {
+            query_params$release <- release
+          } else {
+            query_params$release <- tail(data_message$releases, 1)$release
+          }
+        }
+      }
+
+      if (!is.null(params$series_key)) {
+        query_params$series_key <- params$series_key
+      }
 
       response <- GET(env$repository$url,
                       path = paste(env$repository$path,
                                    "datasets",
-                                   dataset$DataSetID, sep = "/"),
+                                   data_set_ref, sep = "/"),
                       query = query_params,
                       set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
-                      accept_json())
+                      accept("application/vnd.sdmx-codera.data+json"))
 
-      if (response$status_code == 200)
-        message("Processing data set: ",
-                paste(dataset$Dataflow, collapse = ","), " - ",
-                paste(dataset$DataProvider, collapse = ","), "\n")
-      else
-        stop(content(response, encoding = "UTF-8"))
+      if (response$status_code == 200) {
+        message("Processing data set: ", data_set_ref, "\n")
+      } else {
+        stop(content(response, type = "application/json", encoding = "UTF-8"))
+      }
 
-      data_message_1 <- content(response, encoding = "UTF-8")
+      data_message <- content(response, type = "application/json", encoding = "UTF-8")
 
-      dataset_1 <- data_message_1$DataSets[[1]]
+      data_set <- data_message[[2]][["data-sets"]][[1]][[2]]
     }
 
 
@@ -161,9 +219,10 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
     out <- list()
 
-    for (series in dataset_1$Series) {
-      obs <- series$Obs
-      series$Obs <- NULL
+    for (series in data_set$series) {
+      obs <- series$obs
+      series[["series-key"]] <- NULL
+      series[["obs"]] <- NULL
 
       series_name <- NULL
       for (dimension in series_dims) {
@@ -186,12 +245,19 @@ read_econdata <- function(id, ..., tidy = FALSE) {
       attr(out[[s]], "metadata") <- series
     }
 
-    dataset_1$Series <- NULL
-    attr(out, "metadata") <- dataset_1
+    data_set$series <- NULL
+    attr(out, "metadata") <- data_set
 
-    return(out)
+    if (tidy) {
+      econdata_tidy(out, ...)
+    } else {
+      return(out)
+    }
   })
 
-  if (length(database) == 1) database <- database[[1]]
-  return(if (tidy) econdata_tidy(database, ...) else database)
+  if (length(database) == 1) {
+    return(database[[1]])
+  } else {
+    return(list("data-sets", database[[1]]))
+  }
 }

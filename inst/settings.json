@@ -1,4 +1,4 @@
-{ "repository" : {"url" : "https://www.advancedanalytics.co.za",
-                  "path" : "dataapi/v1"},
-  "registry" : {"url" : "https://www.advancedanalytics.co.za",
-                "path" : "FusionRegistry/ws/public/sdmxapi/rest"} }
+{ "repository" : {"url" : "https://www.econdata.co.za",
+                  "path" : "sdmx-codera/v1"},
+  "registry" : {"url" : "https://www.econdata.co.za",
+                "path" : "sdmx-codera/v1"} }

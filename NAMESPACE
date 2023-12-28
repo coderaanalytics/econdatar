@@ -1,9 +1,9 @@
-importFrom("httr", "POST", "GET", "PUT", "authenticate", "accept_json", "content",
-           "upload_file", "cookies", "set_cookies")
+importFrom("httr", "POST", "GET", "PUT", "accept", "accept_json", "authenticate",
+           "content", "content_type", "cookies", "set_cookies", "upload_file")
 importFrom("jsonlite", "fromJSON", "toJSON", "unbox")
-importFrom("xml2", "xml_find_all", "xml_find_first", "xml_attrs", "xml_attr", "xml_text")
-importFrom("collapse", "add_vars<-", "ckmatch", "dapply", "fmutate", "qDT",
-           "fnobs", "frename", "get_vars<-", "qF", "ss", "unlist2d", "vlabels", "vlabels<-")
+importFrom("collapse", "add_vars<-", "ckmatch", "dapply", "fmutate", "fnobs",
+           "frename", "get_vars<-", "qDT", "qF", "ss", "unlist2d", "vlabels",
+           "vlabels<-")
 importFrom("data.table", "dcast", "rbindlist", "setcolorder")
 importFrom("utils", "sessionInfo")
 
