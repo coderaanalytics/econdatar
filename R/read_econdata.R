@@ -45,11 +45,8 @@ read_econdata <- function(id, ..., tidy = FALSE) {
     }
 
     query_params <- list()
-
     query_params$agencyids <- paste(agencyid, collapse = ",")
-
     query_params$ids <- paste(id, collapse = ",")
-
     query_params$versions <- paste(version, collapse = ",")
 
     response <- GET(env$repository$url,
@@ -158,7 +155,6 @@ read_econdata <- function(id, ..., tidy = FALSE) {
                                      "datasets",
                                      data_set_ref,
                                      "release", sep = "/"),
-                        query = query_params,
                         set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                         accept_json())
 
@@ -168,8 +164,12 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
         data_message <- content(response, type = "application/json", encoding = "UTF-8")
 
-        if (is.null(params$release)) {
-          query_params$release <- tail(data_message$releases, n = 1)[[1]]$release
+        if (is.null(params$release) || params$release == "latest") {
+          release <- tail(data_message$releases, n = 1)[[1]]$release |>
+            as.POSIXct(x, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
+          attr(release, "tzone") <- "Africa/Johannesburg"
+          query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
+
         } else {
           release <- sapply(data_message$releases, function(release) {
               if(grepl(params$release, release$description, perl = TRUE)) {
@@ -182,9 +182,15 @@ read_econdata <- function(id, ..., tidy = FALSE) {
           head(n = 1)
 
           if (length(release) != 0) {
-            query_params$release <- release
+            release <- as.POSIXct(release, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
+            attr(release, "tzone") <- "Africa/Johannesburg"
+            query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
           } else {
-            query_params$release <- tail(data_message$releases, 1)$release
+            message("Release not found, returning latest release instead.")
+            release <- tail(data_message$releases, n = 1)[[1]]$release |>
+              as.POSIXct(x, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
+            attr(release, "tzone") <- "Africa/Johannesburg"
+            query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
           }
         }
       }
