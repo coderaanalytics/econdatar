@@ -150,47 +150,53 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
       if (is.null(params$release) || params$release != "unreleased") {
 
-        response <- GET(env$repository$url,
-                        path = paste(env$repository$path,
-                                     "datasets",
-                                     data_set_ref,
-                                     "release", sep = "/"),
-                        set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
-                        accept_json())
+        tryCatch(query_params$release <- strftime(params$release, "%Y-%m-%dT%H:%M:%S"),
+                 error = function(e) { query_params$release <- NULL })
 
-        if (response$status_code != 200) {
-          stop(content(response, type = "application/json", encoding = "UTF-8"))
-        }
+        if (is.null(query_params$release)) {
 
-        data_message <- content(response, type = "application/json", encoding = "UTF-8")
+          response <- GET(env$repository$url,
+                          path = paste(env$repository$path,
+                                       "datasets",
+                                       data_set_ref,
+                                       "release", sep = "/"),
+                          set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                          accept_json())
 
-        if (is.null(params$release) || params$release == "latest") {
-          release <- tail(data_message$releases, n = 1)[[1]]$release |>
-            as.POSIXct(x, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
-          attr(release, "tzone") <- "Africa/Johannesburg"
-          query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
+          if (response$status_code != 200) {
+            stop(content(response, type = "application/json", encoding = "UTF-8"))
+          }
 
-        } else {
-          release <- sapply(data_message$releases, function(release) {
-              if(grepl(params$release, release$description, perl = TRUE)) {
-                release$release
-              } else {
-                NA
-              }
-            }) |>
-          na.omit() |>
-          head(n = 1)
+          data_message <- content(response, type = "application/json", encoding = "UTF-8")
 
-          if (length(release) != 0) {
-            release <- as.POSIXct(release, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
-            attr(release, "tzone") <- "Africa/Johannesburg"
-            query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
-          } else {
-            message("Release not found, returning latest release instead.")
+          if (is.null(params$release) || params$release == "latest") {
             release <- tail(data_message$releases, n = 1)[[1]]$release |>
               as.POSIXct(x, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
             attr(release, "tzone") <- "Africa/Johannesburg"
             query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
+
+          } else {
+            release <- sapply(data_message$releases, function(release) {
+                         if(grepl(params$release, release$description, perl = TRUE)) {
+                           release$release
+                         } else {
+                           NA
+                         }
+                       }) |>
+              na.omit() |>
+              head(n = 1)
+
+            if (length(release) != 0) {
+              release <- as.POSIXct(release, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
+              attr(release, "tzone") <- "Africa/Johannesburg"
+              query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
+            } else {
+              message("Release not found, returning latest release instead.")
+              release <- tail(data_message$releases, n = 1)[[1]]$release |>
+                as.POSIXct(x, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
+              attr(release, "tzone") <- "Africa/Johannesburg"
+              query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
+            }
           }
         }
       }
