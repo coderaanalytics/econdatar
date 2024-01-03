@@ -94,8 +94,8 @@ read_release <- function(id, ..., tidy = FALSE) {
 
     release$releases <- lapply(release$releases, function(r) {
         list("release" = strptime(r$release, "%Y-%m-%dT%H:%M:%S%z"),
-             "start-period" = strptime(r[["start-period"]], "%Y-%m-%dT%H:%M:%S%z"),
-             "end-period" = strptime(r[["end-period"]], "%Y-%m-%dT%H:%M:%S%z"))
+             "start-period" = strptime(r[["start-period"]], "%Y-%m-%d"),
+             "end-period" = strptime(r[["end-period"]], "%Y-%m-%d"))
       })
 
     return(release)

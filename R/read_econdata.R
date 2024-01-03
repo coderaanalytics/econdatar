@@ -222,6 +222,13 @@ read_econdata <- function(id, ..., tidy = FALSE) {
       data_message <- content(response, type = "application/json", encoding = "UTF-8")
 
       data_set <- data_message[[2]][["data-sets"]][[1]][[2]]
+    } else {
+      data_set <- data_set[[2]]
+      data_set$name <- lapply(data_set$name, unbox)
+      data_set[["provision-agreement"]][[1]] <-
+        unbox(data_set[["provision-agreement"]][[1]])
+      data_set[["provision-agreement"]][[2]] <-
+        lapply(data_set[["provision-agreement"]][[2]], unbox)
     }
 
 
