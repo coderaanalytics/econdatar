@@ -18,8 +18,7 @@ write_econdata <- function(x, create = FALSE, update = FALSE, stage = TRUE, ...)
   # Push data message ---
 
 
-  if (!is.null(params$file) &&
-      !exists("econdata_session", envir = .pkgenv)) {
+  if (is.null(params$file) && !exists("econdata_session", envir = .pkgenv)) {
     login_helper(credentials, env$repository$url)
   }
 
@@ -89,6 +88,7 @@ write_econdata <- function(x, create = FALSE, update = FALSE, stage = TRUE, ...)
                  "S" = all(month %in% c(1, 7)) && all(day == 1),
                  "Q" = all(month %in% c(1, 4, 7, 10)) && all(day == 1),
                  "M" = all(day == 1),
+                 "W" = all(weekdays(z, TRUE) == "Mon"),
                  "B" = !any(weekdays(z, TRUE) %in% c("Sat", "Sun")))
         if (!is.null(periods_valid) && !periods_valid) {
           stop("Some dates (row names) are not valid\n",
