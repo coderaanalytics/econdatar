@@ -177,7 +177,7 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
           } else {
             release <- sapply(data_message$releases, function(release) {
-                         if(grepl(params$release, release$description, perl = TRUE)) {
+                         if(params$release == release$description) {
                            release$release
                          } else {
                            NA
@@ -202,7 +202,7 @@ read_econdata <- function(id, ..., tidy = FALSE) {
       }
 
       if (!is.null(params$series_key)) {
-        query_params$series_key <- params$series_key
+        query_params[["series-key"]] <- params$series_key
       }
 
       response <- GET(env$repository$url,

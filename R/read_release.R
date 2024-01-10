@@ -101,7 +101,7 @@ read_release <- function(id, ..., tidy = FALSE) {
     return(release)
   })
 
-  if (tidy) return(econdata_tidy_release(releases))
+  if (tidy) return(econdata_tidy(releases, is_release = TRUE, ...))
 
   return(releases)
 }

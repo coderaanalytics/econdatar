@@ -3,8 +3,6 @@ null2NA <- function(x) if(is.null(x)) NA_character_ else x
 econdata_make_label <- function(x, codelabel, meta) {
   m <- attr(x, "metadata")
 
-  
-
   if (codelabel && !is.null(meta)) {
     lab <- NULL
     for (l in names(m)) {
@@ -17,8 +15,6 @@ econdata_make_label <- function(x, codelabel, meta) {
     lab <- paste(lab, collapse = " - ")
   } else if (length(m$LABEL)) {
     lab <- m$LABEL
-  } else if (!is.null(meta)) {
-    lab <- paste(lab, collapse = " - ")
   } else {
     lab <- NA
   }
@@ -27,8 +23,12 @@ econdata_make_label <- function(x, codelabel, meta) {
 }
 
 # (Optional) list names for multi-version calls
-add_version_names <- function(x, elem = "Dataflow") {
-  versions <- sapply(x, function(z) attr(z, "metadata")[[elem]][[3L]])
+add_version_names <- function(x, elem = NULL) {
+  if (is.null(elem)) {
+    versions <- sapply(x, function(z) attr(z, "metadata")$version)
+  } else {
+    versions <- sapply(x, function(z) attr(z, "metadata")[[elem]]$version)
+  }
   if(length(versions) == length(x) && !anyDuplicated(versions)) names(x) <- paste0("v", versions)
   return(x)
 }
@@ -105,19 +105,18 @@ econdata_tidy_release <- function(x) {
   axnull <- is.null(attributes(x))
   if(axnull && length(x) > 1L) {
     res <- lapply(x, econdata_tidy_release)
-    return(add_version_names(res, elem = "Flowref"))
+    return(add_version_names(res, elem = "data-set"))
   }
   if(axnull) x <- x[[1L]]
-  res <- rbindlist(x$Releases)
-  res$Date <- as.POSIXct(res$Date)
-  names(res) <- tolower(names(res))
-  attr(res, "metadata") <- x$DataSet
+  res <- rbindlist(lapply(x$releases, function(x)
+                     { lapply (x, function(y) as.POSIXct(y)) }))
+  attr(res, "metadata") <- x[["data-set"]]
   return(qDT(res, keep.attr = TRUE))
 }
 
 # This is just needed to get rid of the wide argument for documenting this together with read_econdata()
-econdata_tidy_core <- function(x, wide = TRUE, release = FALSE, ...) {
-  if (release) {
+econdata_tidy_core <- function(x, wide = TRUE, is_release = FALSE, ...) {
+  if (is_release) {
     econdata_tidy_release(x) 
   } else if (wide) {
     econdata_wide(x, ...) 
