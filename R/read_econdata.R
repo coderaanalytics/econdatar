@@ -112,14 +112,23 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
     data_structure <- data_message[[2]]$structures[["data-structures"]][[1]][[2]]
 
-    series_dims <- sapply(data_structure$components, function(component) {
+    series_ids <- sapply(data_structure$components, function(component) {
         if (component[[1]] == "#sdmx.infomodel.datastructure.Dimension") {
           component[[2]][["concept-identity"]][[2]]$id
         } else {
           NA
         }
-      }) |>
-      na.omit()
+      })
+
+    series_pos <- sapply(data_structure$components, function(component) {
+        if (component[[1]] == "#sdmx.infomodel.datastructure.Dimension") {
+          component[[2]]$position
+        } else {
+          NA
+        }
+      })
+
+    series_dims <- na.omit(series_ids[order(series_pos)])
 
     obs_attrs <- sapply(data_structure$components, function(component) {
         if (component[[1]] == "#sdmx.infomodel.datastructure.Attribute") {

@@ -26,7 +26,9 @@ write_release <- function(id, version, providerid, description, reset = FALSE, r
   if (!is.null(params$release)) {
     query_params$release <- params$release
   } else {
-    query_params$release <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
+    query_params$release <- format(Sys.time(),
+                                   "%Y-%m-%dT%H:%M:%S",
+                                   tz = "Africa/Johannesburg")
   }
 
 
