@@ -157,13 +157,13 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
       query_params <- list()
 
-      if (is.null(params$release) || params$release != "unreleased") {
+      if (is.null(params$release)) params$release = "latest"
 
-        tryCatch(query_params$release <- strftime(params$release, "%Y-%m-%dT%H:%M:%S"),
-                 error = function(e) { query_params$release <- NULL })
+      if (params$release != "unreleased") {
 
-        if (is.null(query_params$release)) {
-
+        query_params$release <- tryCatch({
+          strftime(params$release, "%Y-%m-%dT%H:%M:%S")
+        }, error = function(e) {
           response <- GET(env$repository$url,
                           path = paste(env$repository$path,
                                        "datasets",
@@ -178,36 +178,39 @@ read_econdata <- function(id, ..., tidy = FALSE) {
 
           data_message <- content(response, type = "application/json", encoding = "UTF-8")
 
-          if (is.null(params$release) || params$release == "latest") {
-            release <- tail(data_message$releases, n = 1)[[1]]$release |>
+          if (params$release == "latest") {
+            release <- head(data_message$releases, n = 1)[[1]]$release |>
               as.POSIXct(x, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
             attr(release, "tzone") <- "Africa/Johannesburg"
-            query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
+            
+            return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
 
           } else {
             release <- sapply(data_message$releases, function(release) {
-                         if(params$release == release$description) {
-                           release$release
-                         } else {
-                           NA
-                         }
-                       }) |>
-              na.omit() |>
-              head(n = 1)
+                                if(params$release == release$description) {
+                                  release$release
+                                } else {
+                                  NA
+                                }
+                          }) |>
+                 na.omit() |>
+                 head(n = 1)
 
             if (length(release) != 0) {
               release <- as.POSIXct(release, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
               attr(release, "tzone") <- "Africa/Johannesburg"
-              query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
+
+              return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
             } else {
               message("Release not found, returning latest release instead.")
               release <- tail(data_message$releases, n = 1)[[1]]$release |>
                 as.POSIXct(x, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
               attr(release, "tzone") <- "Africa/Johannesburg"
-              query_params$release <- strftime(release, "%Y-%m-%dT%H:%M:%S")
+              
+              return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
             }
           }
-        }
+        })
       }
 
       if (!is.null(params$series_key)) {
@@ -286,6 +289,13 @@ read_econdata <- function(id, ..., tidy = FALSE) {
   if (length(database) == 1) {
     return(database[[1]])
   } else {
-    return(list("data-sets", database[[1]]))
+    if (tidy) {
+      names(database) <-
+        paste0("v", sapply(database,
+                           function(x) attr(x, "metadata")$version))
+      return(database)
+    } else {
+      return(database)
+    }
   }
 }

@@ -5,7 +5,7 @@
 read_econdata
 }
 \description{
-Returns the data set for the given dataflow - ECONDATA:id(version) and data provider - ECONDATA:id, as a list, or as tidy \emph{data.table}'s. Available data sets can be looked up from the data registry (http://www.econdata.co.za/FusionRegistry). Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{econdata_tidy()}.
+Returns the data for the given data set - ECONDATA:id(version), as a list, or as tidy \emph{data.table}'s. Available data sets can be looked up from the web platform (http://www.econdata.co.za). Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{econdata_tidy()}.
 }
 \usage{
 read_econdata(id, \dots, tidy = FALSE)
@@ -18,13 +18,13 @@ econdata_tidy(x, \dots)
 
 \item{\dots}{Further \emph{Optional} arguments:
   \tabular{llll}{
-    \code{agencyid} \tab\tab Agency responsible for the data definition. \cr\cr
-    \code{version} \tab\tab Version of the data definition. \cr\cr
-    \code{provideragencyid} \tab\tab Agency responsible for making the data available. \cr\cr
-    \code{providerid} \tab\tab Provider of the data. \cr\cr
-    \code{file} \tab\tab character. File name for retrieving JSON data from disk. \cr\cr
-    \code{username} \tab\tab character. EconData username. \cr\cr
-    \code{password} \tab\tab character. EconData password. \cr\cr
+    \code{agencyid} \tab\tab character. Agency responsible for the metadata creation/maintenance. \cr
+    \code{version} \tab\tab character. Version(s) of the data (different versions will have different metadata), or 'all' to return all available versions. \cr
+    \code{series_key} \tab\tab character. A character vector specifying a subset of time series (see the web platform (export function) for details). \cr
+    \code{release} \tab\tab character or time object with format \%Y-\%m-\%dT\%H:\%M:\%S. The release description, or a date/time which will return the data as it was at that moment, or 'latest', or 'unreleased'. \cr
+    \code{file} \tab\tab character. File name for retrieving JSON data from disk. \cr
+    \code{username} \tab\tab character. Web username. \cr
+    \code{password} \tab\tab character. Web password. \cr
   }
 }
 
@@ -47,17 +47,15 @@ econdata_tidy(x, \dots)
 }
 }
 \details{
-Specifying the full dataflow and data provider details (as opposed to only using the data id) allows more fine-grained control over the data set being queried. This is not necessary if there is only a single definition of the data and a single provider, which is typically the case.
-
 An EconData account (http://www.econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="username;password")}. If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
 }
 \value{
 %%  ~Describe the value returned
-If \code{tidy = FALSE}, a list of data frames is returned, where the names of the list are the EconData series codes, and each data frame has a single column named 'OBS_VALUE' containing the data, with corresponding dates attached as rownames. Each data frame further has a \code{"metadata"} attribute providing information about the series. The entire list of data frames also has a \code{"metadata"} attribute, providing information about the dataset. If multiple datasets (or versions of a dataset if \code{version} is left empty) are being queried, a list of such lists is returned.
+If \code{tidy = FALSE}, a list of data frames is returned, where the names of the list are the EconData series codes, and each data frame has a single column named 'OBS_VALUE' containing the data, with corresponding dates attached as rownames. Each data frame further has a \code{"metadata"} attribute providing information about the series. The entire list of data frames also has a \code{"metadata"} attribute, providing information about the dataset. If multiple datasets (or versions of a dataset if \code{version} is specified as 'all') are being queried, a list of such lists is returned.
 
-If \code{tidy = TRUE} and \code{wide = TRUE} (the default), a single \emph{data.table} is returned where the first column is the date, and the remaining columns are series named by their EconData codes. Each series has two attributes: \code{"label"} provides a variable label combining important metadata from the \code{"metadata"} attribute in the non-tidy format, and \code{"source.code"} gives the series code assigned by the original data provider. The table has the same dataset-level \code{"metadata"} attribute as the list of data frames if \code{tidy = FALSE}. If multiple datasets (or versions of a dataset if \code{version} is left empty) are being queried, a list of such \emph{data.table}'s is returned.
+If \code{tidy = TRUE} and \code{wide = TRUE} (the default), a single \emph{data.table} is returned where the first column is the date, and the remaining columns are series named by their EconData codes. Each series has two attributes: \code{"label"} provides a variable label combining important metadata from the \code{"metadata"} attribute in the non-tidy format, and \code{"source.code"} gives the series code assigned by the original data provider. The table has the same dataset-level \code{"metadata"} attribute as the list of data frames if \code{tidy = FALSE}. If multiple datasets (or versions of a dataset if \code{version} is specified as 'all') are being queried, a list of such \emph{data.table}'s is returned.
 
-If \code{tidy = TRUE} and \code{wide = FALSE} and \code{compact = FALSE} (the default), a named list of two \emph{data.table}'s is returned. The first, \code{"data"}, has columns 'code', 'date' and 'value' providing the data in a long format. The second, \code{"metadata"}, provides dataset and series-level matadata, with one row for each series. If \code{compact = TRUE}, these two datasets are combined, where all repetitive content is converted to factors for more efficient storage. If multiple datasets (or versions of a dataset if \code{version} is left empty) are being queried, \code{compact = FALSE} gives a nested list, whereas \code{compact = TRUE} binds everything together to a single long frame. In general, if \code{wide = FALSE}, no attributes are attached to the tables or columns in the tables.
+If \code{tidy = TRUE} and \code{wide = FALSE} and \code{compact = FALSE} (the default), a named list of two \emph{data.table}'s is returned. The first, \code{"data"}, has columns 'code', 'date' and 'value' providing the data in a long format. The second, \code{"metadata"}, provides dataset and series-level matadata, with one row for each series. If \code{compact = TRUE}, these two datasets are combined, where all repetitive content is converted to factors for more efficient storage. If multiple datasets (or versions of a dataset if \code{version} is specified as 'all') are being queried, \code{compact = FALSE} gives a nested list, whereas \code{compact = TRUE} binds everything together to a single long frame. In general, if \code{wide = FALSE}, no attributes are attached to the tables or columns in the tables.
 
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
@@ -82,12 +80,16 @@ ELECTRICITY_LONG <- econdata_tidy(ELECTRICITY, wide = FALSE)
 with(ELECTRICITY_LONG, metadata[data, on = "data_key"])
 
 # CPI Analytical Series: Different Revisions
-CPI_ANL <- read_econdata(id = "CPI_ANL_SERIES")
+CPI_ANL <- read_econdata(id = "CPI_ANL_SERIES", version = "all")
 CPI_ANL_WIDE <- econdata_tidy(CPI_ANL)
 CPI_ANL_LONG <- econdata_tidy(CPI_ANL, wide = FALSE, combine = TRUE)
 CPI_ANL_ALLMETA <- econdata_tidy(CPI_ANL, wide = FALSE, allmeta = TRUE) # v2.0 has some 0-obs series
 
-# Can query a specific version by adding e.g. version = "2.0" to the call
+# Can query a specific version by adding e.g. version = "2.0.0" to the call
+
+# Returns 5-10 years (daily average bond yields) not yet contained in the latest release
+# (particularly useful for daily data that is released monthly)
+MARKET_RATES <- read_econdata(id = "MARKET_RATES", series_key = "CMJD003.B.A", release = "unreleased")
 
 }
 }
