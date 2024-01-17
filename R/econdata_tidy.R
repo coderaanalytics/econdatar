@@ -23,11 +23,11 @@ econdata_make_label <- function(x, codelabel, meta) {
 }
 
 # (Optional) list names for multi-version calls
-add_version_names <- function(x, elem = NULL) {
-  if (is.null(elem)) {
+add_version_names <- function(x, is_release = FALSE) {
+  if (!is_release) {
     versions <- sapply(x, function(z) attr(z, "metadata")$version)
   } else {
-    versions <- sapply(x, function(z) attr(z, "metadata")[[elem]]$version)
+    versions <- sapply(x, function(z) attr(z, "metadata")[[2]]$version)
   }
   if(length(versions) == length(x) && !anyDuplicated(versions)) names(x) <- paste0("v", versions)
   return(x)
@@ -105,9 +105,8 @@ econdata_tidy_release <- function(x) {
   axnull <- is.null(attributes(x))
   if(axnull && length(x) > 1L) {
     res <- lapply(x, econdata_tidy_release)
-    return(add_version_names(res, elem = "data-set"))
+    return(add_version_names(res, is_release = TRUE))
   }
-  if(axnull) x <- x[[1L]]
   res <- rbindlist(lapply(x$releases, function(x) {
                        list("release" = as.POSIXct(x[["release"]]),
                             "start-period" = as.POSIXct(x[["start-period"]]),

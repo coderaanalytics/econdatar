@@ -71,7 +71,7 @@ If \code{tidy = TRUE} and \code{wide = FALSE} and \code{compact = FALSE} (the de
 \dontrun{
 # library(econdatar)
 # Sys.setenv(ECONDATA_CREDENTIALS="username;password")
-# Ids see: https://www.econdata.co.za/FusionRegistry/data/datastructure.html
+# for ids/versions see: https://www.econdata.co.za/app
 
 # Electricity Generated
 ELECTRICITY <- read_econdata(id = "ELECTRICITY")
@@ -91,7 +91,6 @@ CPI_ANL_ALLMETA <- econdata_tidy(CPI_ANL, wide = FALSE, allmeta = TRUE) # v2.0 h
 # Returns 5-10 years (daily average bond yields) not yet contained in the latest release
 # (particularly useful for daily data that is released monthly)
 MARKET_RATES <- read_econdata(id = "MARKET_RATES", series_key = "CMJD003.B.A", release = "unreleased")
-
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

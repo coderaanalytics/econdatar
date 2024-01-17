@@ -290,9 +290,8 @@ read_econdata <- function(id, ..., tidy = FALSE) {
     return(database[[1]])
   } else {
     if (tidy) {
-      names(database) <-
-        paste0("v", sapply(database,
-                           function(x) attr(x, "metadata")$version))
+      versions <- sapply(database, function(x) attr(x, "metadata")$version)
+      names(database) <- paste0("v", versions)
       return(database)
     } else {
       return(database)

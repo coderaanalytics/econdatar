@@ -47,15 +47,15 @@ If \code{tidy = FALSE}, a nested lists containing metadata and release desciptio
 \dontrun{
 # library(econdatar)
 # Sys.setenv(ECONDATA_CREDENTIALS="username;password")
-# Ids see: https://www.econdata.co.za/FusionRegistry/data/datastructure.html
+# for ids/versions see: https://www.econdata.co.za/app
 
 # Bank Balance Sheet (institutional)
 MINING_RELEASE <- read_release(id = "MINING")
 # Same as: read_release(id = "BA900", tidy = TRUE)
-econdata_tidy(MINING_RELEASE, release = TRUE)      # No further options supported.
+econdata_tidy(MINING_RELEASE, is_release = TRUE)      # No further options supported.
 
 # Releases for all CPI Revisions
-read_release(id = "CPI_ANL_SERIES", tidy = TRUE)
+read_release(id = "CPI_ANL_SERIES", version = "all", tidy = TRUE)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -95,10 +95,22 @@ read_release <- function(id, ..., tidy = FALSE) {
              "description" = r[["description"]])
       })
 
-    return(release)
+    if (tidy) {
+      econdata_tidy(release, is_release = TRUE, ...)
+    } else {
+      return(release)
+    }
   })
 
-  if (tidy) return(econdata_tidy(releases, is_release = TRUE, ...))
-
-  return(releases)
+  if (length(releases) == 1) {
+    return(releases[[1]])
+  } else {
+    if (tidy) {
+      versions <- sapply(releases, function(x) attr(x, "metadata")[[2]]$version)
+      names(releases) <- paste0("v", versions)
+      return(releases)
+    } else {
+      return(releases)
+    }
+  }
 }
