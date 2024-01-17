@@ -21,7 +21,7 @@ econdata_tidy(x, \dots)
     \code{agencyid} \tab\tab character. Agency responsible for the metadata creation/maintenance. \cr
     \code{version} \tab\tab character. Version(s) of the data (different versions will have different metadata), or 'all' to return all available versions. \cr
     \code{series_key} \tab\tab character. A character vector specifying a subset of time series (see the web platform (export function) for details). \cr
-    \code{release} \tab\tab character or time object with format \%Y-\%m-\%dT\%H:\%M:\%S. The release description, or a date/time which will return the data as it was at that moment, or 'latest', or 'unreleased'. \cr
+    \code{release} \tab\tab character (optionally with format \%Y-\%m-\%dT\%H:\%M:\%S, that will be coerced to a date/time). The release description, which will return the data associated with that release (if the given description matches an existsing release); or a date/time which will return the data as it was at that moment; or 'latest' which will return the latest release; or 'unreleased' which will return any unreleased data (useful for data that is updated more often than it is released, usually daily data). \cr
     \code{file} \tab\tab character. File name for retrieving JSON data from disk. \cr
     \code{username} \tab\tab character. Web username. \cr
     \code{password} \tab\tab character. Web password. \cr
@@ -65,6 +65,7 @@ If \code{tidy = TRUE} and \code{wide = FALSE} and \code{compact = FALSE} (the de
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 \code{\link{write_econdata}}
+\code{\link{read_release}}
 }
 \examples{
 \dontrun{

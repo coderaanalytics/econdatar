@@ -94,4 +94,6 @@ write_release <- function(id, version, providerid, description, reset = FALSE, r
       stop(content(response, encoding = "UTF-8"))
     }
   }
+
+  return(invisible(NULL))
 }

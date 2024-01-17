@@ -1,4 +1,10 @@
-{ "repository" : {"url" : "https://www.econdata.co.za",
-                  "path" : "sdmx-codera/v1"},
-  "registry" : {"url" : "https://www.econdata.co.za",
-                "path" : "sdmx-codera/v1"} }
+{
+  "repository" : {
+    "url" : "https://www.econdata.co.za",
+    "path" : "sdmx-codera/v1"
+  },
+  "registry" : {
+    "url" : "https://www.econdata.co.za",
+    "path" : "sdmx-codera/v1"
+  }
+}
