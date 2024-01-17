@@ -178,4 +178,6 @@ write_econdata <- function(x, create = FALSE, update = FALSE, stage = TRUE, ...)
       }
     }
   })
+
+  return(invisible(NULL))
 }

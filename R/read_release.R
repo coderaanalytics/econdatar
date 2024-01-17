@@ -28,21 +28,17 @@ read_release <- function(id, ..., tidy = FALSE) {
 
   query_params <- list()
 
-  if (!is.null(params$newest)) {
-    query_params$latest <- ifelse(params$latest, "true", "false")
-  }
-
   if (!is.null(params$before)) {
-    query_params[["before-date-time"]] <- strftime(params$before,
-                                                   "%Y-%m-%dT%H:%M:%S")
+    query_params[["before"]] <- strftime(params$before,
+                                         "%Y-%m-%dT%H:%M:%S")
   }
 
   if (!is.null(params$after)) {
-    query_params[["after-date-time"]] <- strftime(params$after,
-                                                  "%Y-%m-%dT%H:%M:%S")
+    query_params[["after"]] <- strftime(params$after,
+                                        "%Y-%m-%dT%H:%M:%S")
   }
 
-  if (!is.null(params$releasedescription)) {
+  if (!is.null(params$description)) {
     query_params$description <- params$description
   }
 
@@ -95,7 +91,8 @@ read_release <- function(id, ..., tidy = FALSE) {
     release$releases <- lapply(release$releases, function(r) {
         list("release" = strptime(r$release, "%Y-%m-%dT%H:%M:%S%z"),
              "start-period" = strptime(r[["start-period"]], "%Y-%m-%d"),
-             "end-period" = strptime(r[["end-period"]], "%Y-%m-%d"))
+             "end-period" = strptime(r[["end-period"]], "%Y-%m-%d"),
+             "description" = r[["description"]])
       })
 
     return(release)

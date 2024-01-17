@@ -10,14 +10,13 @@
 }
 \details{
 
-The DESCRIPTION file:
-\packageDESCRIPTION{econdatar}
-\packageIndices{econdatar}
-This package provides and interface to the EconData database (http://www..econdata.co.za).
+This package provides an interface to Codera Analytic's econometric data service (https://codera.co.za) and  the EconData database (https://www.econdata.co.za) in particular.
 
-In short, EconData provides a single source for South African Macroeconomic Data. There exists a wealth of economic data spread over the public domain. This service aims to bring these disparate sources of data together into a single centralised repository. In order to make the data useful an open API and this package for R are also provided, allowing for automatable workflows.
+EconData enables automation of analytical workflows that depend on public domain or third-party data. It is also a leading-edge forecast management system, enabling data and model automation and best practice data and model governance. EconData supports data-sharing across databases and within institutions, codifies modelling process flows and provides user-level access control. EconData makes it easy to securely manage and share model scenarios and forecast vintages.
 
-The internals of the EconData database are based on the SDMX standard, therefore using this package to its full potential requires some very rudimentary knowledge of SDMX. We have provided a blog with in-depth tutorials that cover all the essentials of making the most of the data we provide, which can be found at http://www.randomsample.co.za.
+The EconData Registry provides a central data glossary of data concepts and the information necessary to access and interpret data and associated metadata.
+
+Codera also uses EconData to automate models, do research, and create value-added products such as interactive scenario dashboards. These dashboards and forecasts are made available to our clients.
 }
 \author{
 %\packageAuthor{econdatar}
@@ -31,8 +30,8 @@ Maintainer: \packageMaintainer{econdatar}
 %%~~ the R documentation directory ~~
 \keyword{ package }
 \seealso{
-http://www.econdata.co.za
-http://www.randomsample.co.za
+https://www.econdata.co.za
+https://blog.econdata.co.za
 }
 %\examples{
 %~~ simple examples of the most important functions ~~

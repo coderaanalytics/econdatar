@@ -108,8 +108,13 @@ econdata_tidy_release <- function(x) {
     return(add_version_names(res, elem = "data-set"))
   }
   if(axnull) x <- x[[1L]]
-  res <- rbindlist(lapply(x$releases, function(x)
-                     { lapply (x, function(y) as.POSIXct(y)) }))
+  res <- rbindlist(lapply(x$releases, function(x) {
+                       list("release" = as.POSIXct(x[["release"]]),
+                            "start-period" = as.POSIXct(x[["start-period"]]),
+                            "end-period" = as.POSIXct(x[["end-period"]]),
+                            "description" = x[["description"]])
+                     }
+                   ))
   attr(res, "metadata") <- x[["data-set"]]
   return(qDT(res, keep.attr = TRUE))
 }

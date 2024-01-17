@@ -4,29 +4,24 @@
 read_release
 }
 \description{
-Returns the dataset releases for the given dataflow - ECONDATA:id(version) and data provider - ECONDATA:id, as a list. A number of utilities are provided to filter only the releases of interest, detailed below.
+Returns the data for the given data set - ECONDATA:id(version), as a list, or as tidy \emph{data.table}'s. Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{econdata_tidy()}.
 }
 \usage{
-read_release(id, ..., tidy = FALSE)
+read_release(id, \dots, tidy = FALSE)
 }
 \arguments{
   \item{id}{Data identifier.}
+  \item{x}{A raw API return object to be tidied. Can also be done directly in \code{read_release()} by setting \code{tidy = TRUE}. See \code{tidy} below for tidying options.}
 
 \item{\dots}{Further \emph{Optional} arguments:
   \tabular{llll}{
-    \code{agencyid} \tab\tab Agency responsible for the data definition. \cr\cr
-    \code{version} \tab\tab Version of the data definition. \cr\cr
-    \code{providerid} \tab\tab Provider of the data. \cr\cr
-    \code{provideragencyid} \tab\tab Agency responsible for making the data available. \cr\cr
-    \code{newest} \tab\tab logical. Returns only the latest release in the results. \cr\cr
-    \code{oldest} \tab\tab logical. Returns only the oldest release in the results. \cr\cr
-    \code{beforedatetime} \tab\tab datetime. Returns all releases before a certain date (can be used with \code{newest}). \cr\cr
-    \code{afterdatetime} \tab\tab datetime. Returns all releases after a certain date (can be used with \code{oldest}). \cr\cr
-    \code{includestext} \tab\tab character. Returns all releases that contain the given string in their description (can be used with \code{oldest} or \code{newest}). \cr\cr
-    \code{releasedescription} \tab\tab character. Returns the release whose description is most similar to the given string. \cr\cr
-    \code{returnrange} \tab\tab boolean. Returns the data set range for each returned release. \cr\cr
-    \code{username} \tab\tab character. EconData username. \cr\cr
-    \code{password} \tab\tab character. EconData password. \cr\cr
+    \code{agencyid} \tab\tab Agency responsible for the data definition. \cr
+    \code{version} \tab\tab Version of the data definition. \cr
+    \code{before} \tab\tab datetime. Returns all releases before a certain date. \cr
+    \code{after} \tab\tab datetime. Returns all releases after a certain date. \cr
+    \code{description} \tab\tab character. Returns the release whose description matches the given string. \cr
+    \code{username} \tab\tab character. Web username. \cr
+    \code{password} \tab\tab character. Web password. \cr
   }
 }
 
@@ -46,6 +41,7 @@ If \code{tidy = FALSE}, a nested lists containing metadata and release desciptio
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 \code{\link{write_release}}
+\code{\link{read_econdata}}
 }
 \examples{
 \dontrun{
@@ -54,9 +50,9 @@ If \code{tidy = FALSE}, a nested lists containing metadata and release desciptio
 # Ids see: https://www.econdata.co.za/FusionRegistry/data/datastructure.html
 
 # Bank Balance Sheet (institutional)
-BA900_RELEASE <- read_release(id = "BA900")
+MINING_RELEASE <- read_release(id = "MINING")
 # Same as: read_release(id = "BA900", tidy = TRUE)
-econdata_tidy(BA900_RELEASE, release = TRUE)      # No further options supported.
+econdata_tidy(MINING_RELEASE, release = TRUE)      # No further options supported.
 
 # Releases for all CPI Revisions
 read_release(id = "CPI_ANL_SERIES", tidy = TRUE)
