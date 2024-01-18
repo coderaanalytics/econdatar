@@ -231,9 +231,40 @@ read_econdata <- function(id, ..., tidy = FALSE) {
         stop(content(response, type = "application/json", encoding = "UTF-8"))
       }
 
-      data_message <- content(response, type = "application/json", encoding = "UTF-8")
+      links <- unlist(strsplit(response$headers$link, ","))
 
+      data_message <- content(response, type = "application/json", encoding = "UTF-8")
       data_set <- data_message[[2]][["data-sets"]][[1]][[2]]
+
+      if (any(grepl("rel=next", links))) {
+        while (any(grepl("rel=next", links))) {
+          link_next <- links[grepl("rel=next", links)]
+          link_match <- regexec("^(<)(.+)(>;rel=next)$", link_next)
+          link_parts <- regmatches(link_next, link_match)[[1]][3] |>
+            URLdecode() |>
+            strsplit("\\?") |>
+            unlist()
+
+          response <- GET(env$repository$url,
+                          path = link_parts[1],
+                          query = strsplit(unlist(strsplit(link_parts[2], "&")), "=") |>
+                            lapply(function(x) { y <- list(); y[[x[1]]] <- x[2]; return(y) }) |>
+                            unlist(recursive = FALSE),
+                          set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                          accept("application/vnd.sdmx-codera.data+json"))
+
+          if (response$status_code != 200) {
+            stop(content(response, type = "application/json", encoding = "UTF-8"))
+          }
+
+          data_message <- content(response, type = "application/json", encoding = "UTF-8")
+          data_set$series <- c(data_set$series,
+                               data_message[[2]][["data-sets"]][[1]][[2]]$series)
+
+          links <- unlist(strsplit(response$headers$link, ","))
+        }
+      }
+
     } else {
       data_set <- data_set[[2]]
       data_set$name <- lapply(data_set$name, unbox)
