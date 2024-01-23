@@ -75,7 +75,7 @@ write_data_structure <- function(data_structure, env, file) {
     primary_measure <- data_structure$components$primary_measure
     data_structure$components <- NULL
     write_ods(as.data.frame(data_structure), path = file, sheet = "data_structure")
-    write_ods(dimensions, path = file, sheet = "dimenions", append = TRUE)
+    write_ods(dimensions, path = file, sheet = "dimensions", append = TRUE)
     write_ods(attrs, path = file, sheet = "attributes", append = TRUE)
     write_ods(time_dimension, path = file, sheet = "time_dimension", append = TRUE)
     write_ods(primary_measure, path = file, sheet = "primary_measure", append = TRUE)
