@@ -1,6 +1,7 @@
 importFrom("httr", "POST", "GET", "PUT", "accept", "accept_json", "authenticate",
            "content", "content_type", "cookies", "set_cookies", "upload_file")
 importFrom("jsonlite", "fromJSON", "toJSON", "unbox")
+importFrom("readODS", "write_ods", "read_ods")
 importFrom("collapse", "add_vars<-", "ckmatch", "dapply", "fmutate", "fnobs",
            "frename", "get_vars<-", "qDT", "qF", "ss", "unlist2d", "vlabels",
            "vlabels<-")
@@ -9,6 +10,8 @@ importFrom("utils", "sessionInfo")
 
 export(read_econdata)
 export(read_release)
+export(read_structure)
 export(write_econdata)
 export(write_release)
+export(write_structure)
 export(econdata_tidy)

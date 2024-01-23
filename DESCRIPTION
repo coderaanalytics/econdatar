@@ -1,11 +1,11 @@
 Package: econdatar
 Title: Automation of time series uploads and downloads from Codera Analytic's econometric data service
-Version: 2.2.0
-Date: 2024-01-18
+Version: 2.3.0
+Date: 2024-01-23
 Authors@R: c(person("Byron", "Botha", role = c("aut", "cre"), email = "byron@codera.co.za"),
              person("Sebastian", "Krantz", role = "ctb"))
 Description: Automation of time series uploads and downloads to and from www.econdata.co.za.
-Imports: httr, jsonlite, collapse, data.table
+Imports: httr, jsonlite, readODS, collapse, data.table
 Suggests: tcltk
 URL: https://www.econdata.co.za/
 BugReports: https://github.com/coderaanalytics/econdatar/issues
