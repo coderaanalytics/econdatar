@@ -191,7 +191,7 @@ read_concept_schemes <- function(env, agencyids, ids, versions, file) {
     concepts <- read_ods(path = file, sheet = "concepts", na = na)
     concept_scheme <- as.list(read_ods(path = file, sheet = "concept_scheme", na = na))
 
-    concept_scheme$conceps <- concepts
+    concept_scheme$concepts <- concepts
 
     return(list(concept_scheme))
   }
@@ -291,7 +291,7 @@ read_data_structures <- function(env, agencyids, ids, versions, file) {
     data_structure <- as.list(read_ods(path = file, sheet = "data_structure", na = na))
 
     data_structure$dimensions <- dimensions
-    data_structure$attrs <- attrs
+    data_structure$attributes <- attrs
     data_structure$time_dimension <- time_dimension
     data_structure$primary_measure <- primary_measure
 
