@@ -34,9 +34,9 @@ add_version_names <- function(x, is_release = FALSE) {
 tidy_wide <- function(x, codelabel = FALSE, prettymeta = TRUE, ...) {
   if(is.null(names(x))) return(lapply(add_version_names(x), tidy_wide, codelabel, prettymeta))
   meta <- if(prettymeta) get_metadata(x) else NULL
-  d <- unlist2d(x, "series_key", row.names = "period", DT = TRUE) |>
-    dcast(period ~ series_key, value.var = "OBS_VALUE") |>
-    fmutate(period = as.Date(period))
+  d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
+    dcast(time_period ~ series_key, value.var = "OBS_VALUE") |>
+    fmutate(time_period = as.Date(time_period))
   labs <- sapply(x, make_label, codelabel, meta)
   nam <- names(d)[-1L]
   vlabels(d) <- c("Date", labs[1L, nam])
@@ -74,19 +74,17 @@ tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, pre
     return(if(combine) rbindlist(res, use.names = TRUE, fill = TRUE) else res)
   }
   meta <- if(prettymeta) get_metadata(x) else NULL
-  d <- unlist2d(x, "series_key", row.names = "period", DT = TRUE) |>
-       fmutate(period = as.Date(period), series_key = qF(series_key)) |>
-       frename(OBS_VALUE = "value")
+  d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
+       fmutate(time_period = as.Date(time_period), series_key = qF(series_key)) |>
+       frename(OBS_VALUE = "obs_value")
   m <- attr(x, "metadata")
   meta <- lapply(x, extract_metadata, allmeta && !combine, origmeta, meta) |>
           rbindlist(use.names = TRUE, fill = TRUE)
   if(origmeta) names(meta) <- tolower(names(meta))
+  meta$id <- null2NA(m$id)
+  meta$version <- null2NA(m$version)
   meta$series_key <- if(allmeta && !combine) names(x) else names(x)[names(x) %in% levels(d$series_key)]
-  meta$source <- null2NA(m$DataProvider[[2L]])
-  meta$dataset <- null2NA(m$Dataflow[[2L]])
-  meta$source_dataset <- null2NA(m$SOURCE_DATASET)
-  meta$version <- null2NA(m$Dataflow[[3L]])
-  setcolorder(meta, c("source", "dataset", "source_dataset", "version", "series_key"))
+  setcolorder(meta, c("id", "version", "series_key"))
   if(!allmeta) get_vars(meta, fnobs(meta) == 0L) <- NULL
   if(combine) {
     meta_fct <- dapply(meta, qF, drop = FALSE) # Factors for efficient storage
