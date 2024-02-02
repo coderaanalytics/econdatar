@@ -1,14 +1,11 @@
-write_structure <- function(structure, x, create = FALSE, ...) {
+write_registry <- function(structure, x, create = FALSE, ...) {
 
 
   # Parameters ---
 
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
-
   params <- list(...)
-
   params$env <- env
-
   if (!is.null(params$username) && !is.null(params$password)) {
     credentials <- paste(params$username, params$password, sep = ";")
   } else {
@@ -21,28 +18,15 @@ write_structure <- function(structure, x, create = FALSE, ...) {
   if (!exists("econdata_session", envir = .pkgenv)) {
     login_helper(credentials, env$repository$url)
   }
-
   header <- list()
-
   if(is.null(params$file)) {
-    header$id <- tryCatch(
-                          unbox(paste0("ECONDATAR-V",
-                                       sessionInfo()[[7]]$econdatar[[4]])),
-                          error = function(e)
-                            unbox("Unknown"))
-
+    header$id <- unbox("ECONDATAR")
     header$prepared <- unbox(format(Sys.time(), format = "%Y-%m-%dT%T"))
-
-    header$sender <- tryCatch(
-                              unbox(Sys.getenv()[["USER"]]),
-                              error = function(e)
-                                unbox("Anonymous"))
-
+    header$sender <- tryCatch(unbox(Sys.getenv()[["USER"]]),
+                              error = function(e) unbox("Anonymous"))
     header$receiver <- unbox("EconData web application")
   }
-
   params$header <- header
-
   structure_data <-
     switch(structure,
            "codelist" = write_codelist(x, create, params),
@@ -61,7 +45,6 @@ write_codelist <- function(codelist, create, params) {
                           codelist$id,
                           codelist$version,
                           sep = "-")
-
     data_message <-
       list(unbox("#sdmx.infomodel.message.SDMXMessage"),
            list(header = params$header,
@@ -74,29 +57,22 @@ write_codelist <- function(codelist, create, params) {
                                version = unbox(codelist$version),
                                name = c("en", codelist$name),
                                codes = list()))))))
-
     if (!is.na(codelist$description)) {
       data_message[[2]]$structures$codelists[[1]][[2]]$description <-
         c("en", codelist$description)
     }
-
     for (i in seq_len(NROW(codelist$codes))) {
       tmp <- as.list(codelist$codes[i,])
-
       code <- list(unbox("#sdmx.infomodel.codelist.Code"),
                    list(id = unbox(tmp$id),
                         name = c("en", tmp$name)))
-
       if (!is.na(tmp$description)) {
         code[[2]]$description <- c("en", tmp$description)
       }
-
       data_message[[2]]$structures$codelists[[1]][[2]]$codes[[i]] <- code
     }
-
     if (create) {
       message("Creating codelist: ", codelist_ref, "\n")
-
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
                                     "codelists", sep = "/"),
@@ -105,7 +81,6 @@ write_codelist <- function(codelist, create, params) {
                                                   envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
-
       if (response$status_code == 201) {
         message(content(response, encoding = "UTF-8")$success)
       } else {
@@ -113,7 +88,6 @@ write_codelist <- function(codelist, create, params) {
       }
     } else {
       message("Updating codelist: ", codelist_ref, "\n")
-
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
                                    "codelists",
@@ -123,7 +97,6 @@ write_codelist <- function(codelist, create, params) {
                                                  envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
-
       if (response$status_code == 200) {
         message(content(response, encoding = "UTF-8")$success)
       } else {
@@ -149,7 +122,6 @@ write_concept_scheme <- function(concept_scheme, create, params) {
                                 concept_scheme$id,
                                 concept_scheme$version,
                                 sep = "-")
-
     data_message <-
       list(unbox("#sdmx.infomodel.message.SDMXMessage"),
            list(header = params$header,
@@ -162,23 +134,18 @@ write_concept_scheme <- function(concept_scheme, create, params) {
                                version = unbox(concept_scheme$version),
                                name = c("en", concept_scheme$name),
                                concepts = list()))))))
-
     if (!is.na(concept_scheme$description)) {
       data_message[[2]]$structures[["concept-schemes"]][[1]][[2]]$description <-
         c("en", concept_scheme$description)
     }
-
     for (i in seq_len(NROW(concept_scheme$concepts))) {
       tmp <- as.list(concept_scheme$concepts[i,])
-
       concept <- list(unbox("#sdmx.infomodel.conceptscheme.Concept"),
                       list(id = unbox(tmp$id),
                            name = c("en", tmp$name)))
-
       if (!is.na(tmp$description)) {
         concept[[2]]$description <- c("en", tmp$description)
       }
-
       if (tmp$representation == "codelist") {
         codelist_ref <- list(unbox("#sdmx.infomodel.codelist.CodelistRef"),
                              list(agencyid = unbox(tmp$codelist_agencyid),
@@ -188,13 +155,10 @@ write_concept_scheme <- function(concept_scheme, create, params) {
       } else {
         concept[[2]][["core-representation"]] <- unbox(tmp$representation)
       }
-
       data_message[[2]]$structures[["concept-schemes"]][[1]][[2]]$concepts[[i]] <- concept
     }
-
     if (create) {
       message("Creating concept scheme: ", concept_scheme_ref, "\n")
-
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
                                     "conceptschemes", sep = "/"),
@@ -203,7 +167,6 @@ write_concept_scheme <- function(concept_scheme, create, params) {
                                                   envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
-
       if (response$status_code == 201) {
         message(content(response, encoding = "UTF-8")$success)
       } else {
@@ -211,7 +174,6 @@ write_concept_scheme <- function(concept_scheme, create, params) {
       }
     } else {
       message("Updating concept scheme: ", concept_scheme_ref, "\n")
-
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
                                    "conceptschemes",
@@ -221,7 +183,6 @@ write_concept_scheme <- function(concept_scheme, create, params) {
                                                  envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
-
       if (response$status_code == 200) {
         message(content(response, encoding = "UTF-8")$success)
       } else {
@@ -248,7 +209,6 @@ write_data_structure <- function(data_structure, create, params) {
                                 data_structure$id,
                                 data_structure$version,
                                 sep = "-")
-
     data_message <-
       list(unbox("#sdmx.infomodel.message.SDMXMessage"),
            list(header = params$header,
@@ -261,7 +221,6 @@ write_data_structure <- function(data_structure, create, params) {
                                version = unbox(data_structure$version),
                                name = c("en", data_structure$name),
                                components = list()))))))
-
     if (!is.na(data_structure$description)) {
       data_message[[2]]$structures[["data-structures"]][[1]][[2]]$description <-
         c("en", data_structure$description)
@@ -272,18 +231,15 @@ write_data_structure <- function(data_structure, create, params) {
 
     for (i in seq_len(NROW(data_structure$dimensions))) {
       tmp <- as.list(data_structure$dimensions[i,])
-
       dimension <- list(unbox("#sdmx.infomodel.datastructure.Dimension"),
                         list(id = unbox(tmp$id),
                              position = unbox(tmp$position)))
-
       concept_ref <- list(unbox("#sdmx.infomodel.conceptscheme.ConceptRef"),
                           list(agencyid = unbox(tmp$concept_agencyid),
                                parentid = unbox(tmp$concept_parentid),
                                parentversion = unbox(tmp$concept_parentversion),
                                id = unbox(tmp$concept_id)))
       dimension[[2]][["concept-identity"]] <- concept_ref
-
       if (tmp$representation == "codelist") {
         codelist_ref <- list(unbox("#sdmx.infomodel.codelist.CodelistRef"),
                              list(agencyid = unbox(tmp$codelist_agencyid),
@@ -293,7 +249,6 @@ write_data_structure <- function(data_structure, create, params) {
       } else {
         dimension[[2]][["local-representation"]] <- unbox(tmp$representation)
       }
-
       data_message[[2]]$structures[["data-structures"]][[1]][[2]]$components[[i]] <-
         dimension
     }
@@ -303,19 +258,16 @@ write_data_structure <- function(data_structure, create, params) {
 
     for (i in seq_len(NROW(data_structure$attributes))) {
       tmp <- as.list(data_structure$attributes[i,])
-
       attribute <- list(unbox("#sdmx.infomodel.datastructure.Attribute"),
                         list(id = unbox(tmp$id),
                              "attachment-level" = unbox(tmp$level),
                              "assignment-mandatory" = unbox(tmp$mandatory)))
-
       concept_ref <- list(unbox("#sdmx.infomodel.conceptscheme.ConceptRef"),
                           list(agencyid = unbox(tmp$concept_agencyid),
                                parentid = unbox(tmp$concept_parentid),
                                parentversion = unbox(tmp$concept_parentversion),
                                id = unbox(tmp$concept_id)))
       attribute[[2]][["concept-identity"]] <- concept_ref
-
       if (tmp$representation == "codelist") {
         codelist_ref <- list(unbox("#sdmx.infomodel.codelist.CodelistRef"),
                              list(agencyid = unbox(tmp$codelist_agencyid),
@@ -325,9 +277,7 @@ write_data_structure <- function(data_structure, create, params) {
       } else {
         attribute[[2]][["local-representation"]] <- unbox(tmp$representation)
       }
-
       j <- i + NROW(data_structure$dimensions)
-
       data_message[[2]]$structures[["data-structures"]][[1]][[2]]$components[[j]] <-
         attribute
     }
@@ -336,17 +286,14 @@ write_data_structure <- function(data_structure, create, params) {
     # Time dimension ---
 
     tmp <- as.list(data_structure$time_dimension[1,])
-
     time_dimension <- list(unbox("#sdmx.infomodel.datastructure.TimeDimension"),
                       list(id = unbox(tmp$id)))
-
     concept_ref <- list(unbox("#sdmx.infomodel.conceptscheme.ConceptRef"),
                         list(agencyid = unbox(tmp$concept_agencyid),
                              parentid = unbox(tmp$concept_parentid),
                              parentversion = unbox(tmp$concept_parentversion),
                              id = unbox(tmp$concept_id)))
     time_dimension[[2]][["concept-identity"]] <- concept_ref
-
     if (tmp$representation == "codelist") {
       codelist_ref <- list(unbox("#sdmx.infomodel.codelist.CodelistRef"),
                            list(agencyid = unbox(tmp$codelist_agencyid),
@@ -356,9 +303,7 @@ write_data_structure <- function(data_structure, create, params) {
     } else {
       time_dimension[[2]][["local-representation"]] <- unbox(tmp$representation)
     }
-
     i <- NROW(data_structure$dimensions) + NROW(data_structure$attributes) + 1
-
     data_message[[2]]$structures[["data-structures"]][[1]][[2]]$components[[i]] <-
       time_dimension
 
@@ -366,17 +311,14 @@ write_data_structure <- function(data_structure, create, params) {
     # Primary measure ---
 
     tmp <- as.list(data_structure$primary_measure[1,])
-
     primary_measure <- list(unbox("#sdmx.infomodel.datastructure.PrimaryMeasure"),
-                      list(id = unbox(tmp$id)))
-
+                            list(id = unbox(tmp$id)))
     concept_ref <- list(unbox("#sdmx.infomodel.conceptscheme.ConceptRef"),
                         list(agencyid = unbox(tmp$concept_agencyid),
                              parentid = unbox(tmp$concept_parentid),
                              parentversion = unbox(tmp$concept_parentversion),
                              id = unbox(tmp$concept_id)))
     primary_measure[[2]][["concept-identity"]] <- concept_ref
-
     if (tmp$representation == "codelist") {
       codelist_ref <- list(unbox("#sdmx.infomodel.codelist.CodelistRef"),
                            list(agencyid = unbox(tmp$codelist_agencyid),
@@ -386,15 +328,15 @@ write_data_structure <- function(data_structure, create, params) {
     } else {
       primary_measure[[2]][["local-representation"]] <- unbox(tmp$representation)
     }
-
     i <- NROW(data_structure$dimensions) + NROW(data_structure$attributes) + 2
-
     data_message[[2]]$structures[["data-structures"]][[1]][[2]]$components[[i]] <-
       primary_measure
 
+
+    # Push data message ---
+
    if (create) {
       message("Creating data structure: ", data_structure_ref, "\n")
-
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
                                     "datastructures", sep = "/"),
@@ -403,7 +345,6 @@ write_data_structure <- function(data_structure, create, params) {
                                                   envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
-
       if (response$status_code == 201) {
         message(content(response, encoding = "UTF-8")$success)
       } else {
@@ -411,7 +352,6 @@ write_data_structure <- function(data_structure, create, params) {
       }
     } else {
       message("Updating data structure: ", data_structure_ref, "\n")
-
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
                                    "datastructures",
@@ -421,7 +361,6 @@ write_data_structure <- function(data_structure, create, params) {
                                                  envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
-
       if (response$status_code == 200) {
         message(content(response, encoding = "UTF-8")$success)
       } else {
