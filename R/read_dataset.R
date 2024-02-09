@@ -117,7 +117,7 @@ read_dataset <- function(id, tidy = FALSE, ...) {
 }
 
 read_econdata <- function(id, tidy = FALSE, ...) {
-  read_obs(id = id, tidy = tidy, ...)
+  read_dataset(id = id, tidy = tidy, ...)
 }
 
 get_release <- function(env, ref, candidate_release) {
