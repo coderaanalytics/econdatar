@@ -6,7 +6,7 @@ read_registry <- function(structure, tidy = FALSE, ...) {
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
   params <- list(...)
   params$env <- env
-  if (is.null(prams$id) && is.null(params$file)) {
+  if (is.null(params$id) && is.null(params$file)) {
     stop("At least one of either: 'id' or 'file' parameter required.")
   }
   if (!is.null(params$username) && !is.null(params$password)) {
@@ -43,7 +43,10 @@ read_registry <- function(structure, tidy = FALSE, ...) {
     switch(structure,
            "codelist" = read_codelists(agencyids, ids, versions, params),
            "concept-scheme" = read_concept_schemes(agencyids, ids, versions, params),
+           "dataflow" = read_dataflow(agencyids, ids, versions, params),
            "data-structure" = read_data_structures(agencyids, ids, versions, params),
+           "consumption-agreement" = read_cons_agreement(agencyids, ids, versions, params),
+           "provision-agreement" = read_prov_agreement(agencyids, ids, versions, params),
            stop("Specified structure, ", structure, ", is not supported."))
 
 
@@ -53,7 +56,10 @@ read_registry <- function(structure, tidy = FALSE, ...) {
     switch(structure,
            "codelist" = process_codelist(x, params),
            "concept-scheme" = process_concept_scheme(x, params),
+           "dataflow" = process_dataflow(x, params),
            "data-structure" = process_data_structure(x, params),
+           "consumption-agreement" = process_cons_agreement(x, params),
+           "provision-agreement" = process_prov_agreement(x, params),
            stop("Specified structure, ", structure, ", is not supported."))
   })
   if (length(structures) == 1) {
@@ -122,10 +128,11 @@ process_codelist <- function(structure, params) {
       }) |>
       do.call(rbind.data.frame, args = _)
     codelist$codes <- codes
-    class(codelist) <- "eds_codelist"
+    class(codelist) <- c(class(codelist), "eds_codelist")
     return(codelist)
   } else {
     message("Processing codelist: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_codelist")
     return(structure)
   }
 }
@@ -150,7 +157,7 @@ read_concept_schemes <- function(agencyids, ids, versions, params) {
     concept_schemes <- data_message[[2]][["structures"]][["concept-schemes"]]
     return(concept_schemes)
   } else {
-    message(paste("\nFetching codelist(s) -", params$file, "\n"))
+    message(paste("\nFetching concept scheme(s) -", params$file, "\n"))
     na <- c("","NA", "#N/A")
     concepts <- read_ods(path = params$file, sheet = "concepts", na = na)
     concept_scheme <- as.list(read_ods(path = params$file, sheet = "concept_scheme", na = na))
@@ -201,14 +208,74 @@ process_concept_scheme <- function(structure, params) {
       }) |>
       do.call(rbind.data.frame, args = _)
     concept_scheme$concepts <- concepts
-    class(concept_scheme) <- "eds_concept_scheme"
+    class(concept_scheme) <- c(class(concept_scheme), "eds_concept_scheme")
     return(concept_scheme)
   } else {
-    message("Processing codelist: ", params$file, "\n")
+    message("Processing concept scheme: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_concept_scheme")
     return(structure)
   }
 }
 
+
+
+# Dataflow ---
+
+
+read_dataflow <- function(agencyids, ids, versions, params) {
+  if (is.null(params$file)) {
+    message(paste("\nFetching dataflow(s) -", paste(ids, collapse = ", "), "\n"))
+    response <- GET(params$env$registry$url,
+                    path = paste(c(params$env$registry$path, "dataflows"), collapse = "/"),
+                    query = list(agencyids = agencyids, ids = ids, versions = versions),
+                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
+
+    if (response$status_code != 200) {
+      stop(content(response, encoding = "UTF-8"))
+    }
+    data_message <- content(response, type = "application/json", encoding = "UTF-8")
+    dataflows <- data_message[[2]][["structures"]][["dataflows"]]
+    return(dataflows)
+  } else {
+    message(paste("\nFetching dataflow(s) -", params$file, "\n"))
+    na <- c("","NA", "#N/A")
+    data_structure <- as.list(read_ods(path = params$file, sheet = "data_structure", na = na))
+    dataflow <- as.list(read_ods(path = params$file, sheet = "dataflow", na = na))
+    dataflow$data_structure <- data_structure
+    return(list(dataflow))
+  }
+}
+
+process_dataflow <- function(structure, params) {
+  if (is.null(params$file)) {
+    structure_ref <- paste(structure[[2]]$agencyid, 
+                           structure[[2]]$id,
+                           structure[[2]]$version,
+                           sep = "-")
+    message("Processing dataflow: ", structure_ref, "\n")
+    description <- if (is.null(structure[[2]]$description[[2]])) {
+      NA
+    } else {
+      structure[[2]]$description[[2]]
+    }
+    dataflow <- list(agencyid = structure[[2]]$agencyid,
+                     id = structure[[2]]$id,
+                     version = structure[[2]]$version,
+                     name = structure[[2]]$name[[2]],
+                     description = description)
+    data_structure <- list(agencyid = structure[[2]][["data-structure"]][[2]]$agencyid,
+                           id = structure[[2]][["data-structure"]][[2]]$id,
+                           version = structure[[2]][["data-structure"]][[2]]$version) 
+    dataflow$data_structure <- data_structure
+    class(dataflow) <- c(class(dataflow), "eds_dataflow")
+    return(dataflow)
+  } else {
+    message("Processing dataflow: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_dataflow")
+    return(structure)
+  }
+}
 
 
 # Data structures ---
@@ -352,10 +419,143 @@ process_data_structure <- function(structure, params) {
                        primary_measure = primary_measure,
                        time_dimension = time_dimension)
     data_structure$components <- components
-    class(data_structure) <- "eds_data_structure"
+    class(data_structure) <- c(class(data_structure), "eds_data_structure")
     return(data_structure)
   } else {
     message("Processing codelist: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_data_structure")
+    return(structure)
+  }
+}
+
+
+
+# Consumption agreement ---
+
+
+read_cons_agreement <- function(agencyids, ids, versions, params) {
+  if (is.null(params$file)) {
+    message(paste("\nFetching consumption agreement(s) -", paste(ids, collapse = ", "), "\n"))
+    response <- GET(params$env$registry$url,
+                    path = paste(c(params$env$registry$path, "consumptionagreements"), collapse = "/"),
+                    query = list(agencyids = agencyids, ids = ids, versions = versions),
+                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
+
+    if (response$status_code != 200) {
+      stop(content(response, encoding = "UTF-8"))
+    }
+    data_message <- content(response, type = "application/json", encoding = "UTF-8")
+    cons_agreements <- data_message[[2]][["structures"]][["consumption-agreements"]]
+    return(cons_agreements)
+  } else {
+    message(paste("\nFetching consumption agreement(s) -", params$file, "\n"))
+    na <- c("","NA", "#N/A")
+    dataflow <- as.list(read_ods(path = params$file, sheet = "dataflow", na = na))
+    data_consumer <- as.list(read_ods(path = params$file, sheet = "data_consumer", na = na))
+    cons_agreement <- as.list(read_ods(path = params$file, sheet = "consumption_agreement", na = na))
+    cons_agreement$dataflow <- dataflow
+    cons_agreement$data_consumer <- data_consumer
+    return(list(cons_agreement))
+  }
+}
+
+process_cons_agreement <- function(structure, params) {
+  if (is.null(params$file)) {
+    structure_ref <- paste(structure[[2]]$agencyid, 
+                           structure[[2]]$id,
+                           structure[[2]]$version,
+                           sep = "-")
+    message("Processing consumption agreement: ", structure_ref, "\n")
+    description <- if (is.null(structure[[2]]$description[[2]])) {
+      NA
+    } else {
+      structure[[2]]$description[[2]]
+    }
+    cons_agreement <- list(agencyid = structure[[2]]$agencyid,
+                           id = structure[[2]]$id,
+                           version = structure[[2]]$version,
+                           name = structure[[2]]$name[[2]],
+                           description = description)
+    dataflow <- list(agencyid = structure[[2]][["dataflow"]][[2]]$agencyid,
+                     id = structure[[2]][["dataflow"]][[2]]$id,
+                     version = structure[[2]][["dataflow"]][[2]]$version) 
+    data_consumer <- list(agencyid = structure[[2]][["data-consumer"]][[2]]$agencyid,
+                          id = structure[[2]][["data-consumer"]][[2]]$id,
+                          version = structure[[2]][["data-consumer"]][[2]]$version) 
+    cons_agreement$dataflow <- dataflow
+    cons_agreement$data_consumer <- data_consumer
+    class(cons_agreement) <- c(class(cons_agreement), "eds_consumption_agreement")
+    return(cons_agreement)
+  } else {
+    message("Processing consumption agreement: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_consumption_agreement")
+    return(structure)
+  }
+}
+
+
+
+# Provision agreement ---
+
+
+read_prov_agreement <- function(agencyids, ids, versions, params) {
+  if (is.null(params$file)) {
+    message(paste("\nFetching provision agreement(s) -", paste(ids, collapse = ", "), "\n"))
+    response <- GET(params$env$registry$url,
+                    path = paste(c(params$env$registry$path, "provisionagreements"), collapse = "/"),
+                    query = list(agencyids = agencyids, ids = ids, versions = versions),
+                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
+
+    if (response$status_code != 200) {
+      stop(content(response, encoding = "UTF-8"))
+    }
+    data_message <- content(response, type = "application/json", encoding = "UTF-8")
+    prov_agreements <- data_message[[2]][["structures"]][["provision-agreements"]]
+    return(prov_agreements)
+  } else {
+    message(paste("\nFetching provision agreement(s) -", params$file, "\n"))
+    na <- c("","NA", "#N/A")
+    dataflow <- as.list(read_ods(path = params$file, sheet = "dataflow", na = na))
+    data_provider <- as.list(read_ods(path = params$file, sheet = "data_provider", na = na))
+    prov_agreement <- as.list(read_ods(path = params$file, sheet = "provision_agreement", na = na))
+    prov_agreement$dataflow <- dataflow
+    prov_agreement$data_provider <- data_provider
+    return(list(prov_agreement))
+  }
+}
+
+process_prov_agreement <- function(structure, params) {
+  if (is.null(params$file)) {
+    structure_ref <- paste(structure[[2]]$agencyid, 
+                           structure[[2]]$id,
+                           structure[[2]]$version,
+                           sep = "-")
+    message("Processing provision agreement: ", structure_ref, "\n")
+    description <- if (is.null(structure[[2]]$description[[2]])) {
+      NA
+    } else {
+      structure[[2]]$description[[2]]
+    }
+    prov_agreement <- list(agencyid = structure[[2]]$agencyid,
+                           id = structure[[2]]$id,
+                           version = structure[[2]]$version,
+                           name = structure[[2]]$name[[2]],
+                           description = description)
+    dataflow <- list(agencyid = structure[[2]][["dataflow"]][[2]]$agencyid,
+                     id = structure[[2]][["dataflow"]][[2]]$id,
+                     version = structure[[2]][["dataflow"]][[2]]$version) 
+    data_provider <- list(agencyid = structure[[2]][["data-provider"]][[2]]$agencyid,
+                          id = structure[[2]][["data-provider"]][[2]]$id,
+                          version = structure[[2]][["data-provider"]][[2]]$version) 
+    prov_agreement$dataflow <- dataflow
+    prov_agreement$data_provider <- data_provider
+    class(prov_agreement) <- c(class(prov_agreement), "eds_provsion_agreement")
+    return(prov_agreement)
+  } else {
+    message("Processing provision agreement: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_provision_agreement")
     return(structure)
   }
 }

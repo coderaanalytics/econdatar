@@ -31,13 +31,17 @@ write_registry <- function(structure, x, create = FALSE, ...) {
     switch(structure,
            "codelist" = write_codelist(x, create, params),
            "concept-scheme" = write_concept_scheme(x, create, params),
+           "dataflow" = write_dataflow(x, create, params),
            "data-structure" = write_data_structure(x, create, params),
+           "consumption-agreement" = write_cons_agreement(x, create, params),
+           "provision-agreement" = write_prov_agreement(x, create, params),
            stop("Specified structure, ", structure, ", is not supported."))
 }
 
 
 
 # Codelist ---
+
 
 write_codelist <- function(codelist, create, params) {
   if(is.null(params$file)) {
@@ -111,6 +115,7 @@ write_codelist <- function(codelist, create, params) {
     message("Codelist successfully written to: ", params$file, "\n")
   }
 }
+
 
 
 # Concept scheme ---
@@ -195,6 +200,78 @@ write_concept_scheme <- function(concept_scheme, create, params) {
     write_ods(as.data.frame(concept_scheme), path = params$file, sheet = "concept_scheme")
     write_ods(concepts, path = params$file, sheet = "concepts", append = TRUE)
     message("Concept scheme successfully written to: ", params$file, "\n")
+  }
+}
+
+
+
+# Dataflow ---
+
+
+write_dataflow <- function(dataflow, create, params) {
+  if(is.null(params$file)) {
+    dataflow_ref <- paste(dataflow$agencyid,
+                          dataflow$id,
+                          dataflow$version,
+                          sep = "-")
+    data_message <-
+      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+           list(header = params$header,
+                structures =
+                  list(dataflows =
+                     list(
+                       list(unbox("#sdmx.infomodel.datastructure.Dataflow"),
+                          list(agencyid = unbox(dataflow$agencyid),
+                               id = unbox(dataflow$id),
+                               version = unbox(dataflow$version),
+                               name = c("en", dataflow$name)))))))
+    if (!is.na(dataflow$description)) {
+      data_message[[2]]$structures$dataflows[[1]][[2]]$description <-
+        c("en", dataflow$description)
+    }
+    data_message[[2]]$structures$dataflows[[1]][[2]][["data-structure"]] <-
+      list(unbox("#sdmx.infomodel.datastructure.DataStructureRef"),
+           list(agencyid = unbox(dataflow$data_structure$agencyid),
+                id = unbox(dataflow$data_structure$id),
+                version = unbox(dataflow$data_structure$version)))
+    if (create) {
+      message("Creating dataflow: ", dataflow_ref, "\n")
+      response <- POST(params$env$repository$url,
+                       path = paste(params$env$repository$path,
+                                    "dataflows", sep = "/"),
+                       body = toJSON(data_message, na = "null"),
+                       set_cookies(.cookies = get("econdata_session",
+                                                  envir = .pkgenv)),
+                       content_type("application/vnd.sdmx-codera.data+json"),
+                       accept_json())
+      if (response$status_code == 201) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    } else {
+      message("Updating dataflow: ", dataflow_ref, "\n")
+      response <- PUT(params$env$repository$url,
+                      path = paste(params$env$repository$path,
+                                   "dataflows",
+                                   dataflow_ref, sep = "/"),
+                      body = toJSON(data_message, na = "null"),
+                      set_cookies(.cookies = get("econdata_session",
+                                                 envir = .pkgenv)),
+                      content_type("application/vnd.sdmx-codera.data+json"),
+                      accept_json())
+      if (response$status_code == 200) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    }
+  } else {
+    data_structure <- dataflow$data_structure
+    dataflow$data_structure <- NULL
+    write_ods(as.data.frame(dataflow), path = params$file, sheet = "dataflow")
+    write_ods(as.data.frame(data_structure), path = params$file, sheet = "data_structure", append = TRUE)
+    message("Dataflow successfully written to: ", params$file, "\n")
   }
 }
 
@@ -379,5 +456,165 @@ write_data_structure <- function(data_structure, create, params) {
     write_ods(time_dimension, path = params$file, sheet = "time_dimension", append = TRUE)
     write_ods(primary_measure, path = params$file, sheet = "primary_measure", append = TRUE)
     message("Data structure successfully written to: ", params$file, "\n")
+  }
+}
+
+
+
+# Consumption agreement ---
+
+
+write_cons_agreement <- function(cons_agreement, create, params) {
+  if(is.null(params$file)) {
+    cons_agreement_ref <- paste(cons_agreement$agencyid,
+                                cons_agreement$id,
+                                cons_agreement$version,
+                                sep = "-")
+    data_message <-
+      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+           list(header = params$header,
+                structures =
+                  list("consumption-agreements" =
+                     list(
+                       list(unbox("#sdmx.infomodel.datastructure.Dataflow"),
+                          list(agencyid = unbox(cons_agreement$agencyid),
+                               id = unbox(cons_agreement$id),
+                               version = unbox(cons_agreement$version),
+                               name = c("en", cons_agreement$name)))))))
+    if (!is.na(cons_agreement$description)) {
+      data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]]$description <-
+        c("en", cons_agreement$description)
+    }
+    data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]][["dataflow"]] <-
+      list(unbox("#sdmx.infomodel.datastructure.DataflowRef"),
+           list(agencyid = unbox(cons_agreement$dataflow$agencyid),
+                id = unbox(cons_agreement$dataflow$id),
+                version = unbox(cons_agreement$dataflow$version)))
+    data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]][["data-consumer"]] <-
+      list(unbox("#sdmx.infomodel.base.DataConsumerRef"),
+           list(agencyid = unbox(cons_agreement$data_consumer$agencyid),
+                id = unbox(cons_agreement$data_consumer$id),
+                version = unbox(cons_agreement$data_consumer$version)))
+    if (create) {
+      message("Creating consumption agreement: ", cons_agreement_ref, "\n")
+      response <- POST(params$env$repository$url,
+                       path = paste(params$env$repository$path,
+                                    "consumptionagreements", sep = "/"),
+                       body = toJSON(data_message, na = "null"),
+                       set_cookies(.cookies = get("econdata_session",
+                                                  envir = .pkgenv)),
+                       content_type("application/vnd.sdmx-codera.data+json"),
+                       accept_json())
+      if (response$status_code == 201) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    } else {
+      message("Updating consumption agreement: ", cons_agreement_ref, "\n")
+      response <- PUT(params$env$repository$url,
+                      path = paste(params$env$repository$path,
+                                   "consumptionagreements",
+                                   cons_agreement_ref, sep = "/"),
+                      body = toJSON(data_message, na = "null"),
+                      set_cookies(.cookies = get("econdata_session",
+                                                 envir = .pkgenv)),
+                      content_type("application/vnd.sdmx-codera.data+json"),
+                      accept_json())
+      if (response$status_code == 200) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    }
+  } else {
+    dataflow <- cons_agreement$dataflow
+    data_consumer <- cons_agreement$data_consumer
+    cons_agreement$dataflow <- NULL
+    cons_agreement$data_consumer <- NULL
+    write_ods(as.data.frame(cons_agreement), path = params$file, sheet = "consumption_agreement")
+    write_ods(as.data.frame(dataflow), path = params$file, sheet = "dataflow", append = TRUE)
+    write_ods(as.data.frame(data_consumer), path = params$file, sheet = "data_consumer", append = TRUE)
+    message("Consumption agreement successfully written to: ", params$file, "\n")
+  }
+}
+
+
+
+# Provision agreement ---
+
+
+write_prov_agreement <- function(prov_agreement, create, params) {
+  if(is.null(params$file)) {
+    prov_agreement_ref <- paste(prov_agreement$agencyid,
+                                prov_agreement$id,
+                                prov_agreement$version,
+                                sep = "-")
+    data_message <-
+      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+           list(header = params$header,
+                structures =
+                  list("provision-agreements" =
+                     list(
+                       list(unbox("#sdmx.infomodel.datastructure.Dataflow"),
+                          list(agencyid = unbox(prov_agreement$agencyid),
+                               id = unbox(prov_agreement$id),
+                               version = unbox(prov_agreement$version),
+                               name = c("en", prov_agreement$name)))))))
+    if (!is.na(prov_agreement$description)) {
+      data_message[[2]]$structures[["provision-agreements"]][[1]][[2]]$description <-
+        c("en", prov_agreement$description)
+    }
+    data_message[[2]]$structures[["provision-agreements"]][[1]][[2]][["dataflow"]] <-
+      list(unbox("#sdmx.infomodel.datastructure.DataflowRef"),
+           list(agencyid = unbox(prov_agreement$dataflow$agencyid),
+                id = unbox(prov_agreement$dataflow$id),
+                version = unbox(prov_agreement$dataflow$version)))
+    data_message[[2]]$structures[["provision-agreements"]][[1]][[2]][["data-provider"]] <-
+      list(unbox("#sdmx.infomodel.base.DataConsumerRef"),
+           list(agencyid = unbox(prov_agreement$data_provider$agencyid),
+                id = unbox(prov_agreement$data_provider$id),
+                version = unbox(prov_agreement$data_provider$version)))
+    if (create) {
+      message("Creating provision agreement: ", prov_agreement_ref, "\n")
+      response <- POST(params$env$repository$url,
+                       path = paste(params$env$repository$path,
+                                    "provisionagreements", sep = "/"),
+                       body = toJSON(data_message, na = "null"),
+                       set_cookies(.cookies = get("econdata_session",
+                                                  envir = .pkgenv)),
+                       content_type("application/vnd.sdmx-codera.data+json"),
+                       accept_json())
+      if (response$status_code == 201) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    } else {
+      message("Updating provision agreement: ", prov_agreement_ref, "\n")
+      response <- PUT(params$env$repository$url,
+                      path = paste(params$env$repository$path,
+                                   "provisionagreements",
+                                   prov_agreement_ref, sep = "/"),
+                      body = toJSON(data_message, na = "null"),
+                      set_cookies(.cookies = get("econdata_session",
+                                                 envir = .pkgenv)),
+                      content_type("application/vnd.sdmx-codera.data+json"),
+                      accept_json())
+      if (response$status_code == 200) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    }
+  } else {
+    dataflow <- prov_agreement$dataflow
+    data_provider <- prov_agreement$data_provider
+    prov_agreement$dataflow <- NULL
+    prov_agreement$data_provider <- NULL
+    write_ods(as.data.frame(prov_agreement), path = params$file, sheet = "provision_agreement")
+    write_ods(as.data.frame(dataflow), path = params$file, sheet = "dataflow", append = TRUE)
+    write_ods(as.data.frame(data_provider), path = params$file, sheet = "data_provider", append = TRUE)
+    message("Consumption agreement successfully written to: ", params$file, "\n")
   }
 }
