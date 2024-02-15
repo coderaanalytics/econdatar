@@ -41,6 +41,7 @@ read_registry <- function(structure, tidy = FALSE, ...) {
   versions <- paste(version, collapse = ",")
   structure_data <-
     switch(structure,
+           "category-scheme" = read_category_schemes(agencyids, ids, versions, params),
            "codelist" = read_codelists(agencyids, ids, versions, params),
            "concept-scheme" = read_concept_schemes(agencyids, ids, versions, params),
            "dataflow" = read_dataflow(agencyids, ids, versions, params),
@@ -54,6 +55,7 @@ read_registry <- function(structure, tidy = FALSE, ...) {
 
   structures <- lapply(structure_data, function(x) {
     switch(structure,
+           "category-scheme" = process_category_scheme(x, params),
            "codelist" = process_codelist(x, params),
            "concept-scheme" = process_concept_scheme(x, params),
            "dataflow" = process_dataflow(x, params),
@@ -66,6 +68,79 @@ read_registry <- function(structure, tidy = FALSE, ...) {
     return(structures[[1]])
   } else {
     return(structures)
+  }
+}
+
+
+
+# Category schemes ---
+
+
+read_category_schemes <- function(agencyids, ids, versions, params) {
+  if (is.null(params$file)) {
+    message(paste("\nFetching category scheme(s) -", paste(ids, collapse = ", "), "\n"))
+    response <- GET(params$env$registry$url,
+                    path = paste(c(params$env$registry$path, "categoryschemes"), collapse = "/"),
+                    query = list(agencyids = agencyids, ids = ids, versions = versions),
+                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
+    if (response$status_code != 200) {
+      stop(content(response, encoding = "UTF-8"))
+    }
+    data_message <- content(response, type = "application/json", encoding = "UTF-8")
+    category_schemes <- data_message[[2]][["structures"]][["category-schemes"]]
+    return(category_schemes)
+  } else {
+    message(paste("\nFetching category scheme(s) -", params$file, "\n"))
+    na <- c("","NA", "#N/A")
+    categories <- read_ods(path = params$file, sheet = "categories", na = na)
+    category_scheme <- as.list(read_ods(path = params$file, sheet = "category_scheme", na = na))
+    category_scheme$categories <- categories
+    return(list(category_scheme))
+  }
+}
+
+process_category_scheme <- function(structure, params) {
+  if (is.null(params$file)) {
+    structure_ref <- paste(structure[[2]]$agencyid, 
+                           structure[[2]]$id,
+                           structure[[2]]$version,
+                           sep = "-")
+    message("Processing category scheme: ", structure_ref, "\n")
+    description <- if (is.null(structure[[2]]$description[[2]])) {
+      NA
+    } else {
+      structure[[2]]$description[[2]]
+    }
+    category_scheme <- list(agencyid = structure[[2]]$agencyid,
+                            id = structure[[2]]$id,
+                            version = structure[[2]]$version,
+                            name = structure[[2]]$name[[2]],
+                            description = description)
+    categories <- lapply(structure[[2]]$categories, function(category) {
+        description <- if (is.null(category[[2]]$description[[2]])) {
+          NA
+        } else {
+          category[[2]]$description[[2]]
+        }
+        lapply(category[[2]]$references, function(reference) {
+          list(id = category[[2]]$id,
+               name = category[[2]]$name[[2]],
+               description = description,
+               reference_agencyid = reference[[2]]$agencyid,
+               reference_id = reference[[2]]$id,
+               reference_version = reference[[2]]$version)
+        }) |>
+        do.call(rbind.data.frame, args = _)
+      }) |>
+      do.call(rbind.data.frame, args = _)
+    category_scheme$categories <- categories
+    class(category_scheme) <- c(class(category_scheme), "eds_category_scheme")
+    return(category_scheme)
+  } else {
+    message("Processing category scheme: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_category_scheme")
+    return(structure)
   }
 }
 

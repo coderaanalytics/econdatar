@@ -29,6 +29,7 @@ write_registry <- function(structure, x, create = FALSE, ...) {
   params$header <- header
   structure_data <-
     switch(structure,
+           "category-scheme" = write_category_scheme(x, create, params),
            "codelist" = write_codelist(x, create, params),
            "concept-scheme" = write_concept_scheme(x, create, params),
            "dataflow" = write_dataflow(x, create, params),
@@ -36,6 +37,98 @@ write_registry <- function(structure, x, create = FALSE, ...) {
            "consumption-agreement" = write_cons_agreement(x, create, params),
            "provision-agreement" = write_prov_agreement(x, create, params),
            stop("Specified structure, ", structure, ", is not supported."))
+}
+
+
+
+# Category scheme ---
+
+
+write_category_scheme <- function(category_scheme, create, params) {
+  if(is.null(params$file)) {
+    category_scheme_ref <- paste(category_scheme$agencyid,
+                                 category_scheme$id,
+                                 category_scheme$version,
+                                 sep = "-")
+    data_message <-
+      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+           list(header = params$header,
+                structures =
+                  list("category-schemes" =
+                     list(
+                       list(unbox("#sdmx.infomodel.categoryscheme.CategoryScheme"),
+                          list(agencyid = unbox(category_scheme$agencyid),
+                               id = unbox(category_scheme$id),
+                               version = unbox(category_scheme$version),
+                               name = c("en", category_scheme$name),
+                               categories = list()))))))
+    if (!is.na(category_scheme$description)) {
+      data_message[[2]]$structures[["category-schemes"]][[1]][[2]]$description <-
+        c("en", category_scheme$description)
+    }
+    if (NROW(category_scheme$categories) > 0) {
+      ids <- unique(category_scheme$categories$id)
+      for (i in seq_len(length(ids))) {
+        id <- ids[i]
+        index <- category_scheme$categories$id == id
+        tmp <- as.list(category_scheme$categories[which(index)[1],])
+        category <- list(unbox("#sdmx.infomodel.categoryscheme.Category"),
+                         list(id = unbox(tmp$id),
+                              name = c("en", tmp$name)))
+        if (!is.na(tmp$description)) {
+          category[[2]]$description <- c("en", tmp$description)
+        }
+        references <- apply(category_scheme$categories[index, ], 1, function(reference) {
+            tmp <- as.list(reference)
+            list(unbox("#sdmx.infomodel.registry.ProvisionAgreementRef"),
+                 list(agencyid = unbox(tmp$reference_agencyid),
+                      id = unbox(tmp$reference_id),
+                      version = unbox(tmp$reference_version)))
+          })
+        names(references) <- NULL
+        category[[2]]$references <- references
+        data_message[[2]]$structures[["category-schemes"]][[1]][[2]]$categories[[i]] <- category
+      }
+    }
+    if (create) {
+      message("Creating category scheme: ", category_scheme_ref, "\n")
+      response <- POST(params$env$repository$url,
+                       path = paste(params$env$repository$path,
+                                    "categoryschemes", sep = "/"),
+                       body = toJSON(data_message, na = "null"),
+                       set_cookies(.cookies = get("econdata_session",
+                                                  envir = .pkgenv)),
+                       content_type("application/vnd.sdmx-codera.data+json"),
+                       accept_json())
+      if (response$status_code == 201) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    } else {
+      message("Updating category scheme: ", category_scheme_ref, "\n")
+      response <- PUT(params$env$repository$url,
+                      path = paste(params$env$repository$path,
+                                   "categoryschemes",
+                                   category_scheme_ref, sep = "/"),
+                      body = toJSON(data_message, na = "null"),
+                      set_cookies(.cookies = get("econdata_session",
+                                                 envir = .pkgenv)),
+                      content_type("application/vnd.sdmx-codera.data+json"),
+                      accept_json())
+      if (response$status_code == 200) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    }
+  } else {
+    categories <- category_scheme$categories
+    category_scheme$categories <- NULL
+    write_ods(as.data.frame(category_scheme), path = params$file, sheet = "category_scheme")
+    write_ods(categories, path = params$file, sheet = "categories", append = TRUE)
+    message("Concept scheme successfully written to: ", params$file, "\n")
+  }
 }
 
 
