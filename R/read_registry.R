@@ -46,6 +46,7 @@ read_registry <- function(structure, tidy = FALSE, ...) {
            "concept-scheme" = read_concept_schemes(agencyids, ids, versions, params),
            "dataflow" = read_dataflow(agencyids, ids, versions, params),
            "data-structure" = read_data_structures(agencyids, ids, versions, params),
+           "memberlist" = read_memberlist(agencyids, ids, versions, params),
            "consumption-agreement" = read_cons_agreement(agencyids, ids, versions, params),
            "provision-agreement" = read_prov_agreement(agencyids, ids, versions, params),
            stop("Specified structure, ", structure, ", is not supported."))
@@ -60,6 +61,7 @@ read_registry <- function(structure, tidy = FALSE, ...) {
            "concept-scheme" = process_concept_scheme(x, params),
            "dataflow" = process_dataflow(x, params),
            "data-structure" = process_data_structure(x, params),
+           "memberlist" = process_memberlist(x, params),
            "consumption-agreement" = process_cons_agreement(x, params),
            "provision-agreement" = process_prov_agreement(x, params),
            stop("Specified structure, ", structure, ", is not supported."))
@@ -93,8 +95,8 @@ read_category_schemes <- function(agencyids, ids, versions, params) {
   } else {
     message(paste("\nFetching category scheme(s) -", params$file, "\n"))
     na <- c("","NA", "#N/A")
-    categories <- read_ods(path = params$file, sheet = "categories", na = na)
-    category_scheme <- as.list(read_ods(path = params$file, sheet = "category_scheme", na = na))
+    categories <- read_ods(path = params$file, sheet = "categories", na = na, as_tibble = FALSE)
+    category_scheme <- as.list(read_ods(path = params$file, sheet = "category_scheme", na = na, as_tibble = FALSE))
     category_scheme$categories <- categories
     return(list(category_scheme))
   }
@@ -167,8 +169,8 @@ read_codelists <- function(agencyids, ids, versions, params) {
   } else {
     message(paste("\nFetching codelist(s) -", params$file, "\n"))
     na <- c("","NA", "#N/A")
-    codes <- read_ods(path = params$file, sheet = "codes", na = na)
-    codelist <- as.list(read_ods(path = params$file, sheet = "codelist", na = na))
+    codes <- read_ods(path = params$file, sheet = "codes", na = na, as_tibble = FALSE)
+    codelist <- as.list(read_ods(path = params$file, sheet = "codelist", na = na, as_tibble = FALSE))
     codelist$codes <- codes
     return(list(codelist))
   }
@@ -234,8 +236,8 @@ read_concept_schemes <- function(agencyids, ids, versions, params) {
   } else {
     message(paste("\nFetching concept scheme(s) -", params$file, "\n"))
     na <- c("","NA", "#N/A")
-    concepts <- read_ods(path = params$file, sheet = "concepts", na = na)
-    concept_scheme <- as.list(read_ods(path = params$file, sheet = "concept_scheme", na = na))
+    concepts <- read_ods(path = params$file, sheet = "concepts", na = na, as_tibble = FALSE)
+    concept_scheme <- as.list(read_ods(path = params$file, sheet = "concept_scheme", na = na, as_tibble = FALSE))
     concept_scheme$concepts <- concepts
     return(list(concept_scheme))
   }
@@ -315,8 +317,8 @@ read_dataflow <- function(agencyids, ids, versions, params) {
   } else {
     message(paste("\nFetching dataflow(s) -", params$file, "\n"))
     na <- c("","NA", "#N/A")
-    data_structure <- as.list(read_ods(path = params$file, sheet = "data_structure", na = na))
-    dataflow <- as.list(read_ods(path = params$file, sheet = "dataflow", na = na))
+    data_structure <- as.list(read_ods(path = params$file, sheet = "data_structure", na = na, as_tibble = FALSE))
+    dataflow <- as.list(read_ods(path = params$file, sheet = "dataflow", na = na, as_tibble = FALSE))
     dataflow$data_structure <- data_structure
     return(list(dataflow))
   }
@@ -373,11 +375,11 @@ read_data_structures <- function(agencyids, ids, versions, params) {
   } else {
     message(paste("\nFetching codelist(s) -", params$file, "\n"))
     na <- c("","NA", "#N/A")
-    dimensions <- read_ods(path = params$file, sheet = "dimensions", na = na)
-    attrs <- read_ods(path = params$file, sheet = "attributes", na = na)
-    time_dimension <- read_ods(path = params$file, sheet = "time_dimension", na = na)
-    primary_measure <- read_ods(path = params$file, sheet = "primary_measure", na = na)
-    data_structure <- as.list(read_ods(path = params$file, sheet = "data_structure", na = na))
+    dimensions <- read_ods(path = params$file, sheet = "dimensions", na = na, as_tibble = FALSE)
+    attrs <- read_ods(path = params$file, sheet = "attributes", na = na, as_tibble = FALSE)
+    time_dimension <- read_ods(path = params$file, sheet = "time_dimension", na = na, as_tibble = FALSE)
+    primary_measure <- read_ods(path = params$file, sheet = "primary_measure", na = na, as_tibble = FALSE)
+    data_structure <- as.list(read_ods(path = params$file, sheet = "data_structure", na = na, as_tibble = FALSE))
     data_structure$dimensions <- dimensions
     data_structure$attributes <- attrs
     data_structure$time_dimension <- time_dimension
@@ -505,6 +507,90 @@ process_data_structure <- function(structure, params) {
 
 
 
+# Memberlist ---
+
+
+read_memberlist <- function(agencyids, ids, versions, params) {
+  if (is.null(params$file)) {
+    message(paste("\nFetching memberlist(s) -", paste(ids, collapse = ", "), "\n"))
+    response <- GET(params$env$registry$url,
+                    path = paste(c(params$env$registry$path, "memberlists"), collapse = "/"),
+                    query = list(agencyids = agencyids, ids = ids, versions = versions),
+                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
+    if (response$status_code != 200) {
+      stop(content(response, encoding = "UTF-8"))
+    }
+    data_message <- content(response, type = "application/json", encoding = "UTF-8")
+    memberlists <- data_message[[2]][["structures"]][["memberlists"]]
+    return(memberlists)
+  } else {
+    message(paste("\nFetching memberlist(s) -", params$file, "\n"))
+    na <- c("","NA", "#N/A")
+    members <- read_ods(path = params$file, sheet = "members", na = na, as_tibble = FALSE)
+    memberlist <- as.list(read_ods(path = params$file, sheet = "memberlist", na = na, as_tibble = FALSE))
+    memberlist$members <- members
+    return(list(memberlist))
+  }
+}
+
+process_memberlist <- function(structure, params) {
+  if (is.null(params$file)) {
+    structure_ref <- paste(structure[[2]]$agencyid, 
+                           structure[[2]]$id,
+                           structure[[2]]$version,
+                           sep = "-")
+    message("Processing memberlist: ", structure_ref, "\n")
+    description <- if (is.null(structure[[2]]$description[[2]])) {
+      NA
+    } else {
+      structure[[2]]$description[[2]]
+    }
+    memberlist <- list(agencyid = structure[[2]]$agencyid,
+                       id = structure[[2]]$id,
+                       version = structure[[2]]$version,
+                       name = structure[[2]]$name[[2]],
+                       description = description)
+    members <- lapply(structure[[2]]$members, function(member) {
+        lapply(member[[2]]$memberships, function(membership) {
+          m <- list(id = member[[2]]$id,
+                    email = member[[2]]$email,
+                    firstname = member[[2]]$firstname,
+                    lastname = member[[2]]$lastname,
+                    annotations = toJSON(lapply(member[[2]]$annotations, unbox)))
+          if (membership[[1]] == "#sdmx.infomodel.base.DataConsumerRef") {
+            c(m,
+              list(membership_type = "data consumer",
+                   membership_agencyid = membership[[2]]$agencyid,
+                   membership_parentid = membership[[2]]$parentid,
+                   membership_parentversion = membership[[2]]$parentversion,
+                   membership_id = membership[[2]]$id))
+          } else if (membership[[1]] == "#sdmx.infomodel.base.DataProviderRef") {
+            c(m,
+              list(membership_type = "data provider",
+                   membership_agencyid = membership[[2]]$agencyid,
+                   membership_parentid = membership[[2]]$parentid,
+                   membership_parentversion = membership[[2]]$parentversion,
+                   membership_id = membership[[2]]$id))
+          } else {
+            stop("Unable to parse reference type: ", membership[[1]])
+          }
+        }) |>
+        do.call(rbind.data.frame, args = _)
+      }) |>
+      do.call(rbind.data.frame, args = _)
+    memberlist$members <- members
+    class(memberlist) <- c(class(memberlist), "memberlist")
+    return(memberlist)
+  } else {
+    message("Processing memberlist: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_memberlist")
+    return(structure)
+  }
+}
+
+
+
 # Consumption agreement ---
 
 
@@ -526,9 +612,9 @@ read_cons_agreement <- function(agencyids, ids, versions, params) {
   } else {
     message(paste("\nFetching consumption agreement(s) -", params$file, "\n"))
     na <- c("","NA", "#N/A")
-    dataflow <- as.list(read_ods(path = params$file, sheet = "dataflow", na = na))
-    data_consumer <- as.list(read_ods(path = params$file, sheet = "data_consumer", na = na))
-    cons_agreement <- as.list(read_ods(path = params$file, sheet = "consumption_agreement", na = na))
+    dataflow <- as.list(read_ods(path = params$file, sheet = "dataflow", na = na, as_tibble = FALSE))
+    data_consumer <- as.list(read_ods(path = params$file, sheet = "data_consumer", na = na, as_tibble = FALSE))
+    cons_agreement <- as.list(read_ods(path = params$file, sheet = "consumption_agreement", na = na, as_tibble = FALSE))
     cons_agreement$dataflow <- dataflow
     cons_agreement$data_consumer <- data_consumer
     return(list(cons_agreement))
@@ -592,9 +678,9 @@ read_prov_agreement <- function(agencyids, ids, versions, params) {
   } else {
     message(paste("\nFetching provision agreement(s) -", params$file, "\n"))
     na <- c("","NA", "#N/A")
-    dataflow <- as.list(read_ods(path = params$file, sheet = "dataflow", na = na))
-    data_provider <- as.list(read_ods(path = params$file, sheet = "data_provider", na = na))
-    prov_agreement <- as.list(read_ods(path = params$file, sheet = "provision_agreement", na = na))
+    dataflow <- as.list(read_ods(path = params$file, sheet = "dataflow", na = na, as_tibble = FALSE))
+    data_provider <- as.list(read_ods(path = params$file, sheet = "data_provider", na = na, as_tibble = FALSE))
+    prov_agreement <- as.list(read_ods(path = params$file, sheet = "provision_agreement", na = na, as_tibble = FALSE))
     prov_agreement$dataflow <- dataflow
     prov_agreement$data_provider <- data_provider
     return(list(prov_agreement))

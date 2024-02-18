@@ -34,6 +34,7 @@ write_registry <- function(structure, x, create = FALSE, ...) {
            "concept-scheme" = write_concept_scheme(x, create, params),
            "dataflow" = write_dataflow(x, create, params),
            "data-structure" = write_data_structure(x, create, params),
+           "memberlist" = write_memberlist(x, create, params),
            "consumption-agreement" = write_cons_agreement(x, create, params),
            "provision-agreement" = write_prov_agreement(x, create, params),
            stop("Specified structure, ", structure, ", is not supported."))
@@ -549,6 +550,106 @@ write_data_structure <- function(data_structure, create, params) {
     write_ods(time_dimension, path = params$file, sheet = "time_dimension", append = TRUE)
     write_ods(primary_measure, path = params$file, sheet = "primary_measure", append = TRUE)
     message("Data structure successfully written to: ", params$file, "\n")
+  }
+}
+
+
+
+# Memberlist ---
+
+
+write_memberlist <- function(memberlist, create, params) {
+  if(is.null(params$file)) {
+    memberlist_ref <- paste(memberlist$agencyid,
+                            memberlist$id,
+                            memberlist$version,
+                            sep = "-")
+    data_message <-
+      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+           list(header = params$header,
+                structures =
+                  list("memberlists" =
+                     list(
+                       list(unbox("#sdmx.infomodel.memberlist.Memberlist"),
+                          list(agencyid = unbox(memberlist$agencyid),
+                               id = unbox(memberlist$id),
+                               version = unbox(memberlist$version),
+                               name = c("en", memberlist$name),
+                               members = list()))))))
+    if (!is.na(memberlist$description)) {
+      data_message[[2]]$structures[["memberlists"]][[1]][[2]]$description <-
+        c("en", memberlist$description)
+    }
+    if (NROW(memberlist$members) > 0) {
+      ids <- unique(memberlist$members$id)
+      for (i in seq_len(length(ids))) {
+        id <- ids[i]
+        index <- memberlist$members$id == id
+        tmp <- as.list(memberlist$members[which(index)[1],])
+        member <- list(unbox("#sdmx.infomodel.memberlist.Member"),
+                         list(id = unbox(tmp$id),
+                              email = unbox(tmp$email),
+                              firstname = unbox(tmp$firstname),
+                              lastname = unbox(tmp$lastname),
+                              annotations = lapply(fromJSON(tmp$annotations), unbox)))
+        memberships <- apply(memberlist$members[index, ], 1, function(membership) {
+            tmp <- as.list(membership)
+            if (tmp$membership_type == "data consumer") {
+              type <- "#sdmx.infomodel.base.DataConsumerRef"
+            } else if (tmp$membership_type == "data provider") {
+              type <- "#sdmx.infomodel.base.DataProviderRef"
+            } else {
+              stop("Unable to parse membership type: ", tmp$membership_type)
+            }
+            list(unbox(type),
+                 list(agencyid = unbox(tmp$membership_agencyid),
+                      parentid = unbox(tmp$membership_parentid),
+                      parentversion = unbox(tmp$membership_parentversion),
+                      id = unbox(tmp$membership_id)))
+          })
+        names(memberships) <- NULL
+        member[[2]]$memberships <- memberships
+        data_message[[2]]$structures[["memberlists"]][[1]][[2]]$members[[i]] <- member
+      }
+    }
+    if (create) {
+      message("Creating memberlist: ", memberlist_ref, "\n")
+      response <- POST(params$env$repository$url,
+                       path = paste(params$env$repository$path,
+                                    "memberlists", sep = "/"),
+                       body = toJSON(data_message, na = "null"),
+                       set_cookies(.cookies = get("econdata_session",
+                                                  envir = .pkgenv)),
+                       content_type("application/vnd.sdmx-codera.data+json"),
+                       accept_json())
+      if (response$status_code == 201) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    } else {
+      message("Updating memberlist: ", memberlist_ref, "\n")
+      response <- PUT(params$env$repository$url,
+                      path = paste(params$env$repository$path,
+                                   "memberlists",
+                                   memberlist_ref, sep = "/"),
+                      body = toJSON(data_message, na = "null"),
+                      set_cookies(.cookies = get("econdata_session",
+                                                 envir = .pkgenv)),
+                      content_type("application/vnd.sdmx-codera.data+json"),
+                      accept_json())
+      if (response$status_code == 200) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        stop(content(response, encoding = "UTF-8"))
+      }
+    }
+  } else {
+    members <- memberlist$members
+    memberlist$members <- NULL
+    write_ods(as.data.frame(memberlist), path = params$file, sheet = "memberlist")
+    write_ods(members, path = params$file, sheet = "members", append = TRUE)
+    message("Memberlist successfully written to: ", params$file, "\n")
   }
 }
 
