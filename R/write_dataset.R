@@ -33,11 +33,20 @@ write_dataset <- function(x, ...) {
   # Push each data set individually ---
 
   lapply(data_sets, function(data_set) {
-    data_set_ref <- paste(attr(data_set, "metadata")$agencyid,
-                          attr(data_set, "metadata")$id,
-                          attr(data_set, "metadata")$version, sep = "-")
+    metadata <- attr(data_set, "metadata")
+    data_set_ref <- paste(metadata$agencyid,
+                          metadata$id,
+                          metadata$version, sep = "-")
     data_sets <- list(list(unbox("#sdmx.infomodel.dataset.DataSet"), 
-                           validate_series(data_set)))
+                           list(agencyid = unbox(metadata$agencyid),
+                                id = unbox(metadata$id),
+                                version = unbox(metadata$version),
+                                name = metadata$name,
+                                "provision-agreement" = metadata[["provision-agreement"]],
+                                series = validate_series(data_set))))
+    if (!is.null(metadata$description)) {
+      data_sets[[1]][[2]]$description <- metadata$description
+    }
     data_message <- list(unbox("#sdmx.infomodel.message.SDMXMessage"),
                          list("header" = header,
                               "structures" = NULL,
@@ -74,7 +83,7 @@ write_econdata <- function(x, create = FALSE, update = FALSE, stage = TRUE, ...)
   if (!stage) {
     warning("'stage=FALSE' ignored, staging anyway...")
   }
-  write_obs(x = x, ...)
+  write_dataset(x = x, ...)
 }
 
 validate_series <- function(data_set) {
