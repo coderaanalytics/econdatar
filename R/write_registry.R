@@ -687,8 +687,9 @@ write_cons_agreement <- function(cons_agreement, create, params) {
     data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]][["data-consumer"]] <-
       list(unbox("#sdmx.infomodel.base.DataConsumerRef"),
            list(agencyid = unbox(cons_agreement$data_consumer$agencyid),
-                id = unbox(cons_agreement$data_consumer$id),
-                version = unbox(cons_agreement$data_consumer$version)))
+                parentid = unbox(cons_agreement$data_consumer$parentid),
+                parentversion = unbox(cons_agreement$data_consumer$parentversion),
+                id = unbox(cons_agreement$data_consumer$id)))
     if (create) {
       message("Creating consumption agreement: ", cons_agreement_ref, "\n")
       response <- POST(params$env$repository$url,
@@ -767,8 +768,9 @@ write_prov_agreement <- function(prov_agreement, create, params) {
     data_message[[2]]$structures[["provision-agreements"]][[1]][[2]][["data-provider"]] <-
       list(unbox("#sdmx.infomodel.base.DataConsumerRef"),
            list(agencyid = unbox(prov_agreement$data_provider$agencyid),
-                id = unbox(prov_agreement$data_provider$id),
-                version = unbox(prov_agreement$data_provider$version)))
+                parentid = unbox(prov_agreement$data_provider$parentid),
+                parentversion = unbox(prov_agreement$data_provider$parentversion),
+                id = unbox(prov_agreement$data_provider$id)))
     if (create) {
       message("Creating provision agreement: ", prov_agreement_ref, "\n")
       response <- POST(params$env$repository$url,

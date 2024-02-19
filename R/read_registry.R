@@ -642,8 +642,9 @@ process_cons_agreement <- function(structure, params) {
                      id = structure[[2]][["dataflow"]][[2]]$id,
                      version = structure[[2]][["dataflow"]][[2]]$version) 
     data_consumer <- list(agencyid = structure[[2]][["data-consumer"]][[2]]$agencyid,
-                          id = structure[[2]][["data-consumer"]][[2]]$id,
-                          version = structure[[2]][["data-consumer"]][[2]]$version) 
+                          parentid = structure[[2]][["data-consumer"]][[2]]$parentid,
+                          parentversion = structure[[2]][["data-consumer"]][[2]]$parentversion,
+                          id = structure[[2]][["data-consumer"]][[2]]$id) 
     cons_agreement$dataflow <- dataflow
     cons_agreement$data_consumer <- data_consumer
     class(cons_agreement) <- c(class(cons_agreement), "eds_consumption_agreement")
@@ -708,8 +709,9 @@ process_prov_agreement <- function(structure, params) {
                      id = structure[[2]][["dataflow"]][[2]]$id,
                      version = structure[[2]][["dataflow"]][[2]]$version) 
     data_provider <- list(agencyid = structure[[2]][["data-provider"]][[2]]$agencyid,
-                          id = structure[[2]][["data-provider"]][[2]]$id,
-                          version = structure[[2]][["data-provider"]][[2]]$version) 
+                          parentid = structure[[2]][["data-provider"]][[2]]$parentid,
+                          parentversion = structure[[2]][["data-provider"]][[2]]$parentversion,
+                          id = structure[[2]][["data-provider"]][[2]]$id) 
     prov_agreement$dataflow <- dataflow
     prov_agreement$data_provider <- data_provider
     class(prov_agreement) <- c(class(prov_agreement), "eds_provsion_agreement")
