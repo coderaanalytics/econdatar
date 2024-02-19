@@ -670,7 +670,7 @@ write_cons_agreement <- function(cons_agreement, create, params) {
                 structures =
                   list("consumption-agreements" =
                      list(
-                       list(unbox("#sdmx.infomodel.datastructure.Dataflow"),
+                       list(unbox("#sdmx.infomodel.registry.ConsumptionAgreement"),
                           list(agencyid = unbox(cons_agreement$agencyid),
                                id = unbox(cons_agreement$id),
                                version = unbox(cons_agreement$version),
@@ -751,7 +751,7 @@ write_prov_agreement <- function(prov_agreement, create, params) {
                 structures =
                   list("provision-agreements" =
                      list(
-                       list(unbox("#sdmx.infomodel.datastructure.Dataflow"),
+                       list(unbox("#sdmx.infomodel.registry.ProvisionAgreement"),
                           list(agencyid = unbox(prov_agreement$agencyid),
                                id = unbox(prov_agreement$id),
                                version = unbox(prov_agreement$version),
