@@ -766,7 +766,7 @@ write_prov_agreement <- function(prov_agreement, create, params) {
                 id = unbox(prov_agreement$dataflow$id),
                 version = unbox(prov_agreement$dataflow$version)))
     data_message[[2]]$structures[["provision-agreements"]][[1]][[2]][["data-provider"]] <-
-      list(unbox("#sdmx.infomodel.base.DataConsumerRef"),
+      list(unbox("#sdmx.infomodel.base.DataProviderRef"),
            list(agencyid = unbox(prov_agreement$data_provider$agencyid),
                 parentid = unbox(prov_agreement$data_provider$parentid),
                 parentversion = unbox(prov_agreement$data_provider$parentversion),
