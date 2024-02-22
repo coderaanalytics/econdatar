@@ -1,7 +1,6 @@
 get_metadata <- function(x) {
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
-
   # Fetch data structure definition (metadata) ---
 
   attrs <- attr(x, "metadata")
@@ -42,7 +41,7 @@ get_metadata <- function(x) {
   response <- GET(env$registry$url,
                   path = paste(c(env$registry$path,
                                  "datastructures",
-                                 dataflow_ref), collapse = "/"),
+                                 data_structure_ref), collapse = "/"),
                   query = list(relations = "references"),
                   set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
                   accept("application/vnd.sdmx-codera.data+json"))
