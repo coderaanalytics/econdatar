@@ -539,11 +539,10 @@ write_data_structure <- function(data_structure, create, params) {
       }
     }
   } else {
-    dimensions <- data_structure$components$dimensions
-    attrs <- data_structure$components$attributes
-    time_dimension <- data_structure$components$time_dimension
-    primary_measure <- data_structure$components$primary_measure
-    data_structure$components <- NULL
+    dimensions <- data_structure$dimensions
+    attrs <- data_structure$attributes
+    time_dimension <- data_structure$time_dimension
+    primary_measure <- data_structure$primary_measure
     write_ods(as.data.frame(data_structure), path = params$file, sheet = "data_structure")
     write_ods(dimensions, path = params$file, sheet = "dimensions", append = TRUE)
     write_ods(attrs, path = params$file, sheet = "attributes", append = TRUE)

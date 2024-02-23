@@ -491,11 +491,10 @@ process_data_structure <- function(structure, params) {
         }
       }) |>
       do.call(rbind.data.frame, args = _)
-    components <- list(dimensions = dimensions_ordered,
-                       attributes = attrs_ordered,
-                       primary_measure = primary_measure,
-                       time_dimension = time_dimension)
-    data_structure$components <- components
+    data_structure$dimensions <- dimensions_ordered
+    data_structure$attributes <- attrs_ordered
+    data_structure$primary_measure <- primary_measure
+    data_structure$time_dimension <- time_dimension
     class(data_structure) <- c(class(data_structure), "eds_data_structure")
     return(data_structure)
   } else {
