@@ -56,14 +56,14 @@ write_database <- function(x, create = FALSE, ...) {
                               "structures" = NULL,
                               "data-sets" = datasets))
     if (!is.null(params$file)) {
-      write(toJSON(data_message, na = "null"), file = params$file)
+      write(toJSON(data_message, na = "null", always_decimal = TRUE), file = params$file)
       message("Data set saved to local storage.\n")
     } else if (create) {
       message("Creating data set: ", dataset_ref, "\n")
       response <- POST(env$repository$url,
                        path = paste(env$repository$path,
                                     "datasets", sep = "/"),
-                       body = toJSON(data_message, na = "null"),
+                       body = toJSON(data_message, na = "null", always_decimal = TRUE),
                        set_cookies(.cookies = get("econdata_session",
                                                   envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
@@ -79,7 +79,7 @@ write_database <- function(x, create = FALSE, ...) {
                       path = paste(env$repository$path,
                                    "datasets",
                                    dataset_ref, sep = "/"),
-                      body = toJSON(data_message, na = "null"),
+                      body = toJSON(data_message, na = "null", always_decimal = TRUE),
                       set_cookies(.cookies = get("econdata_session",
                                                  envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),

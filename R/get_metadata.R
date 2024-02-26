@@ -56,11 +56,11 @@ get_metadata <- function(x) {
 
   # Compile metadata ---
 
-  metadata <- list()
+  concepts <- list()
   for (component in data_structure$components) {
     id <- component[[2]][["concept-identity"]][[2]]
     repr <- component[[2]][["local-representation"]]
-    metadata[[id$id]] <- list(type = component[[1]],
+    concepts[[id$id]] <- list(type = component[[1]],
                               concept = NULL,
                               codelist = NULL)
     for (concept_scheme in concept_schemes) {
@@ -69,7 +69,7 @@ get_metadata <- function(x) {
           id$parentversion == concept_scheme[[2]]$version) {
         for (concept in concept_scheme[[2]]$concepts) {
           if (id$id == concept[[2]]$id) {
-            metadata[[id$id]]$concept <- concept[[2]]
+            concepts[[id$id]]$concept <- concept[[2]]
           }
         }
       }
@@ -79,10 +79,20 @@ get_metadata <- function(x) {
         if (repr[[2]]$agencyid == codelist[[2]]$agencyid &&
             repr[[2]]$id == codelist[[2]]$id &&
             repr[[2]]$version == codelist[[2]]$version) {
-          metadata[[id$id]]$codelist <- codelist[[2]]
+          concepts[[id$id]]$codelist <- codelist[[2]]
         }
       }
     }
   }
+  data_provider_ref <- provision_agreement[[2]][["data-provider"]][[2]] |>
+    (function(x) do.call(sprintf, c("%s:%s(%s):%s", x)))(x = _)
+  dataflow_ref <- provision_agreement[[2]][["dataflow"]][[2]] |>
+    (function(x) do.call(sprintf, c("%s:%s(%s)", x)))(x = _)
+  data_structure_ref <- dataflow[[2]][["data-structure"]][[2]] |>
+    (function(x) do.call(sprintf, c("%s:%s(%s)", x)))(x = _)
+  metadata <- list(data_provider_ref = data_provider_ref,
+                   dataflow_ref= dataflow_ref,
+                   data_structure_ref = data_structure_ref,
+                   concepts = concepts)
   return(metadata)
 }

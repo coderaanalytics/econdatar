@@ -1,4 +1,4 @@
-write_dataset <- function(x, ...) {
+write_dataset <- function(x, validate = FALSE, ...) {
 
 
   # Parameters ---
@@ -52,7 +52,7 @@ write_dataset <- function(x, ...) {
                               "structures" = NULL,
                               "data-sets" = data_sets))
     if (!is.null(params$file)) {
-      write(toJSON(data_message, na = "null"), file = params$file)
+      write(toJSON(data_message, na = "null", always_decimal = TRUE), file = params$file)
       message("Data set saved to local storage.\n")
     } else {
       message("Staging release: ", data_set_ref, "\n")
@@ -61,7 +61,7 @@ write_dataset <- function(x, ...) {
                                     "datasets",
                                     data_set_ref,
                                     "stage", sep = "/"),
-                       body = toJSON(data_message, na = "null"),
+                       body = toJSON(data_message, na = "null", always_decimal = TRUE),
                        set_cookies(.cookies = get("econdata_session",
                                                   envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),

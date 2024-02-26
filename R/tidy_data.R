@@ -33,11 +33,11 @@ add_version_names <- function(x, is_release = FALSE) {
 
 tidy_wide <- function(x, codelabel = FALSE, prettymeta = TRUE, ...) {
   if(is.null(names(x))) return(lapply(add_version_names(x), tidy_wide, codelabel, prettymeta))
-  meta <- if(prettymeta) get_metadata(x) else NULL
+  metadata <- if(prettymeta) get_metadata(x) else NULL
   d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
     dcast(time_period ~ series_key, value.var = "OBS_VALUE") |>
     fmutate(time_period = as.Date(time_period))
-  labs <- sapply(x, make_label, codelabel, meta)
+  labs <- sapply(x, make_label, codelabel, metadata$concepts)
   nam <- names(d)[-1L]
   vlabels(d) <- c("Date", labs[1L, nam])
   vlabels(d, "source_identifier")[-1L] <- labs[2L, nam]
@@ -46,21 +46,23 @@ tidy_wide <- function(x, codelabel = FALSE, prettymeta = TRUE, ...) {
 }
 
 
-extract_metadata <- function(x, allmeta, origmeta, meta) {
+extract_metadata <- function(x, meta, allmeta = FALSE, origmeta = FALSE) {
   if(!allmeta && length(x) == 0L) return(NULL) # Omits non-observed series.
   m <- attr(x, "metadata")
   if(origmeta) return(m)
   if (!is.null(meta)) {
     out <- list()
     for (p in names(m)) {
-      cc_nam <- meta[[p]]$concept$name[[2]]
-      cl <- meta[[p]]$codelist
-      if(!is.null(cl)) {
-        cl <- sapply(meta[[p]]$codelist$codes,
-                     function(x) c(x[[2]]$id, x[[2]]$name[[2]]))
-        out[[gsub(" ", "_", tolower(cc_nam))]] <- cl[2L, which(cl[1L, ] == m[[p]])]
-      } else {
-        out[[gsub(" ", "_", tolower(cc_nam))]] <- m[[p]]
+      if (!is.null(meta[[p]])) {
+        cc_nam <- meta[[p]]$concept$name[[2]]
+        cl <- meta[[p]]$codelist
+        if(!is.null(cl)) {
+          cl <- sapply(meta[[p]]$codelist$codes,
+                       function(x) c(x[[2]]$id, x[[2]]$name[[2]]))
+          out[[gsub(" ", "_", tolower(cc_nam))]] <- cl[2L, which(cl[1L, ] == m[[p]])]
+        } else {
+          out[[gsub(" ", "_", tolower(cc_nam))]] <- m[[p]]
+        }
       }
     }
     return(out)
@@ -69,24 +71,36 @@ extract_metadata <- function(x, allmeta, origmeta, meta) {
 }
 
 tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, prettymeta = TRUE, ...) {
-  if(is.null(names(x))) {
+  if (is.null(names(x))) {
     res <- lapply(add_version_names(x), tidy_long, combine, allmeta, origmeta, prettymeta)
     return(if(combine) rbindlist(res, use.names = TRUE, fill = TRUE) else res)
   }
-  meta <- if(prettymeta) get_metadata(x) else NULL
+  metadata <- if(prettymeta) get_metadata(x) else NULL
   d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
        fmutate(time_period = as.Date(time_period), series_key = qF(series_key)) |>
        frename(OBS_VALUE = "obs_value")
-  m <- attr(x, "metadata")
-  meta <- lapply(x, extract_metadata, allmeta && !combine, origmeta, meta) |>
-          rbindlist(use.names = TRUE, fill = TRUE)
-  if(origmeta) names(meta) <- tolower(names(meta))
-  meta$id <- null2NA(m$id)
-  meta$version <- null2NA(m$version)
-  meta$series_key <- if(allmeta && !combine) names(x) else names(x)[names(x) %in% levels(d$series_key)]
-  setcolorder(meta, c("id", "version", "series_key"))
-  if(!allmeta) get_vars(meta, fnobs(meta) == 0L) <- NULL
-  if(combine) {
+  M <- attr(x, "metadata")
+  meta4dataset <- extract_metadata(x, metadata$concepts, allmeta && !combine, origmeta)
+  meta <- lapply(x, extract_metadata, metadata$concepts, allmeta && !combine, origmeta) |>
+    rbindlist(use.names = TRUE, fill = TRUE)
+  if (origmeta) names(meta) <- tolower(names(meta))
+  if (allmeta && !combine)  {
+    meta <- c(meta4dataset, meta)
+    meta$data_set_name <- M$name[[2]] 
+    meta$data_set_ref <- sprintf("%s:%s(%s)", M$agencyid, M$id, M$version)
+    meta$data_provider_ref <- metadata$data_provider_ref
+    meta$series_key <- names(x)
+  } else {
+    nseries <- length(levels(d$series_key))
+    meta <- c(lapply(meta4dataset, function(x) if (length(x) == 1) rep(x, nseries) else x), meta)
+    meta$data_set_name <- rep(M$name[[2]], nseries)
+    meta$data_set_ref <- rep(sprintf("%s:%s(%s)", M$agencyid, M$id, M$version), nseries)
+    meta$data_provider_ref <- rep(metadata$data_provider_ref, nseries) 
+    meta$series_key <- names(x)[names(x) %in% levels(d$series_key)]
+  }
+  setcolorder(meta, c("data_set_name", "data_set_ref", "data_provider_ref", "series_key"))
+  if (!allmeta) get_vars(meta, fnobs(meta) == 0L) <- NULL
+  if (combine) {
     meta_fct <- dapply(meta, qF, drop = FALSE) # Factors for efficient storage
     series_key <- d$series_key
     d$series_key <- NULL
