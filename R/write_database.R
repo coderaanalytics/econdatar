@@ -73,7 +73,17 @@ write_database <- function(x, method = "update", ...) {
       if (response$status_code == 201) {
         message(content(response, encoding = "UTF-8")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        error <- content(response, encoding = "UTF-8")
+        if (response$status_code == 400) {
+          if (error$message == "Validation error") {
+            error$cause[[1]]$schema <- NULL
+            stop(toJSON(error, pretty = TRUE))
+          } else {
+            stop(error)
+          }
+        }  else {
+          stop(error)
+        }
       }
     } else if (method == "update") {
       message("Updating data set: ", dataset_ref, "\n")
@@ -89,7 +99,17 @@ write_database <- function(x, method = "update", ...) {
       if (response$status_code == 200) {
         message(content(response, encoding = "UTF-8")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        error <- content(response, encoding = "UTF-8")
+        if (response$status_code == 400) {
+          if (error$message == "Validation error") {
+            error$cause[[1]]$schema <- NULL
+            stop(toJSON(error, pretty = TRUE))
+          } else {
+            stop(error)
+          }
+        }  else {
+          stop(error)
+        }
       }
     } else {
       stop("Method not implemented.")

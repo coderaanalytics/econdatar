@@ -63,10 +63,45 @@ write_dataset <- function(x, method = "stage", ...) {
       if (response$status_code == 200) {
         message(content(response, encoding = "UTF-8")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        error <- content(response, encoding = "UTF-8")
+        if (response$status_code == 400) {
+          if (error$message == "Validation error") {
+            error$cause[[1]]$schema <- NULL
+            stop(toJSON(error, pretty = TRUE))
+          } else {
+            stop(error)
+          }
+        }  else {
+          stop(error)
+        }
       }
     } else if (method == "validate") {
-      stop("Method not yet implemented.")
+      message("Validating release: ", data_set_ref, "\n")
+      response <- POST(env$repository$url,
+                       path = paste(env$repository$path,
+                                    "datasets",
+                                    data_set_ref,
+                                    "validate", sep = "/"),
+                       body = toJSON(data_message, na = "null", always_decimal = TRUE),
+                       set_cookies(.cookies = get("econdata_session",
+                                                  envir = .pkgenv)),
+                       content_type("application/vnd.sdmx-codera.data+json"),
+                       accept_json())
+      if (response$status_code == 200) {
+        message(content(response, encoding = "UTF-8")$success)
+      } else {
+        error <- content(response, encoding = "UTF-8")
+        if (response$status_code == 400) {
+          if (error$message == "Validation error") {
+            error$cause[[1]]$schema <- NULL
+            stop(toJSON(error, pretty = TRUE))
+          } else {
+            stop(error)
+          }
+        }  else {
+          stop(error)
+        }
+      }
     } else {
       stop("Method not implemented.")
     }
