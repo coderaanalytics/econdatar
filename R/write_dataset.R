@@ -1,4 +1,4 @@
-write_dataset <- function(x, validate = FALSE, ...) {
+write_dataset <- function(x, method = "stage", ...) {
 
 
   # Parameters ---
@@ -10,6 +10,8 @@ write_dataset <- function(x, validate = FALSE, ...) {
   } else {
     credentials <- NULL
   }
+  stopifnot(length(method) == 1)
+  stopifnot(method %in% c("stage", "validate"))
 
 
   # Push data message ---
@@ -37,24 +39,16 @@ write_dataset <- function(x, validate = FALSE, ...) {
     data_set_ref <- paste(metadata$agencyid,
                           metadata$id,
                           metadata$version, sep = "-")
-    data_sets <- list(list(unbox("#sdmx.infomodel.dataset.DataSet"), 
-                           list(agencyid = unbox(metadata$agencyid),
-                                id = unbox(metadata$id),
-                                version = unbox(metadata$version),
-                                name = metadata$name,
-                                "provision-agreement" = metadata[["provision-agreement"]],
-                                series = validate_series(data_set))))
-    if (!is.null(metadata$description)) {
-      data_sets[[1]][[2]]$description <- metadata$description
-    }
     data_message <- list(unbox("#sdmx.infomodel.message.SDMXMessage"),
                          list("header" = header,
                               "structures" = NULL,
-                              "data-sets" = data_sets))
+                              "data-sets" =
+                                list(list(unbox("#sdmx.infomodel.dataset.DataSet"), 
+                                          validate_series(data_set)))))
     if (!is.null(params$file)) {
       write(toJSON(data_message, na = "null", always_decimal = TRUE), file = params$file)
       message("Data set saved to local storage.\n")
-    } else {
+    } else if (method == "stage") {
       message("Staging release: ", data_set_ref, "\n")
       response <- POST(env$repository$url,
                        path = paste(env$repository$path,
@@ -71,6 +65,10 @@ write_dataset <- function(x, validate = FALSE, ...) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
+    } else if (method == "validate") {
+      stop("Method not yet implemented.")
+    } else {
+      stop("Method not implemented.")
     }
   })
   return(invisible(NULL))
@@ -88,7 +86,7 @@ write_econdata <- function(x, create = FALSE, update = FALSE, stage = TRUE, ...)
 
 validate_series <- function(data_set) {
     d <- lapply(attr(data_set, "metadata"),
-                function(x) if (length(x) == 1) unbox(x) else return(x))
+                function(x) if (length(x) == 1) unbox(x) else x)
     d$series <- lapply(seq_len(length(data_set)), function(index) {
         series <- lapply(attr(data_set[[index]], "metadata"), unbox)
         freq <- series$FREQ
@@ -125,4 +123,5 @@ validate_series <- function(data_set) {
         series$obs <- data.frame(TIME_PERIOD = y, x, row.names = NULL)
         return(series)
       })
+    return(d)
 }

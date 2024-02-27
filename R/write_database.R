@@ -1,4 +1,4 @@
-write_database <- function(x, create = FALSE, ...) {
+write_database <- function(x, method = "update", ...) {
 
 
   # Parameters ---
@@ -10,6 +10,8 @@ write_database <- function(x, create = FALSE, ...) {
   } else {
     credentials <- NULL
   }
+  stopifnot(length(method) == 1)
+  stopifnot(method %in% c("create", "update"))
 
 
   # Push data message ---
@@ -58,7 +60,7 @@ write_database <- function(x, create = FALSE, ...) {
     if (!is.null(params$file)) {
       write(toJSON(data_message, na = "null", always_decimal = TRUE), file = params$file)
       message("Data set saved to local storage.\n")
-    } else if (create) {
+    } else if (method == "create") {
       message("Creating data set: ", dataset_ref, "\n")
       response <- POST(env$repository$url,
                        path = paste(env$repository$path,
@@ -73,7 +75,7 @@ write_database <- function(x, create = FALSE, ...) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else {
+    } else if (method == "update") {
       message("Updating data set: ", dataset_ref, "\n")
       response <- PUT(env$repository$url,
                       path = paste(env$repository$path,
@@ -89,6 +91,8 @@ write_database <- function(x, create = FALSE, ...) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
+    } else {
+      stop("Method not implemented.")
     }
   })
   return(invisible(NULL))

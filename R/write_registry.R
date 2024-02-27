@@ -1,4 +1,4 @@
-write_registry <- function(structure, x, create = FALSE, ...) {
+write_registry <- function(structure, x, method = "update", ...) {
 
 
   # Parameters ---
@@ -11,6 +11,8 @@ write_registry <- function(structure, x, create = FALSE, ...) {
   } else {
     credentials <- NULL
   }
+  stopifnot(length(method) == 1)
+  stopifnot(method %in% c("create", "update"))
 
 
   # Fetch structure(s) ---
@@ -29,14 +31,14 @@ write_registry <- function(structure, x, create = FALSE, ...) {
   params$header <- header
   structure_data <-
     switch(structure,
-           "category-scheme" = write_category_scheme(x, create, params),
-           "codelist" = write_codelist(x, create, params),
-           "concept-scheme" = write_concept_scheme(x, create, params),
-           "dataflow" = write_dataflow(x, create, params),
-           "data-structure" = write_data_structure(x, create, params),
-           "memberlist" = write_memberlist(x, create, params),
-           "consumption-agreement" = write_cons_agreement(x, create, params),
-           "provision-agreement" = write_prov_agreement(x, create, params),
+           "category-scheme" = write_category_scheme(x, method, params),
+           "codelist" = write_codelist(x, method, params),
+           "concept-scheme" = write_concept_scheme(x, method, params),
+           "dataflow" = write_dataflow(x, method, params),
+           "data-structure" = write_data_structure(x, method, params),
+           "memberlist" = write_memberlist(x, method, params),
+           "consumption-agreement" = write_cons_agreement(x, method, params),
+           "provision-agreement" = write_prov_agreement(x, method, params),
            stop("Specified structure, ", structure, ", is not supported."))
 }
 
@@ -45,7 +47,7 @@ write_registry <- function(structure, x, create = FALSE, ...) {
 # Category scheme ---
 
 
-write_category_scheme <- function(category_scheme, create, params) {
+write_category_scheme <- function(category_scheme, method, params) {
   if(is.null(params$file)) {
     category_scheme_ref <- paste(category_scheme$agencyid,
                                  category_scheme$id,
@@ -91,7 +93,7 @@ write_category_scheme <- function(category_scheme, create, params) {
         data_message[[2]]$structures[["category-schemes"]][[1]][[2]]$categories[[i]] <- category
       }
     }
-    if (create) {
+    if (method == "create") {
       message("Creating category scheme: ", category_scheme_ref, "\n")
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
@@ -106,7 +108,7 @@ write_category_scheme <- function(category_scheme, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else {
+    } else if (method == "update") {
       message("Updating category scheme: ", category_scheme_ref, "\n")
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
@@ -122,6 +124,8 @@ write_category_scheme <- function(category_scheme, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
+    } else {
+      stop("Method not implemented.")
     }
   } else {
     categories <- category_scheme$categories
@@ -137,7 +141,7 @@ write_category_scheme <- function(category_scheme, create, params) {
 # Codelist ---
 
 
-write_codelist <- function(codelist, create, params) {
+write_codelist <- function(codelist, method, params) {
   if(is.null(params$file)) {
     codelist_ref <- paste(codelist$agencyid,
                           codelist$id,
@@ -169,7 +173,7 @@ write_codelist <- function(codelist, create, params) {
       }
       data_message[[2]]$structures$codelists[[1]][[2]]$codes[[i]] <- code
     }
-    if (create) {
+    if (method == "create") {
       message("Creating codelist: ", codelist_ref, "\n")
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
@@ -184,7 +188,7 @@ write_codelist <- function(codelist, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else {
+    } else if (method == "update") {
       message("Updating codelist: ", codelist_ref, "\n")
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
@@ -200,6 +204,8 @@ write_codelist <- function(codelist, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
+    } else {
+      stop("Method not implemented.")
     }
   } else {
     codes <- codelist$codes
@@ -215,7 +221,7 @@ write_codelist <- function(codelist, create, params) {
 # Concept scheme ---
 
 
-write_concept_scheme <- function(concept_scheme, create, params) {
+write_concept_scheme <- function(concept_scheme, method, params) {
   if(is.null(params$file)) {
     concept_scheme_ref <- paste(concept_scheme$agencyid,
                                 concept_scheme$id,
@@ -256,7 +262,7 @@ write_concept_scheme <- function(concept_scheme, create, params) {
       }
       data_message[[2]]$structures[["concept-schemes"]][[1]][[2]]$concepts[[i]] <- concept
     }
-    if (create) {
+    if (method == "create") {
       message("Creating concept scheme: ", concept_scheme_ref, "\n")
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
@@ -271,7 +277,7 @@ write_concept_scheme <- function(concept_scheme, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else {
+    } else if (method == "update") {
       message("Updating concept scheme: ", concept_scheme_ref, "\n")
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
@@ -287,6 +293,8 @@ write_concept_scheme <- function(concept_scheme, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
+    } else {
+      stop("Method not implemented.")
     }
   } else {
     concepts <- concept_scheme$concepts
@@ -302,7 +310,7 @@ write_concept_scheme <- function(concept_scheme, create, params) {
 # Dataflow ---
 
 
-write_dataflow <- function(dataflow, create, params) {
+write_dataflow <- function(dataflow, method, params) {
   if(is.null(params$file)) {
     dataflow_ref <- paste(dataflow$agencyid,
                           dataflow$id,
@@ -328,7 +336,7 @@ write_dataflow <- function(dataflow, create, params) {
            list(agencyid = unbox(dataflow$data_structure$agencyid),
                 id = unbox(dataflow$data_structure$id),
                 version = unbox(dataflow$data_structure$version)))
-    if (create) {
+    if (method == "create") {
       message("Creating dataflow: ", dataflow_ref, "\n")
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
@@ -343,7 +351,7 @@ write_dataflow <- function(dataflow, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else {
+    } else if (method == "update") {
       message("Updating dataflow: ", dataflow_ref, "\n")
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
@@ -359,6 +367,8 @@ write_dataflow <- function(dataflow, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
+    } else {
+      stop("Method not implemented.")
     }
   } else {
     data_structure <- dataflow$data_structure
@@ -374,7 +384,7 @@ write_dataflow <- function(dataflow, create, params) {
 # Data structure ---
 
 
-write_data_structure <- function(data_structure, create, params) {
+write_data_structure <- function(data_structure, method, params) {
   if(is.null(params$file)) {
     data_structure_ref <- paste(data_structure$agencyid,
                                 data_structure$id,
@@ -506,7 +516,7 @@ write_data_structure <- function(data_structure, create, params) {
 
     # Push data message ---
 
-   if (create) {
+   if (method == "create") {
       message("Creating data structure: ", data_structure_ref, "\n")
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
@@ -521,7 +531,7 @@ write_data_structure <- function(data_structure, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else {
+    } else if (method == "update") {
       message("Updating data structure: ", data_structure_ref, "\n")
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
@@ -537,6 +547,8 @@ write_data_structure <- function(data_structure, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
+    } else {
+      stop("Method not implemented.")
     }
   } else {
     dimensions <- data_structure$dimensions
@@ -557,7 +569,7 @@ write_data_structure <- function(data_structure, create, params) {
 # Memberlist ---
 
 
-write_memberlist <- function(memberlist, create, params) {
+write_memberlist <- function(memberlist, method, params) {
   if(is.null(params$file)) {
     memberlist_ref <- paste(memberlist$agencyid,
                             memberlist$id,
@@ -611,7 +623,7 @@ write_memberlist <- function(memberlist, create, params) {
         data_message[[2]]$structures[["memberlists"]][[1]][[2]]$members[[i]] <- member
       }
     }
-    if (create) {
+    if (method == "create") {
       message("Creating memberlist: ", memberlist_ref, "\n")
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
@@ -626,7 +638,7 @@ write_memberlist <- function(memberlist, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else {
+    } else if (method == "udpate") {
       message("Updating memberlist: ", memberlist_ref, "\n")
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
@@ -657,7 +669,7 @@ write_memberlist <- function(memberlist, create, params) {
 # Consumption agreement ---
 
 
-write_cons_agreement <- function(cons_agreement, create, params) {
+write_cons_agreement <- function(cons_agreement, method, params) {
   if(is.null(params$file)) {
     cons_agreement_ref <- paste(cons_agreement$agencyid,
                                 cons_agreement$id,
@@ -689,7 +701,7 @@ write_cons_agreement <- function(cons_agreement, create, params) {
                 parentid = unbox(cons_agreement$data_consumer$parentid),
                 parentversion = unbox(cons_agreement$data_consumer$parentversion),
                 id = unbox(cons_agreement$data_consumer$id)))
-    if (create) {
+    if (method == "create") {
       message("Creating consumption agreement: ", cons_agreement_ref, "\n")
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
@@ -704,7 +716,7 @@ write_cons_agreement <- function(cons_agreement, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else {
+    } else if (method == "update") {
       message("Updating consumption agreement: ", cons_agreement_ref, "\n")
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
@@ -720,6 +732,8 @@ write_cons_agreement <- function(cons_agreement, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
+    } else {
+      stop("Method not implemented.")
     }
   } else {
     dataflow <- cons_agreement$dataflow
@@ -738,7 +752,7 @@ write_cons_agreement <- function(cons_agreement, create, params) {
 # Provision agreement ---
 
 
-write_prov_agreement <- function(prov_agreement, create, params) {
+write_prov_agreement <- function(prov_agreement, method, params) {
   if(is.null(params$file)) {
     prov_agreement_ref <- paste(prov_agreement$agencyid,
                                 prov_agreement$id,
@@ -770,7 +784,7 @@ write_prov_agreement <- function(prov_agreement, create, params) {
                 parentid = unbox(prov_agreement$data_provider$parentid),
                 parentversion = unbox(prov_agreement$data_provider$parentversion),
                 id = unbox(prov_agreement$data_provider$id)))
-    if (create) {
+    if (method == "create") {
       message("Creating provision agreement: ", prov_agreement_ref, "\n")
       response <- POST(params$env$repository$url,
                        path = paste(params$env$repository$path,
@@ -785,7 +799,7 @@ write_prov_agreement <- function(prov_agreement, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else {
+    } else if (method == "update") {
       message("Updating provision agreement: ", prov_agreement_ref, "\n")
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
@@ -801,6 +815,8 @@ write_prov_agreement <- function(prov_agreement, create, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
+    } else {
+      stop("Method not implemented.")
     }
   } else {
     dataflow <- prov_agreement$dataflow
