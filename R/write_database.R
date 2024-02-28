@@ -76,7 +76,6 @@ write_database <- function(x, method = "update", ...) {
         error <- content(response, encoding = "UTF-8")
         if (response$status_code == 400) {
           if (error$message == "Validation error") {
-            error$cause[[1]]$schema <- NULL
             stop(toJSON(error, pretty = TRUE))
           } else {
             stop(error)
@@ -102,7 +101,6 @@ write_database <- function(x, method = "update", ...) {
         error <- content(response, encoding = "UTF-8")
         if (response$status_code == 400) {
           if (error$message == "Validation error") {
-            error$cause[[1]]$schema <- NULL
             stop(toJSON(error, pretty = TRUE))
           } else {
             stop(error)

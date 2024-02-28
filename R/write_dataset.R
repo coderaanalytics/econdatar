@@ -44,7 +44,7 @@ write_dataset <- function(x, method = "stage", ...) {
                               "structures" = NULL,
                               "data-sets" =
                                 list(list(unbox("#sdmx.infomodel.dataset.DataSet"), 
-                                          validate_series(data_set)))))
+                                          validate_series(data_set_ref, data_set)))))
     if (!is.null(params$file)) {
       write(toJSON(data_message, na = "null", always_decimal = TRUE), file = params$file)
       message("Data set saved to local storage.\n")
@@ -66,7 +66,6 @@ write_dataset <- function(x, method = "stage", ...) {
         error <- content(response, encoding = "UTF-8")
         if (response$status_code == 400) {
           if (error$message == "Validation error") {
-            error$cause[[1]]$schema <- NULL
             stop(toJSON(error, pretty = TRUE))
           } else {
             stop(error)
@@ -93,7 +92,6 @@ write_dataset <- function(x, method = "stage", ...) {
         error <- content(response, encoding = "UTF-8")
         if (response$status_code == 400) {
           if (error$message == "Validation error") {
-            error$cause[[1]]$schema <- NULL
             stop(toJSON(error, pretty = TRUE))
           } else {
             stop(error)
@@ -119,7 +117,7 @@ write_econdata <- function(x, create = FALSE, update = FALSE, stage = TRUE, ...)
   write_dataset(x = x, ...)
 }
 
-validate_series <- function(data_set) {
+validate_series <- function(data_set_ref, data_set) {
     d <- lapply(attr(data_set, "metadata"),
                 function(x) if (length(x) == 1) unbox(x) else x)
     d$series <- lapply(seq_len(length(data_set)), function(index) {
