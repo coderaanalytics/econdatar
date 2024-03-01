@@ -1,6 +1,6 @@
 Package: econdatar
 Title: Automation of data tasks to and from Codera Analytics' econometric data service
-Version: 3.0.0
+Version: 3.0.1
 Date: 2024-03-01
 Authors@R: c(person("Byron", "Botha", role = c("aut", "cre"), email = "byron@codera.co.za"),
              person("Sebastian", "Krantz", role = "ctb"))
