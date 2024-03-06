@@ -23,13 +23,15 @@ write_database <- function(x, method = "update", ...) {
   header$id <- tryCatch(
                         unbox(paste0("ECONDATAR-V",
                                      sessionInfo()[[7]]$econdatar[[4]])),
-                        error = function(e)
-                          unbox("Unknown"))
+                        error = function(e) {
+                          unbox("Unknown")
+                        })
   header$prepared <- unbox(format(Sys.time(), format = "%Y-%m-%dT%T"))
   header$sender <- tryCatch(
                             unbox(Sys.getenv()[["USER"]]),
-                            error = function(e)
-                              unbox("Anonymous"))
+                            error = function(e) {
+                              unbox("Anonymous")
+                            })
   header$receiver <- unbox("EconData web application")
   if (any(names(x) == "data-sets")) {
     datasets <- x[["data-sets"]]
@@ -45,11 +47,12 @@ write_database <- function(x, method = "update", ...) {
                          attr(dataset, "metadata")$id,
                          attr(dataset, "metadata")$version, sep = "-")
     d <- lapply(attr(dataset, "metadata"), function(x) {
-      if (length(x) == 1) { unbox(x) } else { return(x) }
+      if (length(x) == 1) unbox(x) else return(x)
     })
     d$series <- list()
     for (index in seq_len(length(dataset))) {
       series <- lapply(attr(dataset[[index]], "metadata"), unbox)
+      series$obs <- list()
       d$series[[index]] <- series
     }
     datasets <- list(list(unbox("#sdmx.infomodel.dataset.DataSet"), d))
@@ -58,14 +61,16 @@ write_database <- function(x, method = "update", ...) {
                               "structures" = NULL,
                               "data-sets" = datasets))
     if (!is.null(params$file)) {
-      write(toJSON(data_message, na = "null", always_decimal = TRUE), file = params$file)
+      write(toJSON(data_message, na = "null", always_decimal = TRUE),
+            file = params$file)
       message("Data set saved to local storage.\n")
     } else if (method == "create") {
       message("Creating data set: ", dataset_ref, "\n")
       response <- POST(env$repository$url,
                        path = paste(env$repository$path,
                                     "datasets", sep = "/"),
-                       body = toJSON(data_message, na = "null", always_decimal = TRUE),
+                       body = toJSON(data_message, na = "null",
+                                     always_decimal = TRUE),
                        set_cookies(.cookies = get("econdata_session",
                                                   envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
@@ -90,7 +95,8 @@ write_database <- function(x, method = "update", ...) {
                       path = paste(env$repository$path,
                                    "datasets",
                                    dataset_ref, sep = "/"),
-                      body = toJSON(data_message, na = "null", always_decimal = TRUE),
+                      body = toJSON(data_message, na = "null",
+                                    always_decimal = TRUE),
                       set_cookies(.cookies = get("econdata_session",
                                                  envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
