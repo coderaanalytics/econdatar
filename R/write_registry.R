@@ -638,7 +638,7 @@ write_memberlist <- function(memberlist, method, params) {
       } else {
         stop(content(response, encoding = "UTF-8"))
       }
-    } else if (method == "udpate") {
+    } else if (method == "update") {
       message("Updating memberlist: ", memberlist_ref, "\n")
       response <- PUT(params$env$repository$url,
                       path = paste(params$env$repository$path,
