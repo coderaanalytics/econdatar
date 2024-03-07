@@ -267,7 +267,7 @@ process_concept_scheme <- function(structure, params) {
           concept[[2]]$description[[2]]
         }
         representation <- if (is.list(concept[[2]][["core-representation"]])) {
-          codelist_ref <- component[[2]][["core-representation"]][[2]]
+          codelist_ref <- concept[[2]][["core-representation"]][[2]]
           list(representation = "codelist",
                codelist_agencyid = codelist_ref$agencyid,
                codelist_id = codelist_ref$id,
