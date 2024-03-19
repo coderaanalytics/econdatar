@@ -37,6 +37,6 @@ Please see the [EconData blog](https://blog.econdata.co.za) for in depth tutoria
 
 ## License
 
-Copyright © 2023 Codera Pty Ltd
+Copyright © 2024 Codera Pty Ltd
 
 Available under the terms of the MIT License, see `LICENSE`.
