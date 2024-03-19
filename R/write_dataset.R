@@ -39,14 +39,16 @@ write_dataset <- function(x, method = "stage", ...) {
     data_set_ref <- paste(metadata$agencyid,
                           metadata$id,
                           metadata$version, sep = "-")
-    data_message <- list(unbox("#sdmx.infomodel.message.SDMXMessage"),
-                         list("header" = header,
-                              "structures" = NULL,
-                              "data-sets" =
-                                list(list(unbox("#sdmx.infomodel.dataset.DataSet"), 
-                                          validate_series(data_set_ref, data_set)))))
+    data_message <-
+      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+           list("header" = header,
+                "structures" = NULL,
+                "data-sets" =
+                  list(list(unbox("#sdmx.infomodel.dataset.DataSet"),
+                            validate_series(data_set_ref, data_set)))))
     if (!is.null(params$file)) {
-      write(toJSON(data_message, na = "null", always_decimal = TRUE), file = params$file)
+      write(toJSON(data_message, na = "null", always_decimal = TRUE),
+            file = params$file)
       message("Data set saved to local storage.\n")
     } else if (method == "stage") {
       message("Staging release: ", data_set_ref, "\n")
@@ -55,7 +57,9 @@ write_dataset <- function(x, method = "stage", ...) {
                                     "datasets",
                                     data_set_ref,
                                     "stage", sep = "/"),
-                       body = toJSON(data_message, na = "null", always_decimal = TRUE),
+                       body = toJSON(data_message,
+                                     na = "null",
+                                     always_decimal = TRUE),
                        set_cookies(.cookies = get("econdata_session",
                                                   envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
@@ -81,7 +85,9 @@ write_dataset <- function(x, method = "stage", ...) {
                                     "datasets",
                                     data_set_ref,
                                     "validate", sep = "/"),
-                       body = toJSON(data_message, na = "null", always_decimal = TRUE),
+                       body = toJSON(data_message,
+                                     na = "null",
+                                     always_decimal = TRUE),
                        set_cookies(.cookies = get("econdata_session",
                                                   envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
@@ -108,7 +114,7 @@ write_dataset <- function(x, method = "stage", ...) {
 }
 
 write_econdata <- function(x, create = FALSE, update = FALSE, stage = TRUE, ...) {
-  if(create || update) {
+  if (create || update) {
     stop("Create and update no longer supported, please use 'write_dataset'")
   }
   if (!stage) {
@@ -118,43 +124,46 @@ write_econdata <- function(x, create = FALSE, update = FALSE, stage = TRUE, ...)
 }
 
 validate_series <- function(data_set_ref, data_set) {
-    d <- lapply(attr(data_set, "metadata"),
-                function(x) if (length(x) == 1) unbox(x) else x)
-    d$series <- lapply(seq_len(length(data_set)), function(index) {
-        series <- lapply(attr(data_set[[index]], "metadata"), unbox)
-        freq <- series$FREQ
-        x <- data_set[[index]]
-        y <- rownames(x)
-        if (all(grepl("^\\d{4}-\\d{2}-\\d{2}$", y, perl = TRUE))) {
-          z <- tryCatch(as.Date(y), error = function(e) {
-                          stop("Unable to coerce some row names to as.Date\n",
-                               "Error in data set ", data_set_ref,
-                               " at index ", index)
-                       })
-          if (!is.null(freq) && any(freq == c("A", "S", "Q"))) {
-            month <- as.integer(substr(y, 6, 7))
-          }
-          if (!is.null(freq) && any(freq == c("A", "S", "Q", "M"))) {
-            day <- as.integer(substr(y, 9, 10))
-          }
-          periods_valid <-
-            switch(freq,
-                   "A" = all(month == 1) && all(day == 1),
-                   "S" = all(month %in% c(1, 7)) && all(day == 1),
-                   "Q" = all(month %in% c(1, 4, 7, 10)) && all(day == 1),
-                   "M" = all(day == 1),
-                   "W" = all(weekdays(z, TRUE) == "Mon"),
-                   "B" = !any(weekdays(z, TRUE) %in% c("Sat", "Sun")))
-          if (!is.null(periods_valid) && !periods_valid) {
-            stop("Some dates (row names) are not valid\n",
-                 "Error in data set ", data_set_ref, " at index ", index)
-          }
-        } else {
-          stop("Row names must have format: '%Y-%m-%d'\n",
-               "Error in data set ", data_set_ref, " at index ", index)
-        }
-        series$obs <- data.frame(TIME_PERIOD = y, x, row.names = NULL)
-        return(series)
+  d <- lapply(attr(data_set, "metadata"),
+              function(x) if (length(x) == 1) unbox(x) else x)
+  d$series <- lapply(seq_len(length(data_set)), function(index) {
+    series <- lapply(attr(data_set[[index]], "metadata"), unbox)
+    freq <- series$FREQ
+    x <- data_set[[index]]
+    y <- rownames(x)
+    if (all(grepl("^\\d{4}-\\d{2}-\\d{2}$", y, perl = TRUE))) {
+      z <- tryCatch(as.Date(y), error = function(e) {
+        stop("Unable to coerce some row names to as.Date\n",
+             "Error in data set ", data_set_ref,
+             " at index ", index)
       })
-    return(d)
+      if (!is.null(freq) && any(freq == c("A", "S", "Q"))) {
+        month <- as.integer(substr(y, 6, 7))
+      }
+      if (!is.null(freq) && any(freq == c("A", "S", "Q", "M"))) {
+        day <- as.integer(substr(y, 9, 10))
+      }
+      periods_valid <-
+        switch(freq,
+               "A" = all(month == 1) && all(day == 1),
+               "S" = all(month %in% c(1, 7)) && all(day == 1),
+               "Q" = all(month %in% c(1, 4, 7, 10)) && all(day == 1),
+               "M" = all(day == 1),
+               "W" = all(weekdays(z, TRUE) == "Mon"),
+               "B" = !any(weekdays(z, TRUE) %in% c("Sat", "Sun")),
+               "D" = TRUE,
+               "I" = TRUE,
+               FALSE)
+      if (!periods_valid) {
+        stop("Some dates (row names) are not valid\n",
+             "Error in data set ", data_set_ref, " at index ", index)
+      }
+    } else {
+      stop("Row names must have format: '%Y-%m-%d'\n",
+           "Error in data set ", data_set_ref, " at index ", index)
+    }
+    series$obs <- data.frame(TIME_PERIOD = y, x, row.names = NULL)
+    return(series)
+  })
+  return(d)
 }
