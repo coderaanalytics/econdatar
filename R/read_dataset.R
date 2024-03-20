@@ -150,7 +150,7 @@ get_release <- function(env, ref, candidate_release) {
       data_message <- content(response,
                               type = "application/json",
                               encoding = "UTF-8")
-      if (data_message$releases) {
+      if (length(data_message$releases) != 0) {
         if (candidate_release == "latest") {
           release <- head(data_message$releases, n = 1)[[1]]$release |>
             as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
