@@ -1,9 +1,8 @@
 read_release <- function(id, tidy = FALSE, ...) {
 
 
-  # Parameters ---
+  # Parameters ----
 
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))
   params <- list(...)
   if (!is.null(params$username) && !is.null(params$password)) {
     credentials <- paste(params$username, params$password, sep = ";")
@@ -30,20 +29,22 @@ read_release <- function(id, tidy = FALSE, ...) {
   if (!is.null(params$description)) {
     query_params$description <- params$description
   }
+  env <- fromJSON(system.file("settings.json",
+                              package = "econdatar"))[[agencyid]]
 
 
-  # Fetch release ---
+  # Fetch release ----
 
   if (!exists("econdata_session", envir = .pkgenv)) {
     login_helper(credentials, env$repository$url)
   }
-  dataset_ref <- paste(agencyid, id, version, sep = "-")
   response <- GET(env$repository$url,
                   path = c(env$repository$path, "/datasets"),
                   query = list(agencyids = paste(agencyid, collapse = ","),
                                ids = paste(id, collapse = ","),
                                versions = paste(version, collapse = ",")),
-                  set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                  set_cookies(.cookies =
+                                get("econdata_session", envir = .pkgenv)),
                   accept_json())
   if (response$status_code != 200)
     stop(content(response, encoding = "UTF-8"))
@@ -57,7 +58,8 @@ read_release <- function(id, tidy = FALSE, ...) {
                                  "datasets", dataset_ref,
                                  "release", sep = "/"),
                     query = query_params,
-                    set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+                    set_cookies(.cookies =
+                                  get("econdata_session", envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code == 200) {
       message("Fetching releases for: ", dataset_ref, "\n")
@@ -66,11 +68,11 @@ read_release <- function(id, tidy = FALSE, ...) {
     }
     release <- content(response, type = "application/json", encoding = "UTF-8")
     release$releases <- lapply(release$releases, function(r) {
-        list("release" = strptime(r$release, "%Y-%m-%dT%H:%M:%S%z"),
-             "start-period" = strptime(r[["start-period"]], "%Y-%m-%d"),
-             "end-period" = strptime(r[["end-period"]], "%Y-%m-%d"),
-             "description" = r[["description"]])
-      })
+      list("release" = strptime(r$release, "%Y-%m-%dT%H:%M:%S%z"),
+           "start-period" = strptime(r[["start-period"]], "%Y-%m-%d"),
+           "end-period" = strptime(r[["end-period"]], "%Y-%m-%d"),
+           "description" = r[["description"]])
+    })
     class(release) <- "eds_release"
     if (tidy) {
       tidy_data(release, ...)

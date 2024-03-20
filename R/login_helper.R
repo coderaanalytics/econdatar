@@ -21,7 +21,7 @@ login_helper <- function(credentials, login_url) {
   cookie_jar <- cookies(response)
   domain <- substr(login_url, 9, nchar(login_url))
   session <- cookie_jar[which(cookie_jar[, 1] == paste0("#HttpOnly_", domain) &
-                              cookie_jar[, 6] == "ring-session"), ]
+                                cookie_jar[, 6] == "ring-session"), ]
   assign("econdata_session", as.character(session), envir = .pkgenv)
   lockBinding("econdata_session", .pkgenv)
 }

@@ -3,7 +3,6 @@ write_database <- function(x, method = "update", ...) {
 
   # Parameters ---
 
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))
   params <- list(...)
   if (!is.null(params$username) && !is.null(params$password)) {
     credentials <- paste(params$username, params$password, sep = ";")
@@ -12,6 +11,8 @@ write_database <- function(x, method = "update", ...) {
   }
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("create", "update"))
+  env <- fromJSON(system.file("settings.json",
+                              package = "econdatar"))[[x$agencyid]]
 
 
   # Push data message ---

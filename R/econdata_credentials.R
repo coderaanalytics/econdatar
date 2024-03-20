@@ -1,6 +1,6 @@
 econdata_credentials <- function() {
   if (!requireNamespace("tcltk", quietly = TRUE)) {
-    stop("Package \"tcltk\" needed for this function to work. Please install it.",
+    stop("Package \"tcltk\" needed for this function to work.",
          call. = FALSE)
   }
   user <- pswd <- NULL # Need to add global bindings for variables
@@ -28,9 +28,12 @@ econdata_credentials <- function() {
   }
   submit.but <- tcltk::tkbutton(tt, text = "submit", command = submit)
 
-  tcltk::tkgrid(tcltk::tklabel(tt, text = "Enter User Details"), columnspan = 2)
-  tcltk::tkgrid(tcltk::tklabel(tt, text = "Username"), user.entry, pady = 10, padx = 10)
-  tcltk::tkgrid(tcltk::tklabel(tt, text = "Password"), pswd.entry, pady = 10, padx = 10)
+  tcltk::tkgrid(tcltk::tklabel(tt, text = "Enter User Details"),
+                columnspan = 2)
+  tcltk::tkgrid(tcltk::tklabel(tt, text = "Username"),
+                user.entry, pady = 10, padx = 10)
+  tcltk::tkgrid(tcltk::tklabel(tt, text = "Password"),
+                pswd.entry, pady = 10, padx = 10)
   tcltk::tkgrid(submit.but, reset.but, pady = 10, padx = 50)
 
   tcltk::tkwait.window(tt)

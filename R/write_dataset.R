@@ -1,7 +1,7 @@
 write_dataset <- function(x, method = "stage", ...) {
 
 
-  # Parameters ---
+  # Parameters ----
 
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
   params <- list(...)
@@ -12,9 +12,11 @@ write_dataset <- function(x, method = "stage", ...) {
   }
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("stage", "validate"))
+  env <- fromJSON(system.file("settings.json",
+                              package = "econdatar"))[[x$agencyid]]
 
 
-  # Push data message ---
+  # Push data message ----
 
   if (is.null(params$file) && !exists("econdata_session", envir = .pkgenv)) {
     login_helper(credentials, env$repository$url)
@@ -32,7 +34,7 @@ write_dataset <- function(x, method = "stage", ...) {
   }
 
 
-  # Push each data set individually ---
+  # Push each data set individually ----
 
   lapply(data_sets, function(data_set) {
     metadata <- attr(data_set, "metadata")

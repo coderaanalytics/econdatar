@@ -1,10 +1,22 @@
 {
-  "repository" : {
-    "url" : "https://www.econdata.co.za",
-    "path" : "sdmx-codera/v1"
+  "ECONDATA" : {
+    "repository" : {
+      "url" : "https://www.econdata.co.za",
+      "path" : "sdmx-codera/v1"
+    },
+    "registry" : {
+      "url" : "https://www.econdata.co.za",
+      "path" : "sdmx-codera/v1"
+    }
   },
-  "registry" : {
-    "url" : "https://www.econdata.co.za",
-    "path" : "sdmx-codera/v1"
+  "FIRSTRAND" : {
+    "repository" : {
+      "url" : "https://firstrand.econdata.co.za",
+      "path" : "sdmx-codera/v1"
+    },
+    "registry" : {
+      "url" : "https://firstrand.econdata.co.za",
+      "path" : "sdmx-codera/v1"
+    }
   }
 }
