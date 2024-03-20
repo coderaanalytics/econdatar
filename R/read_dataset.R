@@ -19,9 +19,12 @@ read_dataset <- function(id, tidy = FALSE, ...) {
   } else {
     version <- "latest"
   }
-
-  env <- fromJSON(system.file("settings.json",
-                              package = "econdatar"))[[agencyid]]
+  if (!is.null(params$portal)) {
+    portal <- params$portal
+  } else {
+    portal <- "econdata"
+  }
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
 
 
   # Fetch data set(s) ----

@@ -23,10 +23,14 @@ write_release <- function(id, version, providerid, description, method = "releas
                                    "%Y-%m-%dT%H:%M:%S",
                                    tz = "Africa/Johannesburg")
   }
+  if (!is.null(params$portal)) {
+    portal <- params$portal
+  } else {
+    portal <- "econdata"
+  }
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("release", "reset", "rollback"))
-  env <- fromJSON(system.file("settings.json",
-                              package = "econdatar"))[[agencyid]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
 
 
   # Commit data set release ----

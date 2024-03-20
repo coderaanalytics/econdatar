@@ -1,5 +1,5 @@
 {
-  "ECONDATA" : {
+  "econdata" : {
     "repository" : {
       "url" : "https://www.econdata.co.za",
       "path" : "sdmx-codera/v1"
@@ -9,7 +9,7 @@
       "path" : "sdmx-codera/v1"
     }
   },
-  "FIRSTRAND" : {
+  "firstrand" : {
     "repository" : {
       "url" : "https://firstrand.econdata.co.za",
       "path" : "sdmx-codera/v1"

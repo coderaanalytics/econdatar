@@ -9,10 +9,14 @@ write_registry <- function(structure, x, method = "update", ...) {
   } else {
     credentials <- NULL
   }
+  if (!is.null(params$portal)) {
+    portal <- params$portal
+  } else {
+    portal <- "econdata"
+  }
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("create", "update"))
-  env <- fromJSON(system.file("settings.json",
-                              package = "econdatar"))[[x$agencyid]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
   params$env <- env
 
 

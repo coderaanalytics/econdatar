@@ -1,7 +1,7 @@
 write_database <- function(x, method = "update", ...) {
 
 
-  # Parameters ---
+  # Parameters ----
 
   params <- list(...)
   if (!is.null(params$username) && !is.null(params$password)) {
@@ -9,13 +9,17 @@ write_database <- function(x, method = "update", ...) {
   } else {
     credentials <- NULL
   }
+  if (!is.null(params$portal)) {
+    portal <- params$portal
+  } else {
+    portal <- "econdata"
+  }
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("create", "update"))
-  env <- fromJSON(system.file("settings.json",
-                              package = "econdatar"))[[x$agencyid]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
 
 
-  # Push data message ---
+  # Push data message ----
 
   if (is.null(params$file) && !exists("econdata_session", envir = .pkgenv)) {
     login_helper(credentials, env$repository$url)
@@ -41,7 +45,7 @@ write_database <- function(x, method = "update", ...) {
   }
 
 
-  # Push each data set individually ---
+  # Push each data set individually ----
 
   lapply(datasets, function(dataset) {
     dataset_ref <- paste(attr(dataset, "metadata")$agencyid,

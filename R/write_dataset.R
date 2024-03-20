@@ -10,10 +10,14 @@ write_dataset <- function(x, method = "stage", ...) {
   } else {
     credentials <- NULL
   }
+  if (!is.null(params$portal)) {
+    portal <- params$portal
+  } else {
+    portal <- "econdata"
+  }
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("stage", "validate"))
-  env <- fromJSON(system.file("settings.json",
-                              package = "econdatar"))[[x$agencyid]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
 
 
   # Push data message ----
