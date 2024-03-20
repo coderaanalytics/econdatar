@@ -150,34 +150,39 @@ get_release <- function(env, ref, candidate_release) {
       data_message <- content(response,
                               type = "application/json",
                               encoding = "UTF-8")
-      if (candidate_release == "latest") {
-        release <- head(data_message$releases, n = 1)[[1]]$release |>
-          as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
-        attr(release, "tzone") <- "Africa/Johannesburg"
-        return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
-      } else {
-        release <- sapply(data_message$releases, function(release) {
-          if (candidate_release == release$description) {
-            release$release
-          } else {
-            NA
-          }
-        }) |>
-          na.omit() |>
-          head(n = 1)
-        if (length(release) != 0) {
-          release <- as.POSIXct(release,
-                                tz = "UTC",
-                                format = "%Y-%m-%dT%H:%M:%SZ")
-          attr(release, "tzone") <- "Africa/Johannesburg"
-          return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
-        } else {
-          message("Release not found, returning latest release instead.")
-          release <- tail(data_message$releases, n = 1)[[1]]$release |>
+      if (data_message$releases) {
+        if (candidate_release == "latest") {
+          release <- head(data_message$releases, n = 1)[[1]]$release |>
             as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
           attr(release, "tzone") <- "Africa/Johannesburg"
           return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
+        } else {
+          release <- sapply(data_message$releases, function(release) {
+            if (candidate_release == release$description) {
+              release$release
+            } else {
+              NA
+            }
+          }) |>
+            na.omit() |>
+            head(n = 1)
+          if (length(release) != 0) {
+            release <- as.POSIXct(release,
+                                  tz = "UTC",
+                                  format = "%Y-%m-%dT%H:%M:%SZ")
+            attr(release, "tzone") <- "Africa/Johannesburg"
+            return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
+          } else {
+            message("Release not found, returning latest release instead.")
+            release <- tail(data_message$releases, n = 1)[[1]]$release |>
+              as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
+            attr(release, "tzone") <- "Africa/Johannesburg"
+            return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
+          }
         }
+      } else {
+        stop("Data set has no historical releases, ",
+             "try: release = \"unreleased\"")
       }
     })
   } else {
