@@ -38,7 +38,7 @@ tidy_wide <- function(x, codelabel = FALSE, prettymeta = TRUE, ...) {
                                        tidy_wide,
                                        codelabel,
                                        prettymeta))
-  metadata <- if (prettymeta) get_metadata(x) else NULL
+  metadata <- if (prettymeta) get_metadata(x, ...) else NULL
   d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
     dcast(time_period ~ series_key, value.var = "OBS_VALUE") |>
     fmutate(time_period = as.Date(time_period))
@@ -86,7 +86,7 @@ tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, pre
                   prettymeta)
     return(if (combine) rbindlist(res, use.names = TRUE, fill = TRUE) else res)
   }
-  metadata <- if (prettymeta) get_metadata(x) else NULL
+  metadata <- if (prettymeta) get_metadata(x, ...) else NULL
   d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
     fmutate(time_period = as.Date(time_period),
             series_key = qF(series_key)) |>
