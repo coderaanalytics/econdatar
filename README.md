@@ -8,7 +8,7 @@
 ```r
 install.packages(c("remotes", "tcltk"), repos = "https://cran.mirror.ac.za")
 library("remotes")
-install_github("coderaanalytics/econdatar", ref = "3.0.1")
+install_github("coderaanalytics/econdatar", ref = "3.0.2")
 ```
 
 Install from disk
@@ -30,7 +30,7 @@ Or if selecting a particular release **(recommended)**, [see](https://github.com
 ```r
 library("remotes")
 remove.packages("econdatar")
-install_github("coderaanalytics/econdatar", ref = "3.0.1")
+install_github("coderaanalytics/econdatar", ref = "3.0.2")
 ```
 
 Please see the [EconData blog](https://blog.econdata.co.za) for in depth tutorials
