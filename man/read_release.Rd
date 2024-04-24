@@ -1,5 +1,6 @@
 \name{read_release}
 \alias{read_release}
+\alias{tidy_data.eds_release}
 \title{
 read_release
 }
@@ -7,7 +8,8 @@ read_release
 Returns the data for the given data set - ECONDATA:id(version), as a list, or as tidy \emph{data.table}'s. Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{econdata_tidy()}.
 }
 \usage{
-read_release(id, \dots, tidy = FALSE)
+read_release(id, tidy = FALSE, \dots)
+\method{tidy_data}{eds_release}(x, \dots)
 }
 \arguments{
   \item{id}{Data identifier.}
@@ -15,7 +17,7 @@ read_release(id, \dots, tidy = FALSE)
 
 \item{\dots}{Further \emph{Optional} arguments:
   \tabular{llll}{
-    \code{agencyid} \tab\tab Agency responsible for the data definition. \cr
+    \code{agencyid} \tab\tab character. Defaults to \code{ECONDATA}. Agency responsible for the metadata creation/maintenance. \cr
     \code{version} \tab\tab Version of the data definition. \cr
     \code{before} \tab\tab datetime. Returns all releases before a certain date. \cr
     \code{after} \tab\tab datetime. Returns all releases after a certain date. \cr

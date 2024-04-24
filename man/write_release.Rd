@@ -7,26 +7,17 @@ write_release
 Release data set with identifier - ECONDATA:id(version).
 }
 \usage{
-write_release(id, version, description, reset = FALSE, rollback = FALSE, \dots)
+write_release(id, version, providerid, description, method = "release", ...)
 }
 \arguments{
-  \item{id}{
-Data identifier.
-}
-  \item{version}{
-Version of the data definition.
-}
-  \item{description}{
-Description of the new data set release/vintage.
-}
-  \item{reset}{
-Should the unreleased data be reset (TRUE) or released (FALSE).
-}
-  \item{rollback}{
-Should the latest release be rolled back (deleted).
-}
+  \item{id}{Data identifier.}
+  \item{version}{Version of the data definition.}
+  \item{providerid}{Data provider identifier.}
+  \item{description}{Description of the new data set release/vintage.}
+  \item{method}{One of \code{release}, \code{reset}, or \code{rollback}. \code{release} releases staged data, \code{reset} wipes staged data, and \code{rollback} wipes the previous release.}
   \item{\dots}{Further \emph{Optional} arguments:
     \tabular{llll}{
+      \code{agencyid} \tab\tab character. Defaults to \code{"ECONDATA"}. Agency responsible for the metadata creation/maintenance. \cr
       \code{release} \tab\tab Date/time. For historical releases with format \%Y-\%m-\%dT\%H:\%M:\%S. \cr
       \code{username} \tab\tab character. EconData username. \cr
       \code{password} \tab\tab character. EconData password. \cr
@@ -49,8 +40,7 @@ The functionality provided by \emph{write_release} is to release, reset, or roll
 }
 \examples{
 \dontrun{
-write_release(agencyid = "ECONDATA",
-              id = "BA900",
+write_release(id = "BA900",
               version = "1.0.0",
               description = paste0("Vintage - ", Sys.Date()))
 }

@@ -1,6 +1,6 @@
 \name{read_dataset}
 \alias{read_dataset}
-\alias{tidy_data}
+\alias{tidy_data.eds_dataset}
 \title{
 read_dataset
 }
@@ -10,15 +10,16 @@ Returns the data for the given data set - ECONDATA:id(version), as a list, or as
 \usage{
 read_dataset(id, tidy = FALSE, \dots)
 
-tidy_data(x, \dots)
+\method{tidy_data}{eds_dataset}(x, wide = TRUE, \dots)
 }
 \arguments{
   \item{id}{Data set identifier.}
   \item{x}{A raw API return object to be tidied. Can also be done directly in \code{read_dataset()} by setting \code{tidy = TRUE}. See \code{tidy} below for tidying options.}
+  \item{wide}{Should the tidied data be returned in \emph{wide} or \emph{long} format.}
 
 \item{\dots}{Further \emph{Optional} arguments:
   \tabular{llll}{
-    \code{agencyid} \tab\tab character. Agency responsible for the metadata creation/maintenance. \cr
+    \code{agencyid} \tab\tab character. Defaults to \code{ECONDATA}. Agency responsible for the metadata creation/maintenance. \cr
     \code{version} \tab\tab character. Version(s) of the data (different versions will have different metadata), or 'all' to return all available versions. \cr
     \code{series_key} \tab\tab character. A character vector specifying a subset of time series (see the web platform (export function) for details). \cr
     \code{release} \tab\tab character (optionally with format \%Y-\%m-\%dT\%H:\%M:\%S, to be coerced to a date/time). The release description, which will return the data associated with that release (if the given description matches an existsing release); or a date/time which will return the data as it was at the given time; or 'latest' which will return the latest release; or 'unreleased' which will return any unreleased data (useful for data that is updated more often than it is released, e.g. daily data). \cr

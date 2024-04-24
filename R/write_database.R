@@ -25,18 +25,10 @@ write_database <- function(x, method = "update", ...) {
     login_helper(credentials, env$repository$url)
   }
   header <- list()
-  header$id <- tryCatch(
-                        unbox(paste0("ECONDATAR-V",
-                                     sessionInfo()[[7]]$econdatar[[4]])),
-                        error = function(e) {
-                          unbox("Unknown")
-                        })
+  header$id <-  unbox("ECONDATAR")
   header$prepared <- unbox(format(Sys.time(), format = "%Y-%m-%dT%T"))
-  header$sender <- tryCatch(
-                            unbox(Sys.getenv()[["USER"]]),
-                            error = function(e) {
-                              unbox("Anonymous")
-                            })
+  header$sender <- tryCatch(unbox(Sys.getenv()[["USER"]]),
+                            error = function(e) unbox("Anonymous"))
   header$receiver <- unbox("EconData web application")
   if (any(names(x) == "data-sets")) {
     datasets <- x[["data-sets"]]

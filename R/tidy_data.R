@@ -141,7 +141,7 @@ tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, pre
 }
 
 # Tidying the output of read_release()
-tidy_data.eds_release <- function(x) {
+tidy_data.eds_release <- function(x, ...) {
   axnull <- is.null(attributes(x))
   if (axnull && length(x) > 1L) {
     res <- lapply(x, tidy_data.eds_release)
@@ -177,6 +177,10 @@ tidy_data.eds_database <- function(x, ...) {
     return(m[c("agencyid", "id", "version", "name")])
   }) |>
     rbindlist()
+}
+
+tidy_data.eds_registry <- function(x, ...) {
+  return(x)
 }
 
 tidy_data <- function(x, ...) UseMethod("tidy_data", x)

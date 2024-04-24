@@ -1,17 +1,17 @@
-\name{write_dataset}
-\alias{write_dataset}
+\name{write_database}
+\alias{write_database}
 \title{
-write_dataset
+write_database
 }
 \description{
-Saves the data set. Available data sets can be looked up from the web platform (http://econdata.co.za).
+Create or update a data set (metadata including series and their metadata).
 }
 \usage{
-write_dataset(x, method = "stage", \dots)
+write_database(x, method = "update", \dots)
 }
 \arguments{
   \item{x}{Data set to upload.}
-  \item{method}{Desired method. One of \code{stage} or \code{validate}. \code{stage} will stage the given data making it ready for release. \code{validate} will validate the given data against the schema derived from the data structure definition.}
+  \item{method}{Desired method. One of \code{create} or \code{update}. \code{create} will create a new data set with the provided metadata. \code{update} (default) will update an existing data set in the database.}
 
 \item{\dots}{Further \emph{Optional} arguments:
   \tabular{llll}{
@@ -24,21 +24,20 @@ write_dataset(x, method = "stage", \dots)
 \details{
 An EconData account (http://econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password". If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
 
-The functionality provided by \emph{write_dataset} is to save the data set according to the function arguments. As this makes modifications to the database the user calling this function requires higher privileges than needed for other \emph{econdatar} functions - the user requires \emph{membership} with the relevant data provider.
+The functionality provided by \emph{write_database} is to save the data set according to the function arguments. As this makes modifications to the database the user calling this function requires higher privileges than needed for other \emph{econdatar} functions - the user requires \emph{membership} with the relevant data provider.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{read_dataset}}
-\code{\link{write_release}}
+\code{\link{read_database}}
 }
 \examples{
 \dontrun{
-x <- read_dataset("MINING")
+x <- read_database("MINING")
 
-write_dataset(x, file = "mining.json")
+write_database(x)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

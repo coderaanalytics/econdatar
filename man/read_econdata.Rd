@@ -1,16 +1,16 @@
 \name{read_econdata}
 \alias{read_econdata}
-\alias{econdata_tidy}
+\alias{tidy_data}
 \title{
 read_econdata
 }
 \description{
-Returns the data for the given data set - ECONDATA:id(version), as a list, or as tidy \emph{data.table}'s. Available data sets can be looked up from the web platform (http://www.econdata.co.za). Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{econdata_tidy()}.
+Returns the data for the given data set - ECONDATA:id(version), as a list, or as tidy \emph{data.table}'s. Available data sets can be looked up from the web platform (http://www.econdata.co.za). Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{tidy_data()}.
 }
 \usage{
-read_econdata(id, \dots, tidy = FALSE)
+read_econdata(id, tidy = FALSE, \dots)
 
-econdata_tidy(x, \dots)
+tidy_data(x, \dots)
 }
 \arguments{
   \item{id}{Data identifier.}
@@ -18,7 +18,7 @@ econdata_tidy(x, \dots)
 
 \item{\dots}{Further \emph{Optional} arguments:
   \tabular{llll}{
-    \code{agencyid} \tab\tab character. Agency responsible for the metadata creation/maintenance. \cr
+    \code{agencyid} \tab\tab character. Defaults to \code{ECONDATA}. Agency responsible for the metadata creation/maintenance. \cr
     \code{version} \tab\tab character. Version(s) of the data (different versions will have different metadata), or 'all' to return all available versions. \cr
     \code{series_key} \tab\tab character. A character vector specifying a subset of time series (see the web platform (export function) for details). \cr
     \code{release} \tab\tab character (optionally with format \%Y-\%m-\%dT\%H:\%M:\%S, that will be coerced to a date/time). The release description, which will return the data associated with that release (if the given description matches an existsing release); or a date/time which will return the data as it was at that moment; or 'latest' which will return the latest release; or 'unreleased' which will return any unreleased data (useful for data that is updated more often than it is released, usually daily data). \cr
@@ -28,7 +28,7 @@ econdata_tidy(x, \dots)
   }
 }
 
-\item{tidy}{logical. Return data and metadata in tidy \emph{data.table}'s (see Value), by passing the result through \code{econdata_tidy}. If \code{TRUE}, \code{read_econdata()/econdata_tidy()} admit the following additional arguments:
+\item{tidy}{logical. Return data and metadata in tidy \emph{data.table}'s (see Value), by passing the result through \code{tidy_data}. If \code{TRUE}, \code{read_econdata()/tidy_data()} admit the following additional arguments:
   \tabular{llll}{
     \code{wide} \tab\tab logical, default: \code{TRUE}. Returns data in a column-based format, with \code{"label"} and \code{"source_identifier"} attributes to columns (when available) and an overall "metadata" attribute to the table, otherwise a long-format is returned. See Value. \cr
 
@@ -42,7 +42,7 @@ econdata_tidy(x, \dots)
 
     \code{prettymeta} \tab\tab logical, default: \code{TRUE}. Attempts to make the returned metadata more human readable replacing each code category and enumeration with its name. It is advisable to leave this set to \code{TRUE}, in some cases, where speed is paramount you may want to set this flag to \code{FALSE}. If multiple datasets are being querioed this option is automatically set to \code{FALSE}. \cr
 
-   \code{release} \tab\tab logical, default: \code{FALSE}. \code{TRUE} allows you to apply \code{econdata_tidy()} to objects returned by \code{read_release()}. All other flags to \code{econdata_tidy()} are ignored.
+   \code{release} \tab\tab logical, default: \code{FALSE}. \code{TRUE} allows you to apply \code{tidy_data()} to objects returned by \code{read_release()}. All other flags to \code{tidy_data()} are ignored.
 }
 }
 }
@@ -75,16 +75,16 @@ If \code{tidy = TRUE} and \code{wide = FALSE} and \code{compact = FALSE} (the de
 
 # Electricity Generated
 ELECTRICITY <- read_econdata(id = "ELECTRICITY")
-ELECTRICITY_WIDE <- econdata_tidy(ELECTRICITY) # Or: read_econdata("ELECTRICITY", tidy = TRUE)
-ELECTRICITY_LONG <- econdata_tidy(ELECTRICITY, wide = FALSE)
-# Same as econdata_tidy(ELECTRICITY, wide = FALSE, combine = TRUE):
+ELECTRICITY_WIDE <- tidy_data(ELECTRICITY) # Or: read_econdata("ELECTRICITY", tidy = TRUE)
+ELECTRICITY_LONG <- tidy_data(ELECTRICITY, wide = FALSE)
+# Same as tidy_data(ELECTRICITY, wide = FALSE, combine = TRUE):
 with(ELECTRICITY_LONG, metadata[data, on = "data_key"])
 
 # CPI Analytical Series: Different Revisions
 CPI_ANL <- read_econdata(id = "CPI_ANL_SERIES", version = "all")
-CPI_ANL_WIDE <- econdata_tidy(CPI_ANL)
-CPI_ANL_LONG <- econdata_tidy(CPI_ANL, wide = FALSE, combine = TRUE)
-CPI_ANL_ALLMETA <- econdata_tidy(CPI_ANL, wide = FALSE, allmeta = TRUE) # v2.0 has some 0-obs series
+CPI_ANL_WIDE <- tidy_data(CPI_ANL)
+CPI_ANL_LONG <- tidy_data(CPI_ANL, wide = FALSE, combine = TRUE)
+CPI_ANL_ALLMETA <- tidy_data(CPI_ANL, wide = FALSE, allmeta = TRUE) # v2.0 has some 0-obs series
 
 # Can query a specific version by adding e.g. version = "2.0.0" to the call
 
