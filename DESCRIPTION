@@ -5,6 +5,7 @@ Date: 2024-04-24
 Authors@R: c(person("Byron", "Botha", role = c("aut", "cre"), email = "byron@codera.co.za"),
              person("Sebastian", "Krantz", role = "ctb"))
 Description: Automation of data tasks to and from Codera Analytics' econometric data service.
+Depends: R (>= 4.2.0)
 Imports: httr, jsonlite, readODS, collapse, data.table
 Suggests: tcltk
 URL: https://www.econdata.co.za/
