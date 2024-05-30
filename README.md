@@ -33,7 +33,7 @@ remove.packages("econdatar")
 install_github("coderaanalytics/econdatar", ref = "3.0.2")
 ```
 
-Please see the [EconData blog](https://blog.econdata.co.za) for in depth tutorials
+Please see the [EconData blog](https://econdata.co.za) for in depth tutorials
 
 ## License
 

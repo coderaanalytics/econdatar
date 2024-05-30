@@ -31,7 +31,7 @@ Maintainer: \packageMaintainer{econdatar}
 \keyword{ package }
 \seealso{
 https://www.econdata.co.za
-https://blog.econdata.co.za
+https://econdata.co.za
 }
 %\examples{
 %~~ simple examples of the most important functions ~~

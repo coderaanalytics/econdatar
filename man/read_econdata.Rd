@@ -90,7 +90,9 @@ CPI_ANL_ALLMETA <- tidy_data(CPI_ANL, wide = FALSE, allmeta = TRUE) # v2.0 has s
 
 # Returns 5-10 years (daily average bond yields) not yet contained in the latest release
 # (particularly useful for daily data that is released monthly)
-MARKET_RATES <- read_econdata(id = "MARKET_RATES", series_key = "CMJD003.B.A", release = "unreleased")
+MARKET_RATES <- read_econdata(id = "MARKET_RATES",
+                              series_key = "CMJD003.B.A",
+                              release = "unreleased")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
