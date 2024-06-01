@@ -4,11 +4,6 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
   # Parameters ----
 
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
   } else {
@@ -29,8 +24,8 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
     data_message <- fromJSON(params$file, simplifyVector = FALSE)
     message("Data set(s) successfully retrieved from local storage.\n")
   } else {
-    if (!exists("econdata_session", envir = .pkgenv)) {
-      login_helper(credentials, env$repository$url)
+    if (!exists("econdata_token", envir = .pkgenv)) {
+      login_helper(env$repository$url)
     }
     query_params <- list()
     query_params$agencyids <- paste(agencyid, collapse = ",")
@@ -39,8 +34,8 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
     response <- GET(env$repository$url,
                     path = c(env$repository$path, "/datasets"),
                     query = query_params,
-                    set_cookies(.cookies = get("econdata_session",
-                                               envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
       stop(content(response, encoding = "UTF-8"))
@@ -72,8 +67,8 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
                                      data_set_ref,
                                      "series", sep = "/"),
                         query = query_params,
-                        set_cookies(.cookies =
-                                      get("econdata_session", envir = .pkgenv)),
+                        add_headers(authorization = get("econdata_token",
+                                                        envir = .pkgenv)),
                         accept("application/vnd.sdmx-codera.data+json"))
         if (response$status_code == 200) {
           message("Processing data set: ", data_set_ref, "\n")

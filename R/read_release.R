@@ -4,11 +4,6 @@ read_release <- function(id, tidy = FALSE, ...) {
   # Parameters ----
 
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
   } else {
@@ -34,16 +29,16 @@ read_release <- function(id, tidy = FALSE, ...) {
 
   # Fetch release ----
 
-  if (!exists("econdata_session", envir = .pkgenv)) {
-    login_helper(credentials, env$repository$url)
+  if (!exists("econdata_token", envir = .pkgenv)) {
+    login_helper(env$repository$url)
   }
   response <- GET(env$repository$url,
                   path = c(env$repository$path, "/datasets"),
                   query = list(agencyids = paste(agencyid, collapse = ","),
                                ids = paste(id, collapse = ","),
                                versions = paste(version, collapse = ",")),
-                  set_cookies(.cookies =
-                                get("econdata_session", envir = .pkgenv)),
+                  add_headers(authorization = get("econdata_token",
+                                                  envir = .pkgenv)),
                   accept_json())
   if (response$status_code != 200)
     stop(content(response, encoding = "UTF-8"))
@@ -57,8 +52,8 @@ read_release <- function(id, tidy = FALSE, ...) {
                                  "datasets", dataset_ref,
                                  "release", sep = "/"),
                     query = query_params,
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code == 200) {
       message("Fetching releases for: ", dataset_ref, "\n")

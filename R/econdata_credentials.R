@@ -3,39 +3,30 @@ econdata_credentials <- function() {
     stop("Package \"tcltk\" needed for this function to work.",
          call. = FALSE)
   }
-  user <- pswd <- NULL # Need to add global bindings for variables
-  username   <- tcltk::tclVar(Sys.info()["user"])
-  password   <- tcltk::tclVar("")
+  tkn <- NULL # Need to add global bindings for variables
+  token   <- tcltk::tclVar("")
 
   tt <- tcltk::tktoplevel()
-  tcltk::tkwm.title(tt, "www.econdata.co.za credentials")
-  user.entry <- tcltk::tkentry(tt, textvariable = username)
-  pswd.entry <- tcltk::tkentry(tt, textvariable = password, show = "*")
+  tcltk::tkwm.title(tt, "econdata.co.za credentials")
+  tkn.entry <- tcltk::tkentry(tt, textvariable = token)
 
-  reset <- function() {
-    tcltk::tclvalue(username)   <- Sys.info()["user"]
-    tcltk::tclvalue(password)   <- ""
-  }
+  reset <- function() tcltk::tclvalue(token) <- ""
   reset.but <- tcltk::tkbutton(tt, text = "Reset", command = reset)
 
   submit <- function() {
-    user <- tcltk::tclvalue(username)
-    pswd <- tcltk::tclvalue(password)
+    tkn <- tcltk::tclvalue(token)
     e <- parent.env(environment())
-    e$user <- user
-    e$pswd <- pswd
+    e$tkn <- tkn
     tcltk::tkdestroy(tt)
   }
-  submit.but <- tcltk::tkbutton(tt, text = "submit", command = submit)
+  submit.but <- tcltk::tkbutton(tt, text = "Submit", command = submit)
 
-  tcltk::tkgrid(tcltk::tklabel(tt, text = "Enter User Details"),
+  tcltk::tkgrid(tcltk::tklabel(tt, text = "Enter Token Details"),
                 columnspan = 2)
-  tcltk::tkgrid(tcltk::tklabel(tt, text = "Username"),
-                user.entry, pady = 10, padx = 10)
-  tcltk::tkgrid(tcltk::tklabel(tt, text = "Password"),
-                pswd.entry, pady = 10, padx = 10)
+  tcltk::tkgrid(tcltk::tklabel(tt, text = "API Token"),
+                tkn.entry, pady = 10, padx = 10)
   tcltk::tkgrid(submit.but, reset.but, pady = 10, padx = 50)
 
   tcltk::tkwait.window(tt)
-  return(c(user, pswd))
+  return(tkn)
 }

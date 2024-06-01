@@ -5,11 +5,6 @@ write_dataset <- function(x, method = "stage", ...) {
 
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("stage", "validate"))
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
@@ -17,8 +12,8 @@ write_dataset <- function(x, method = "stage", ...) {
 
   # Push data message ----
 
-  if (is.null(params$file) && !exists("econdata_session", envir = .pkgenv)) {
-    login_helper(credentials, env$repository$url)
+  if (is.null(params$file) && !exists("econdata_token", envir = .pkgenv)) {
+    login_helper(env$repository$url)
   }
   header <- list()
   header$id <- unbox("ECONDATAR")
@@ -61,8 +56,8 @@ write_dataset <- function(x, method = "stage", ...) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 200) {
@@ -89,8 +84,8 @@ write_dataset <- function(x, method = "stage", ...) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 200) {

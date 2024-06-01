@@ -4,11 +4,6 @@ write_release <- function(id, version, providerid, description, method = "releas
   # Parameters ----
 
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
   } else {
@@ -30,8 +25,8 @@ write_release <- function(id, version, providerid, description, method = "releas
 
   # Commit data set release ----
 
-  if (!exists("econdata_session", envir = .pkgenv)) {
-    login_helper(credentials, env$repository$url)
+  if (!exists("econdata_token", envir = .pkgenv)) {
+    login_helper(env$repository$url)
   }
   dataset_ref <- paste(agencyid, id, version, sep = "-")
   if (method == "release") {
@@ -42,8 +37,8 @@ write_release <- function(id, version, providerid, description, method = "releas
                                   dataset_ref,
                                   "commit", sep = "/"),
                      query = query_params,
-                     set_cookies(.cookies =
-                                   get("econdata_session", envir = .pkgenv)),
+                     add_headers(authorization = get("econdata_token",
+                                                     envir = .pkgenv)),
                      accept_json())
     if (response$status_code == 200) {
       message(content(response, encoding = "UTF-8")$success)
@@ -57,8 +52,8 @@ write_release <- function(id, version, providerid, description, method = "releas
                                   "datasets",
                                   dataset_ref,
                                   "reset", sep = "/"),
-                     set_cookies(.cookies =
-                                   get("econdata_session", envir = .pkgenv)),
+                     add_headers(authorization = get("econdata_token",
+                                                     envir = .pkgenv)),
                      accept_json())
     if (response$status_code == 200) {
       message(content(response, encoding = "UTF-8")$success)
@@ -72,8 +67,8 @@ write_release <- function(id, version, providerid, description, method = "releas
                                   "datasets",
                                   dataset_ref,
                                   "rollback", sep = "/"),
-                     set_cookies(.cookies =
-                                   get("econdata_session", envir = .pkgenv)),
+                     add_headers(authorization = get("econdata_token",
+                                                     envir = .pkgenv)),
                      accept_json())
     if (response$status_code == 200) {
       message(content(response, encoding = "UTF-8")$success)

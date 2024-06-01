@@ -4,11 +4,6 @@ write_registry <- function(structure, x, method = "update", ...) {
   # Parameters ----
 
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("create", "update"))
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
@@ -17,8 +12,8 @@ write_registry <- function(structure, x, method = "update", ...) {
 
   # Fetch structure(s) ----
 
-  if (!exists("econdata_session", envir = .pkgenv)) {
-    login_helper(credentials, env$repository$url)
+  if (!exists("econdata_token", envir = .pkgenv)) {
+    login_helper(env$repository$url)
   }
   header <- list()
   if (is.null(params$file)) {
@@ -102,8 +97,8 @@ write_category_scheme <- function(category_scheme, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
@@ -120,8 +115,8 @@ write_category_scheme <- function(category_scheme, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      set_cookies(.cookies = get("econdata_session",
-                                                 envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
@@ -191,8 +186,8 @@ write_codelist <- function(codelist, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
@@ -209,8 +204,8 @@ write_codelist <- function(codelist, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      set_cookies(.cookies = get("econdata_session",
-                                                 envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
@@ -284,8 +279,8 @@ write_concept_scheme <- function(concept_scheme, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
@@ -302,8 +297,8 @@ write_concept_scheme <- function(concept_scheme, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      set_cookies(.cookies = get("econdata_session",
-                                                 envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
@@ -364,8 +359,8 @@ write_dataflow <- function(dataflow, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
@@ -381,8 +376,8 @@ write_dataflow <- function(dataflow, method, params) {
                                    dataflow_ref, sep = "/"),
                       body = toJSON(data_message, na = "null",
                                     always_decimal = TRUE),
-                      set_cookies(.cookies = get("econdata_session",
-                                                 envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
@@ -551,8 +546,8 @@ write_data_structure <- function(data_structure, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
@@ -569,8 +564,8 @@ write_data_structure <- function(data_structure, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      set_cookies(.cookies = get("econdata_session",
-                                                 envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
@@ -677,8 +672,8 @@ write_memberlist <- function(memberlist, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
@@ -695,8 +690,8 @@ write_memberlist <- function(memberlist, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      set_cookies(.cookies = get("econdata_session",
-                                                 envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
@@ -761,8 +756,8 @@ write_cons_agreement <- function(cons_agreement, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
@@ -779,8 +774,8 @@ write_cons_agreement <- function(cons_agreement, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      set_cookies(.cookies = get("econdata_session",
-                                                 envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
@@ -855,8 +850,8 @@ write_prov_agreement <- function(prov_agreement, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
@@ -873,8 +868,8 @@ write_prov_agreement <- function(prov_agreement, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      set_cookies(.cookies = get("econdata_session",
-                                                 envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {

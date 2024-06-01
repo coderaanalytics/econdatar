@@ -4,11 +4,6 @@ read_dataset <- function(id, tidy = FALSE, ...) {
   # Parameters ----
 
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
   } else {
@@ -29,8 +24,8 @@ read_dataset <- function(id, tidy = FALSE, ...) {
     data_message <- fromJSON(params$file, simplifyVector = FALSE)
     message("Data set(s) successfully retrieved from local storage.\n")
   } else {
-    if (!exists("econdata_session", envir = .pkgenv)) {
-      login_helper(credentials, env$repository$url)
+    if (!exists("econdata_token", envir = .pkgenv)) {
+      login_helper(env$repository$url)
     }
     query_params <- list()
     query_params$agencyids <- paste(agencyid, collapse = ",")
@@ -39,8 +34,8 @@ read_dataset <- function(id, tidy = FALSE, ...) {
     response <- GET(env$repository$url,
                     path = c(env$repository$path, "/datasets"),
                     query = query_params,
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
       stop(content(response, encoding = "UTF-8"))
@@ -136,8 +131,8 @@ get_release <- function(env, ref, candidate_release) {
                                    "datasets",
                                    ref,
                                    "release", sep = "/"),
-                      set_cookies(.cookies =
-                                    get("econdata_session", envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       accept_json())
       if (response$status_code != 200) {
         stop(content(response, type = "application/json", encoding = "UTF-8"))
@@ -193,8 +188,8 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
                                  "datasets",
                                  ref, sep = "/"),
                     query = params,
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code == 200) {
       message("Processing data set: ", ref, "\n")
@@ -228,7 +223,7 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
               return(y)
             }) |>
             unlist(recursive = FALSE),
-          set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+          add_headers(authorization = get("econdata_token", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
       stop(content(response, type = "application/json", encoding = "UTF-8"))
