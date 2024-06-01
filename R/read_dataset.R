@@ -24,8 +24,13 @@ read_dataset <- function(id, tidy = FALSE, ...) {
     data_message <- fromJSON(params$file, simplifyVector = FALSE)
     message("Data set(s) successfully retrieved from local storage.\n")
   } else {
-    if (!exists("econdata_token", envir = .pkgenv)) {
-      login_helper(env$repository$url)
+    if (exists("econdata_token", envir = .pkgenv)) {
+      payload <- jwt_split(get("econdata_token", envir = .pkgenv))$payload
+      if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
+        login_helper(env$auth)
+      }
+    } else {
+      login_helper(env$auth)
     }
     query_params <- list()
     query_params$agencyids <- paste(agencyid, collapse = ",")

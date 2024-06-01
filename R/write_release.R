@@ -25,8 +25,13 @@ write_release <- function(id, version, providerid, description, method = "releas
 
   # Commit data set release ----
 
-  if (!exists("econdata_token", envir = .pkgenv)) {
-    login_helper(env$repository$url)
+  if (exists("econdata_token", envir = .pkgenv)) {
+    payload <- jwt_split(get("econdata_token", envir = .pkgenv))$payload
+    if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
+      login_helper(env$auth)
+    }
+  } else {
+    login_helper(env$auth)
   }
   dataset_ref <- paste(agencyid, id, version, sep = "-")
   if (method == "release") {

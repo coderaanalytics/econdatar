@@ -28,8 +28,15 @@ read_registry <- function(structure, tidy = FALSE, ...) {
 
   # Fetch structure(s) ----
 
-  if (!exists("econdata_token", envir = .pkgenv)) {
-    login_helper(env$repository$url)
+  if (is.null(params$file)) {
+    if (exists("econdata_token", envir = .pkgenv)) {
+      payload <- jwt_split(get("econdata_token", envir = .pkgenv))$payload
+      if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
+        login_helper(env$auth)
+      }
+    } else {
+      login_helper(env$auth)
+    }
   }
   agencyids <- paste(agencyid, collapse = ",")
   ids <- paste(id, collapse = ",")
