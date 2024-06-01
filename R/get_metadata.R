@@ -1,11 +1,5 @@
-get_metadata <- function(x, ...) {
-  params <- list(...)
-  if (!is.null(params$portal)) {
-    portal <- params$portal
-  } else {
-    portal <- "econdata"
-  }
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
+get_metadata <- function(x) {
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
 
   # Fetch data structure definition (metadata) ----

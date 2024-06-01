@@ -29,12 +29,7 @@ read_release <- function(id, tidy = FALSE, ...) {
   if (!is.null(params$description)) {
     query_params$description <- params$description
   }
-  if (!is.null(params$portal)) {
-    portal <- params$portal
-  } else {
-    portal <- "econdata"
-  }
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
 
   # Fetch release ----
