@@ -4,6 +4,7 @@ importFrom("collapse", "add_vars<-", "ckmatch", "dapply", "fmutate", "fnobs",
 importFrom("data.table", "dcast", "rbindlist", "setcolorder")
 importFrom("httr", "POST", "GET", "PUT", "accept", "accept_json", "authenticate",
            "content", "content_type", "cookies", "set_cookies", "upload_file")
+importFrom("jose", "jwt_split")
 importFrom("jsonlite", "fromJSON", "toJSON", "unbox")
 importFrom("readODS", "write_ods", "read_ods")
 importFrom("stats", "na.omit")
