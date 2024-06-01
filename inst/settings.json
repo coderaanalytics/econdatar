@@ -1,7 +1,7 @@
 {
   "auth" : {
     "url" : "https://codera-firstrand.auth.af-south-1.amazoncognito.com",
-    "path" : "/oauth2/token"
+    "path" : "oauth2/token"
   },
   "repository" : {
     "url" : "https://firstrand.econdata.co.za",

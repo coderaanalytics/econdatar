@@ -16,5 +16,5 @@ login_helper <- function(auth) {
   } else {
     token <- econdata_credentials()
   }
-  assign("econdata_token", paste("Token", token), envir = .pkgenv)
+  assign("econdata_token", paste("Bearer", token), envir = .pkgenv)
 }

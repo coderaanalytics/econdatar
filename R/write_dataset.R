@@ -14,7 +14,8 @@ write_dataset <- function(x, method = "stage", ...) {
 
   if (is.null(params$file)) {
     if (exists("econdata_token", envir = .pkgenv)) {
-      payload <- jwt_split(get("econdata_token", envir = .pkgenv))$payload
+      token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
+      payload <- jwt_split(token)$payload
       if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
         login_helper(env$auth)
       }
