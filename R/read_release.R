@@ -47,8 +47,8 @@ read_release <- function(id, tidy = FALSE, ...) {
                                                   envir = .pkgenv)),
                   accept_json())
   if (response$status_code != 200)
-    stop(content(response, encoding = "UTF-8"))
-  data_message <- content(response, encoding = "UTF-8")
+    stop(content(response, type = "application/json"))
+  data_message <- content(response, type = "application/json")
   releases <- lapply(data_message[["data-sets"]], function(dataset) {
     dataset_ref <- paste(dataset$agencyid,
                          dataset$id,
@@ -64,9 +64,9 @@ read_release <- function(id, tidy = FALSE, ...) {
     if (response$status_code == 200) {
       message("Fetching releases for: ", dataset_ref, "\n")
     } else {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    release <- content(response, type = "application/json", encoding = "UTF-8")
+    release <- content(response, type = "application/json")
     release$releases <- lapply(release$releases, function(r) {
       list("release" = strptime(r$release, "%Y-%m-%dT%H:%M:%S%z"),
            "start-period" = strptime(r[["start-period"]], "%Y-%m-%d"),

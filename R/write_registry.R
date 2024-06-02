@@ -110,9 +110,9 @@ write_category_scheme <- function(category_scheme, method, params) {
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else if (method == "update") {
       message("Updating category scheme: ", category_scheme_ref, "\n")
@@ -128,9 +128,9 @@ write_category_scheme <- function(category_scheme, method, params) {
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else {
       stop("Method not implemented.")
@@ -199,9 +199,9 @@ write_codelist <- function(codelist, method, params) {
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else if (method == "update") {
       message("Updating codelist: ", codelist_ref, "\n")
@@ -217,9 +217,9 @@ write_codelist <- function(codelist, method, params) {
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else {
       stop("Method not implemented.")
@@ -292,9 +292,9 @@ write_concept_scheme <- function(concept_scheme, method, params) {
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else if (method == "update") {
       message("Updating concept scheme: ", concept_scheme_ref, "\n")
@@ -310,9 +310,9 @@ write_concept_scheme <- function(concept_scheme, method, params) {
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else {
       stop("Method not implemented.")
@@ -372,9 +372,9 @@ write_dataflow <- function(dataflow, method, params) {
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else if (method == "update") {
       message("Updating dataflow: ", dataflow_ref, "\n")
@@ -389,9 +389,9 @@ write_dataflow <- function(dataflow, method, params) {
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else {
       stop("Method not implemented.")
@@ -559,9 +559,9 @@ write_data_structure <- function(data_structure, method, params) {
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else if (method == "update") {
       message("Updating data structure: ", data_structure_ref, "\n")
@@ -577,9 +577,9 @@ write_data_structure <- function(data_structure, method, params) {
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else {
       stop("Method not implemented.")
@@ -685,9 +685,9 @@ write_memberlist <- function(memberlist, method, params) {
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else if (method == "update") {
       message("Updating memberlist: ", memberlist_ref, "\n")
@@ -703,9 +703,9 @@ write_memberlist <- function(memberlist, method, params) {
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     }
   } else {
@@ -769,9 +769,9 @@ write_cons_agreement <- function(cons_agreement, method, params) {
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else if (method == "update") {
       message("Updating consumption agreement: ", cons_agreement_ref, "\n")
@@ -787,9 +787,9 @@ write_cons_agreement <- function(cons_agreement, method, params) {
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else {
       stop("Method not implemented.")
@@ -863,9 +863,9 @@ write_prov_agreement <- function(prov_agreement, method, params) {
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else if (method == "update") {
       message("Updating provision agreement: ", prov_agreement_ref, "\n")
@@ -881,9 +881,9 @@ write_prov_agreement <- function(prov_agreement, method, params) {
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        stop(content(response, encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
     } else {
       stop("Method not implemented.")

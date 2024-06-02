@@ -47,9 +47,9 @@ write_release <- function(id, version, providerid, description, method = "releas
                                                      envir = .pkgenv)),
                      accept_json())
     if (response$status_code == 200) {
-      message(content(response, encoding = "UTF-8")$success)
+      message(content(response, type = "application/json")$success)
     } else {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
   } else if (method == "reset") {
     message("Resetting release: ", dataset_ref, "\n")
@@ -62,9 +62,9 @@ write_release <- function(id, version, providerid, description, method = "releas
                                                      envir = .pkgenv)),
                      accept_json())
     if (response$status_code == 200) {
-      message(content(response, encoding = "UTF-8")$success)
+      message(content(response, type = "application/json")$success)
     } else {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
   } else if (method == "rollback") {
     message("Rolling back release: ", dataset_ref, "\n")
@@ -77,9 +77,9 @@ write_release <- function(id, version, providerid, description, method = "releas
                                                      envir = .pkgenv)),
                      accept_json())
     if (response$status_code == 200) {
-      message(content(response, encoding = "UTF-8")$success)
+      message(content(response, type = "application/json")$success)
     } else {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
   } else {
     stop("Method not implemented.")

@@ -103,11 +103,9 @@ read_category_schemes <- function(agencyids, ids, versions, params) {
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     category_schemes <- data_message[[2]][["structures"]][["category-schemes"]]
     return(category_schemes)
   } else {
@@ -190,11 +188,9 @@ read_codelists <- function(agencyids, ids, versions, params) {
                     accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     codelists <- data_message[[2]][["structures"]][["codelists"]]
     return(codelists)
   } else {
@@ -270,11 +266,9 @@ read_concept_schemes <- function(agencyids, ids, versions, params) {
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     concept_schemes <- data_message[[2]][["structures"]][["concept-schemes"]]
     return(concept_schemes)
   } else {
@@ -364,11 +358,9 @@ read_dataflow <- function(agencyids, ids, versions, params) {
                     accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     dataflows <- data_message[[2]][["structures"]][["dataflows"]]
     return(dataflows)
   } else {
@@ -436,11 +428,9 @@ read_data_structures <- function(agencyids, ids, versions, params) {
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     data_structures <- data_message[[2]][["structures"]][["data-structures"]]
     return(data_structures)
   } else {
@@ -612,11 +602,9 @@ read_memberlist <- function(agencyids, ids, versions, params) {
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     memberlists <- data_message[[2]][["structures"]][["memberlists"]]
     return(memberlists)
   } else {
@@ -710,10 +698,10 @@ read_cons_agreement <- function(agencyids, ids, versions, params) {
           accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
     data_message <-
-      content(response, type = "application/json", encoding = "UTF-8")
+      content(response, type = "application/json")
     cons_agreements <-
       data_message[[2]][["structures"]][["consumption-agreements"]]
     return(cons_agreements)
@@ -795,10 +783,10 @@ read_prov_agreement <- function(agencyids, ids, versions, params) {
           accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
     data_message <-
-      content(response, type = "application/json", encoding = "UTF-8")
+      content(response, type = "application/json")
     prov_agreements <-
       data_message[[2]][["structures"]][["provision-agreements"]]
     return(prov_agreements)

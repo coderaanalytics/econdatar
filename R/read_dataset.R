@@ -44,11 +44,9 @@ read_dataset <- function(id, tidy = FALSE, ...) {
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
   }
 
 
@@ -141,11 +139,9 @@ get_release <- function(env, ref, candidate_release) {
                                                       envir = .pkgenv)),
                       accept_json())
       if (response$status_code != 200) {
-        stop(content(response, type = "application/json", encoding = "UTF-8"))
+        stop(content(response, type = "application/json"))
       }
-      data_message <- content(response,
-                              type = "application/json",
-                              encoding = "UTF-8")
+      data_message <- content(response, type = "application/json")
       if (length(data_message$releases) != 0) {
         if (candidate_release == "latest") {
           release <- head(data_message$releases, n = 1)[[1]]$release |>
@@ -200,12 +196,10 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
     if (response$status_code == 200) {
       message("Processing data set: ", ref, "\n")
     } else {
-      stop(content(response, type = "application/json", encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
     links <- unlist(strsplit(response$headers$link, ","))
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     data_set <- data_message[[2]][["data-sets"]][[1]][[2]]
     if (!any(grepl("rel=next", links))) {
       return(data_set)
@@ -232,12 +226,10 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
           add_headers(authorization = get("econdata_token", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, type = "application/json", encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
     links <- unlist(strsplit(response$headers$link, ","))
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     data_set$series <- c(data_set$series,
                          data_message[[2]][["data-sets"]][[1]][[2]]$series)
     if (!any(grepl("rel=next", links))) {

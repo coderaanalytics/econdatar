@@ -46,11 +46,9 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
   }
 
 
@@ -81,11 +79,9 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
         if (response$status_code == 200) {
           message("Processing data set: ", data_set_ref, "\n")
         } else {
-          stop(content(response, type = "application/json", encoding = "UTF-8"))
+          stop(content(response, type = "application/json"))
         }
-        data_message <- content(response,
-                                type = "application/json",
-                                encoding = "UTF-8")
+        data_message <- content(response, type = "application/json")
         tmp_data_set <- data_message[[2]][["data-sets"]][[1]][[2]]
       } else {
         tmp_data_set <- raw_data_set[[2]]

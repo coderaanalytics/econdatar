@@ -71,9 +71,9 @@ write_database <- function(x, method = "update", ...) {
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 201) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        error <- content(response, encoding = "UTF-8")
+        error <- content(response, type = "application/json")
         if (response$status_code == 400) {
           if (error$message == "Validation error") {
             stop(toJSON(error, pretty = TRUE))
@@ -97,9 +97,9 @@ write_database <- function(x, method = "update", ...) {
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        error <- content(response, encoding = "UTF-8")
+        error <- content(response, type = "application/json")
         if (response$status_code == 400) {
           if (error$message == "Validation error") {
             stop(toJSON(error, pretty = TRUE))
