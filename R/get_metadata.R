@@ -13,8 +13,8 @@ get_metadata <- function(x) {
                   path = paste(c(env$registry$path,
                                  "provisionagreements",
                                  provision_agreement_ref), collapse = "/"),
-                  set_cookies(.cookies =
-                                get("econdata_session", envir = .pkgenv)),
+                  add_headers(authorization = get("econdata_token",
+                                                  envir = .pkgenv)),
                   accept("application/vnd.sdmx-codera.data+json"))
   if (response$status_code != 200) {
     stop(content(response, type = "application/json", encoding = "UTF-8"))
@@ -32,8 +32,8 @@ get_metadata <- function(x) {
                   path = paste(c(env$registry$path,
                                  "dataflows",
                                  dataflow_ref), collapse = "/"),
-                  set_cookies(.cookies =
-                                get("econdata_session", envir = .pkgenv)),
+                  add_headers(authorization = get("econdata_token",
+                                                  envir = .pkgenv)),
                   accept("application/vnd.sdmx-codera.data+json"))
   if (response$status_code != 200) {
     stop(content(response, type = "application/json", encoding = "UTF-8"))
@@ -51,8 +51,8 @@ get_metadata <- function(x) {
                                  "datastructures",
                                  data_structure_ref), collapse = "/"),
                   query = list(relations = "references"),
-                  set_cookies(.cookies =
-                                get("econdata_session", envir = .pkgenv)),
+                  add_headers(authorization = get("econdata_token",
+                                                  envir = .pkgenv)),
                   accept("application/vnd.sdmx-codera.data+json"))
   if (response$status_code != 200) {
     stop(content(response, type = "application/json", encoding = "UTF-8"))
