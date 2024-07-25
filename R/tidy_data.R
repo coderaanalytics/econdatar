@@ -122,11 +122,20 @@ tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, pre
     meta$data_provider_ref <- rep(metadata$data_provider_ref, nseries)
     meta$series_key <- names(x)[names(x) %in% levels(d$series_key)]
   }
-  setcolorder(meta,
-              c("data_set_name",
-                "data_set_ref",
-                "data_provider_ref",
-                "series_key"))
+  if (prettymeta) {
+    setcolorder(meta,
+                c("data_set_name",
+                  "data_set_ref",
+                  "data_provider_ref",
+                  "series_key"))
+  } else {
+    setcolorder(meta,
+                c("data_set_name",
+                  "data_set_ref",
+                  "series_key"))
+    meta[["name"]] <- NULL
+    meta[["provision-agreement"]] <- NULL
+  }
   if (!allmeta) get_vars(meta, fnobs(meta) == 0L) <- NULL
   if (combine) {
     meta_fct <- dapply(meta, qF, drop = FALSE) # Factors for efficient storage

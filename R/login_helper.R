@@ -7,8 +7,7 @@ login_helper <- function(auth) {
                      path = auth$path,
                      body = list(grant_type = "client_credentials",
                                  client_id = creds[1],
-                                 client_secret = creds[2],
-                                 scope = "econdata.co.za/read econdata.co.za/write"),
+                                 client_secret = creds[2]),
                      encode = "form",
                      accept_json())
     if (response$status_code != 200)
