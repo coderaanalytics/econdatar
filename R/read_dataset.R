@@ -128,7 +128,13 @@ get_release <- function(env, ref, candidate_release) {
   }
   if (candidate_release != "unreleased") {
     final_release <- tryCatch({
-      strftime(candidate_release, "%Y-%m-%dT%H:%M:%S")
+      if (grepl("^\\d{4}-\\d{1,2}-\\d{1,2}(T\\d{1,2}:\\d{1,2}:\\d{1,2})?$",
+                candidate_release,
+                perl = TRUE)) {
+        strftime(candidate_release, "%Y-%m-%dT%H:%M:%S")
+      } else {
+        stop("Unacceptable proposed time/date format")
+      }
     }, error = function(e) {
       response <- GET(env$repository$url,
                       path = paste(env$repository$path,
