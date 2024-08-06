@@ -43,6 +43,9 @@ read_dataset <- function(id, tidy = FALSE, ...) {
                     add_headers(authorization = get("econdata_token",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
+    if (params$debug == TRUE) {
+      message("Request URL: ", response$request$url, "\n")
+    }
     if (response$status_code != 200) {
       stop(content(response, type = "application/json"))
     }
@@ -61,11 +64,11 @@ read_dataset <- function(id, tidy = FALSE, ...) {
                             raw_data_set[[2]]$version,
                             sep = "-")
       query_params <- list()
-      query_params$release <- get_release(env, data_set_ref, params$release)
+      query_params$release <- get_release(env, data_set_ref, params$release, params$debug)
       if (!is.null(params$series_key)) {
         query_params[["series-key"]] <- params$series_key
       }
-      tmp_data_set <- get_data(env, data_set_ref, query_params)
+      tmp_data_set <- get_data(env, data_set_ref, query_params, debug = params$debug)
     }
     series_names <- sapply(tmp_data_set$series, function(raw_series) {
       return(raw_series[["series-key"]])
@@ -122,7 +125,7 @@ read_econdata <- function(id, tidy = FALSE, ...) {
   read_dataset(id = id, tidy = tidy, ...)
 }
 
-get_release <- function(env, ref, candidate_release) {
+get_release <- function(env, ref, candidate_release, debug = FALSE) {
   if (is.null(candidate_release)) {
     candidate_release <- "latest"
   }
@@ -144,6 +147,9 @@ get_release <- function(env, ref, candidate_release) {
                       add_headers(authorization = get("econdata_token",
                                                       envir = .pkgenv)),
                       accept_json())
+      if (debug == TRUE) {
+        message("Request URL: ", response$request$url, "\n")
+      }
       if (response$status_code != 200) {
         stop(content(response, type = "application/json"))
       }
@@ -189,7 +195,7 @@ get_release <- function(env, ref, candidate_release) {
   return(final_release)
 }
 
-get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
+get_data <- function(env, ref, params, links = NULL, data_set = NULL, debug = FALSE) {
   if (is.null(links)) {
     response <- GET(env$repository$url,
                     path = paste(env$repository$path,
@@ -199,6 +205,9 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
                     add_headers(authorization = get("econdata_token",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
+    if (debug == TRUE) {
+      message("Request URL: ", response$request$url, "\n")
+    }
     if (response$status_code == 200) {
       message("Processing data set: ", ref, "\n")
     } else {
@@ -210,7 +219,7 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
     if (!any(grepl("rel=next", links))) {
       return(data_set)
     } else {
-      return(get_data(env, ref, params, links, data_set))
+      return(get_data(env, ref, params, links, data_set, debug))
     }
   } else {
     link_next <- links[grepl("rel=next", links)]
@@ -231,6 +240,9 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
             unlist(recursive = FALSE),
           add_headers(authorization = get("econdata_token", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
+    if (debug == TRUE) {
+      message("Request URL: ", response$request$url, "\n")
+    }
     if (response$status_code != 200) {
       stop(content(response, type = "application/json"))
     }
@@ -241,7 +253,7 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
     if (!any(grepl("rel=next", links))) {
       return(data_set)
     } else {
-      return(get_data(env, ref, params, links, data_set))
+      return(get_data(env, ref, params, links, data_set, debug))
     }
   }
 }
