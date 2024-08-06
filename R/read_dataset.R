@@ -4,6 +4,9 @@ read_dataset <- function(id, tidy = FALSE, ...) {
   # Parameters ----
 
   params <- list(...)
+  if (is.null(params$debug)) {
+    params$debug <- FALSE
+  }
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
   } else {
