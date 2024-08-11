@@ -1,14 +1,14 @@
 {
   "auth" : {
-    "url" : "https://codera-firstrand.auth.af-south-1.amazoncognito.com",
+    "url" : "https://codera-econdata.auth.af-south-1.amazoncognito.com",
     "path" : "oauth2/token"
   },
   "repository" : {
-    "url" : "https://firstrand.econdata.co.za",
+    "url" : "https://www.econdata.co.za",
     "path" : "sdmx-codera/v1"
   },
   "registry" : {
-    "url" : "https://firstrand.econdata.co.za",
+    "url" : "https://www.econdata.co.za",
     "path" : "sdmx-codera/v1"
   }
 }
