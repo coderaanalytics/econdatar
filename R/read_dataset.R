@@ -4,10 +4,8 @@ read_dataset <- function(id, tidy = FALSE, ...) {
   # Parameters ----
 
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
+  if (is.null(params$debug)) {
+    params$debug <- FALSE
   }
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
@@ -19,12 +17,7 @@ read_dataset <- function(id, tidy = FALSE, ...) {
   } else {
     version <- "latest"
   }
-  if (!is.null(params$portal)) {
-    portal <- params$portal
-  } else {
-    portal <- "econdata"
-  }
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
 
   # Fetch data set(s) ----
@@ -34,8 +27,14 @@ read_dataset <- function(id, tidy = FALSE, ...) {
     data_message <- fromJSON(params$file, simplifyVector = FALSE)
     message("Data set(s) successfully retrieved from local storage.\n")
   } else {
-    if (!exists("econdata_session", envir = .pkgenv)) {
-      login_helper(credentials, env$repository$url)
+    if (exists("econdata_token", envir = .pkgenv)) {
+      token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
+      payload <- jwt_split(token)$payload
+      if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
+        login_helper(env$auth)
+      }
+    } else {
+      login_helper(env$auth)
     }
     query_params <- list()
     query_params$agencyids <- paste(agencyid, collapse = ",")
@@ -44,15 +43,16 @@ read_dataset <- function(id, tidy = FALSE, ...) {
     response <- GET(env$repository$url,
                     path = c(env$repository$path, "/datasets"),
                     query = query_params,
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
-    if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+    if (params$debug == TRUE) {
+      message("Request URL: ", response$request$url, "\n")
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    if (response$status_code != 200) {
+      stop(content(response, type = "application/json"))
+    }
+    data_message <- content(response, type = "application/json")
   }
 
 
@@ -67,11 +67,11 @@ read_dataset <- function(id, tidy = FALSE, ...) {
                             raw_data_set[[2]]$version,
                             sep = "-")
       query_params <- list()
-      query_params$release <- get_release(env, data_set_ref, params$release)
+      query_params$release <- get_release(env, data_set_ref, params$release, params$debug)
       if (!is.null(params$series_key)) {
         query_params[["series-key"]] <- params$series_key
       }
-      tmp_data_set <- get_data(env, data_set_ref, query_params)
+      tmp_data_set <- get_data(env, data_set_ref, query_params, debug = params$debug)
     }
     series_names <- sapply(tmp_data_set$series, function(raw_series) {
       return(raw_series[["series-key"]])
@@ -128,28 +128,35 @@ read_econdata <- function(id, tidy = FALSE, ...) {
   read_dataset(id = id, tidy = tidy, ...)
 }
 
-get_release <- function(env, ref, candidate_release) {
+get_release <- function(env, ref, candidate_release, debug = FALSE) {
   if (is.null(candidate_release)) {
     candidate_release <- "latest"
   }
   if (candidate_release != "unreleased") {
     final_release <- tryCatch({
-      strftime(candidate_release, "%Y-%m-%dT%H:%M:%S")
+      if (grepl("^\\d{4}-\\d{1,2}-\\d{1,2}(T\\d{1,2}:\\d{1,2}:\\d{1,2})?$",
+                candidate_release,
+                perl = TRUE)) {
+        strftime(candidate_release, "%Y-%m-%dT%H:%M:%S")
+      } else {
+        stop("Unacceptable proposed time/date format")
+      }
     }, error = function(e) {
       response <- GET(env$repository$url,
                       path = paste(env$repository$path,
                                    "datasets",
                                    ref,
                                    "release", sep = "/"),
-                      set_cookies(.cookies =
-                                    get("econdata_session", envir = .pkgenv)),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
                       accept_json())
-      if (response$status_code != 200) {
-        stop(content(response, type = "application/json", encoding = "UTF-8"))
+      if (debug == TRUE) {
+        message("Request URL: ", response$request$url, "\n")
       }
-      data_message <- content(response,
-                              type = "application/json",
-                              encoding = "UTF-8")
+      if (response$status_code != 200) {
+        stop(content(response, type = "application/json"))
+      }
+      data_message <- content(response, type = "application/json")
       if (length(data_message$releases) != 0) {
         if (candidate_release == "latest") {
           release <- head(data_message$releases, n = 1)[[1]]$release |>
@@ -191,30 +198,31 @@ get_release <- function(env, ref, candidate_release) {
   return(final_release)
 }
 
-get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
+get_data <- function(env, ref, params, links = NULL, data_set = NULL, debug = FALSE) {
   if (is.null(links)) {
     response <- GET(env$repository$url,
                     path = paste(env$repository$path,
                                  "datasets",
                                  ref, sep = "/"),
                     query = params,
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
+    if (debug == TRUE) {
+      message("Request URL: ", response$request$url, "\n")
+    }
     if (response$status_code == 200) {
       message("Processing data set: ", ref, "\n")
     } else {
-      stop(content(response, type = "application/json", encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
     links <- unlist(strsplit(response$headers$link, ","))
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     data_set <- data_message[[2]][["data-sets"]][[1]][[2]]
     if (!any(grepl("rel=next", links))) {
       return(data_set)
     } else {
-      return(get_data(env, ref, params, links, data_set))
+      return(get_data(env, ref, params, links, data_set, debug))
     }
   } else {
     link_next <- links[grepl("rel=next", links)]
@@ -233,21 +241,22 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL) {
               return(y)
             }) |>
             unlist(recursive = FALSE),
-          set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+          add_headers(authorization = get("econdata_token", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
+    if (debug == TRUE) {
+      message("Request URL: ", response$request$url, "\n")
+    }
     if (response$status_code != 200) {
-      stop(content(response, type = "application/json", encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
     links <- unlist(strsplit(response$headers$link, ","))
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     data_set$series <- c(data_set$series,
                          data_message[[2]][["data-sets"]][[1]][[2]]$series)
     if (!any(grepl("rel=next", links))) {
       return(data_set)
     } else {
-      return(get_data(env, ref, params, links, data_set))
+      return(get_data(env, ref, params, links, data_set, debug))
     }
   }
 }

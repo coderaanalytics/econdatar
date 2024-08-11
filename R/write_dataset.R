@@ -5,25 +5,23 @@ write_dataset <- function(x, method = "stage", ...) {
 
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
-  if (!is.null(params$portal)) {
-    portal <- params$portal
-  } else {
-    portal <- "econdata"
-  }
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("stage", "validate"))
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
 
   # Push data message ----
 
-  if (is.null(params$file) && !exists("econdata_session", envir = .pkgenv)) {
-    login_helper(credentials, env$repository$url)
+  if (is.null(params$file)) {
+    if (exists("econdata_token", envir = .pkgenv)) {
+      token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
+      payload <- jwt_split(token)$payload
+      if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
+        login_helper(env$auth)
+      }
+    } else {
+      login_helper(env$auth)
+    }
   }
   header <- list()
   header$id <- unbox("ECONDATAR")
@@ -66,14 +64,14 @@ write_dataset <- function(x, method = "stage", ...) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        error <- content(response, encoding = "UTF-8")
+        error <- content(response, type = "application/json")
         if (response$status_code == 400) {
           if (error$message == "Validation error") {
             stop(toJSON(error, pretty = TRUE))
@@ -94,14 +92,14 @@ write_dataset <- function(x, method = "stage", ...) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       set_cookies(.cookies = get("econdata_session",
-                                                  envir = .pkgenv)),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
       if (response$status_code == 200) {
-        message(content(response, encoding = "UTF-8")$success)
+        message(content(response, type = "application/json")$success)
       } else {
-        error <- content(response, encoding = "UTF-8")
+        error <- content(response, type = "application/json")
         if (response$status_code == 400) {
           if (error$message == "Validation error") {
             stop(toJSON(error, pretty = TRUE))

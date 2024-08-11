@@ -4,11 +4,6 @@ read_release <- function(id, tidy = FALSE, ...) {
   # Parameters ----
 
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
   } else {
@@ -29,30 +24,31 @@ read_release <- function(id, tidy = FALSE, ...) {
   if (!is.null(params$description)) {
     query_params$description <- params$description
   }
-  if (!is.null(params$portal)) {
-    portal <- params$portal
-  } else {
-    portal <- "econdata"
-  }
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
 
   # Fetch release ----
 
-  if (!exists("econdata_session", envir = .pkgenv)) {
-    login_helper(credentials, env$repository$url)
+  if (exists("econdata_token", envir = .pkgenv)) {
+    token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
+    payload <- jwt_split(token)$payload
+    if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
+      login_helper(env$auth)
+    }
+  } else {
+    login_helper(env$auth)
   }
   response <- GET(env$repository$url,
                   path = c(env$repository$path, "/datasets"),
                   query = list(agencyids = paste(agencyid, collapse = ","),
                                ids = paste(id, collapse = ","),
                                versions = paste(version, collapse = ",")),
-                  set_cookies(.cookies =
-                                get("econdata_session", envir = .pkgenv)),
+                  add_headers(authorization = get("econdata_token",
+                                                  envir = .pkgenv)),
                   accept_json())
   if (response$status_code != 200)
-    stop(content(response, encoding = "UTF-8"))
-  data_message <- content(response, encoding = "UTF-8")
+    stop(content(response, type = "application/json"))
+  data_message <- content(response, type = "application/json")
   releases <- lapply(data_message[["data-sets"]], function(dataset) {
     dataset_ref <- paste(dataset$agencyid,
                          dataset$id,
@@ -62,15 +58,15 @@ read_release <- function(id, tidy = FALSE, ...) {
                                  "datasets", dataset_ref,
                                  "release", sep = "/"),
                     query = query_params,
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code == 200) {
       message("Fetching releases for: ", dataset_ref, "\n")
     } else {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    release <- content(response, type = "application/json", encoding = "UTF-8")
+    release <- content(response, type = "application/json")
     release$releases <- lapply(release$releases, function(r) {
       list("release" = strptime(r$release, "%Y-%m-%dT%H:%M:%S%z"),
            "start-period" = strptime(r[["start-period"]], "%Y-%m-%d"),

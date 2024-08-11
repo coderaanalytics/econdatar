@@ -38,7 +38,7 @@ tidy_wide <- function(x, codelabel = FALSE, prettymeta = TRUE, ...) {
                                        tidy_wide,
                                        codelabel,
                                        prettymeta))
-  metadata <- if (prettymeta) get_metadata(x, ...) else NULL
+  metadata <- if (prettymeta) get_metadata(x) else NULL
   d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
     dcast(time_period ~ series_key, value.var = "OBS_VALUE") |>
     fmutate(time_period = as.Date(time_period))
@@ -86,7 +86,7 @@ tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, pre
                   prettymeta)
     return(if (combine) rbindlist(res, use.names = TRUE, fill = TRUE) else res)
   }
-  metadata <- if (prettymeta) get_metadata(x, ...) else NULL
+  metadata <- if (prettymeta) get_metadata(x) else NULL
   d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
     fmutate(time_period = as.Date(time_period),
             series_key = qF(series_key)) |>
@@ -122,11 +122,20 @@ tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, pre
     meta$data_provider_ref <- rep(metadata$data_provider_ref, nseries)
     meta$series_key <- names(x)[names(x) %in% levels(d$series_key)]
   }
-  setcolorder(meta,
-              c("data_set_name",
-                "data_set_ref",
-                "data_provider_ref",
-                "series_key"))
+  if (prettymeta) {
+    setcolorder(meta,
+                c("data_set_name",
+                  "data_set_ref",
+                  "data_provider_ref",
+                  "series_key"))
+  } else {
+    setcolorder(meta,
+                c("data_set_name",
+                  "data_set_ref",
+                  "series_key"))
+    meta[["name"]] <- NULL
+    meta[["provision-agreement"]] <- NULL
+  }
   if (!allmeta) get_vars(meta, fnobs(meta) == 0L) <- NULL
   if (combine) {
     meta_fct <- dapply(meta, qF, drop = FALSE) # Factors for efficient storage

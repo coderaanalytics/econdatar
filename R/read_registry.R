@@ -7,11 +7,6 @@ read_registry <- function(structure, tidy = FALSE, ...) {
   if (is.null(params$id) && is.null(params$file)) {
     stop("At least one of either: 'id' or 'file' parameter required.")
   }
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
   } else {
@@ -27,19 +22,22 @@ read_registry <- function(structure, tidy = FALSE, ...) {
   } else {
     version <- "latest"
   }
-  if (!is.null(params$portal)) {
-    portal <- params$portal
-  } else {
-    portal <- "econdata"
-  }
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
   params$env <- env
 
 
   # Fetch structure(s) ----
 
-  if (!exists("econdata_session", envir = .pkgenv)) {
-    login_helper(credentials, env$repository$url)
+  if (is.null(params$file)) {
+    if (exists("econdata_token", envir = .pkgenv)) {
+      token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
+      payload <- jwt_split(token)$payload
+      if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
+        login_helper(env$auth)
+      }
+    } else {
+      login_helper(env$auth)
+    }
   }
   agencyids <- paste(agencyid, collapse = ",")
   ids <- paste(id, collapse = ",")
@@ -101,15 +99,13 @@ read_category_schemes <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     category_schemes <- data_message[[2]][["structures"]][["category-schemes"]]
     return(category_schemes)
   } else {
@@ -187,16 +183,14 @@ read_codelists <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     codelists <- data_message[[2]][["structures"]][["codelists"]]
     return(codelists)
   } else {
@@ -268,15 +262,13 @@ read_concept_schemes <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     concept_schemes <- data_message[[2]][["structures"]][["concept-schemes"]]
     return(concept_schemes)
   } else {
@@ -361,16 +353,14 @@ read_dataflow <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     dataflows <- data_message[[2]][["structures"]][["dataflows"]]
     return(dataflows)
   } else {
@@ -434,15 +424,13 @@ read_data_structures <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     data_structures <- data_message[[2]][["structures"]][["data-structures"]]
     return(data_structures)
   } else {
@@ -610,15 +598,13 @@ read_memberlist <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    set_cookies(.cookies =
-                                  get("econdata_session", envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
     memberlists <- data_message[[2]][["structures"]][["memberlists"]]
     return(memberlists)
   } else {
@@ -708,14 +694,14 @@ read_cons_agreement <- function(agencyids, ids, versions, params) {
           query = list(agencyids = agencyids,
                        ids = ids,
                        versions = versions),
-          set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+          add_headers(authorization = get("econdata_token", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
     data_message <-
-      content(response, type = "application/json", encoding = "UTF-8")
+      content(response, type = "application/json")
     cons_agreements <-
       data_message[[2]][["structures"]][["consumption-agreements"]]
     return(cons_agreements)
@@ -793,14 +779,14 @@ read_prov_agreement <- function(agencyids, ids, versions, params) {
           query = list(agencyids = agencyids,
                        ids = ids,
                        versions = versions),
-          set_cookies(.cookies = get("econdata_session", envir = .pkgenv)),
+          add_headers(authorization = get("econdata_token", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
     data_message <-
-      content(response, type = "application/json", encoding = "UTF-8")
+      content(response, type = "application/json")
     prov_agreements <-
       data_message[[2]][["structures"]][["provision-agreements"]]
     return(prov_agreements)

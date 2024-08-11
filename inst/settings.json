@@ -1,22 +1,14 @@
 {
-  "econdata" : {
-    "repository" : {
-      "url" : "https://www.econdata.co.za",
-      "path" : "sdmx-codera/v1"
-    },
-    "registry" : {
-      "url" : "https://www.econdata.co.za",
-      "path" : "sdmx-codera/v1"
-    }
+  "auth" : {
+    "url" : "https://codera-firstrand.auth.af-south-1.amazoncognito.com",
+    "path" : "oauth2/token"
   },
-  "firstrand" : {
-    "repository" : {
-      "url" : "https://firstrand.econdata.co.za",
-      "path" : "sdmx-codera/v1"
-    },
-    "registry" : {
-      "url" : "https://firstrand.econdata.co.za",
-      "path" : "sdmx-codera/v1"
-    }
+  "repository" : {
+    "url" : "https://firstrand.econdata.co.za",
+    "path" : "sdmx-codera/v1"
+  },
+  "registry" : {
+    "url" : "https://firstrand.econdata.co.za",
+    "path" : "sdmx-codera/v1"
   }
 }

@@ -1,12 +1,12 @@
 Package: econdatar
 Title: Automation of Data Tasks to and from Codera Analytics' Econometric Data Services
-Version: 3.0.2
+Version: 3.1.0
 Date: 2024-04-24
 Authors@R: c(person("Byron", "Botha", role = c("aut", "cre"), email = "byron@codera.co.za"),
              person("Sebastian", "Krantz", role = "ctb"))
 Description: Automation of data tasks to and from <https://codera.co.za> econometric data services. Using this package users can download data from <https://www.econdata.co.za> directly into R (in tidy format) after signing up for a free account. <https://www.econdata.co.za> hosts a comprehensive database of South African macroeconomic data.
 Depends: R (>= 4.2.0)
-Imports: httr, jsonlite, readODS, collapse, data.table
+Imports: httr, jose, jsonlite, readODS, collapse, data.table
 Suggests: tcltk
 URL: https://www.econdata.co.za/
 BugReports: https://github.com/coderaanalytics/econdatar/issues

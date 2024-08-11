@@ -4,11 +4,6 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
   # Parameters ----
 
   params <- list(...)
-  if (!is.null(params$username) && !is.null(params$password)) {
-    credentials <- paste(params$username, params$password, sep = ";")
-  } else {
-    credentials <- NULL
-  }
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
   } else {
@@ -19,12 +14,7 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
   } else {
     version <- "latest"
   }
-  if (!is.null(params$portal)) {
-    portal <- params$portal
-  } else {
-    portal <- "econdata"
-  }
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))[[portal]]
+  env <- fromJSON(system.file("settings.json", package = "econdatar"))
 
 
   # Fetch data set(s) ----
@@ -34,8 +24,16 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
     data_message <- fromJSON(params$file, simplifyVector = FALSE)
     message("Data set(s) successfully retrieved from local storage.\n")
   } else {
-    if (!exists("econdata_session", envir = .pkgenv)) {
-      login_helper(credentials, env$repository$url)
+    if (is.null(params$file)) {
+      if (exists("econdata_token", envir = .pkgenv)) {
+        token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
+        payload <- jwt_split(token)$payload
+        if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
+          login_helper(env$auth)
+        }
+      } else {
+        login_helper(env$auth)
+      }
     }
     query_params <- list()
     query_params$agencyids <- paste(agencyid, collapse = ",")
@@ -44,15 +42,13 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
     response <- GET(env$repository$url,
                     path = c(env$repository$path, "/datasets"),
                     query = query_params,
-                    set_cookies(.cookies = get("econdata_session",
-                                               envir = .pkgenv)),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
-      stop(content(response, encoding = "UTF-8"))
+      stop(content(response, type = "application/json"))
     }
-    data_message <- content(response,
-                            type = "application/json",
-                            encoding = "UTF-8")
+    data_message <- content(response, type = "application/json")
   }
 
 
@@ -77,17 +73,15 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
                                      data_set_ref,
                                      "series", sep = "/"),
                         query = query_params,
-                        set_cookies(.cookies =
-                                      get("econdata_session", envir = .pkgenv)),
+                        add_headers(authorization = get("econdata_token",
+                                                        envir = .pkgenv)),
                         accept("application/vnd.sdmx-codera.data+json"))
         if (response$status_code == 200) {
           message("Processing data set: ", data_set_ref, "\n")
         } else {
-          stop(content(response, type = "application/json", encoding = "UTF-8"))
+          stop(content(response, type = "application/json"))
         }
-        data_message <- content(response,
-                                type = "application/json",
-                                encoding = "UTF-8")
+        data_message <- content(response, type = "application/json")
         tmp_data_set <- data_message[[2]][["data-sets"]][[1]][[2]]
       } else {
         tmp_data_set <- raw_data_set[[2]]
