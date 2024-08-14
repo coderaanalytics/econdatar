@@ -19,20 +19,22 @@ The EconData Registry provides a central data glossary of data concepts and the 
 Codera also uses EconData to automate models, do research, and create value-added products such as interactive scenario dashboards. These dashboards and forecasts are made available to our clients.
 }
 \author{
-%\packageAuthor{econdatar}
 
 Maintainer: \packageMaintainer{econdatar}
 }
-%\references{
-%~~ Literature or other references for background information ~~
-%}
-%%~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
-%%~~ the R documentation directory ~~
 \keyword{ package }
 \seealso{
 https://www.econdata.co.za
 https://econdata.co.za
 }
-%\examples{
-%~~ simple examples of the most important functions ~~
-%}
+\examples{
+\donttest{
+# library(econdatar)
+
+# Return all data sets (useful for browsing available data)
+CATALOGUE <- read_database(id = "all", tidy = TRUE)
+
+# Mining production and sales
+MINING <- read_dataset(id = "MINING", tidy = TRUE)
+}
+}

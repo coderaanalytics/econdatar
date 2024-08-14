@@ -22,8 +22,6 @@ read_release(id, tidy = FALSE, \dots)
     \code{before} \tab\tab datetime. Returns all releases before a certain date. \cr
     \code{after} \tab\tab datetime. Returns all releases after a certain date. \cr
     \code{description} \tab\tab character. Returns the release whose description matches the given string. \cr
-    \code{username} \tab\tab character. Web username. \cr
-    \code{password} \tab\tab character. Web password. \cr
   }
 }
 
@@ -33,34 +31,27 @@ read_release(id, tidy = FALSE, \dots)
 \details{
 Specifying the full dataflow and data provider details (as opposed to only using the data id) allows more fine-grained control over the data set being queried. This is not necessary if there is only a single definition of the data and a single provider, which is typically the case.
 
-An EconData account (http://www.econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password". If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
+An EconData account (http://econdata.co.za) is required to use this function. The user must provide an API token that can be found on the \emph{Account} page of the online portal, a GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
 }
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 \value{
 If \code{tidy = FALSE}, a nested lists containing metadata and release desciption and dates. If \code{tidy = TRUE}, a (list of) \emph{data.table}(s) providing release information, with metadata attached as an attribute.
 }
-
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 \code{\link{write_release}}
 \code{\link{read_econdata}}
 }
 \examples{
-\dontrun{
+\donttest{
 # library(econdatar)
-# Sys.setenv(ECONDATA_CREDENTIALS="username;password")
-# for ids/versions see: https://www.econdata.co.za/app
 
 # Bank Balance Sheet (institutional)
 MINING_RELEASE <- read_release(id = "MINING")
 # Same as: read_release(id = "BA900", tidy = TRUE)
-econdata_tidy(MINING_RELEASE, is_release = TRUE)      # No further options supported.
+econdata_tidy(MINING_RELEASE, is_release = TRUE) # No further options supported.
 
 # Releases for all CPI Revisions
 read_release(id = "CPI_ANL_SERIES", version = "all", tidy = TRUE)
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ release }% use one of  RShowDoc("KEYWORDS")
-\keyword{ vintage }% __ONLY ONE__ keyword per line
+\keyword{ release }
+\keyword{ vintage }

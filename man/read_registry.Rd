@@ -21,8 +21,6 @@ read_registry(structure, tidy = FALSE, \dots)
     \code{agencyid} \tab\tab character. Defaults to \code{ECONDATA}. Agency responsible for the metadata creation/maintenance. \cr
     \code{version} \tab\tab character. Version(s) of the data (different versions will have different metadata), or 'all' to return all available versions. \cr
     \code{file} \tab\tab character. File name for retrieving structures stored as JSON data from disk (output of \code{read_registry()}). \cr
-    \code{username} \tab\tab character. Web username. \cr
-    \code{password} \tab\tab character. Web password. \cr
   }
 }
 
@@ -30,31 +28,21 @@ read_registry(structure, tidy = FALSE, \dots)
 }
 }
 \details{
-An EconData account (http://econdata.co.za) is required to use this function. The user must provide their credentials either through the function arguments, or by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "username;password", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="username;password")}. If credentials are not supplied by the aforementioned methods a GUI dialog will prompt the user for credentials.
+An EconData account (http://econdata.co.za) is required to use this function. The user must provide an API token that can be found on the \emph{Account} page of the online portal, a GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
 }
 \value{
-%%  ~Describe the value returned
 If \code{tidy = FALSE}, a list detailing at a minimum the structure's agencyid, id, version, name, and description, as well as a data.frame with rows containing the data of any child structures.
-
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
 }
-
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 \code{\link{write_registry}}
 }
 \examples{
-\dontrun{
+\donttest{
 # library(econdatar)
-# Sys.setenv(ECONDATA_CREDENTIALS="username;password")
 
 # Frequency codelist
 CL_FREQ <- read_registry("codelist", id = "CL_FREQ")
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ load }% use one of  RShowDoc("KEYWORDS")
-\keyword{ download }% __ONLY ONE__ keyword per line
+\keyword{ load }
+\keyword{ download }
