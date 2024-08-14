@@ -1,14 +1,14 @@
 {
   "auth" : {
-    "url" : "https://codera-econdata.auth.af-south-1.amazoncognito.com",
+    "url" : "https://codera-dev.auth.af-south-1.amazoncognito.com",
     "path" : "oauth2/token"
   },
   "repository" : {
-    "url" : "https://www.econdata.co.za",
+    "url" : "https://dev.econdata.co.za",
     "path" : "sdmx-codera/v1"
   },
   "registry" : {
-    "url" : "https://www.econdata.co.za",
+    "url" : "https://dev.econdata.co.za",
     "path" : "sdmx-codera/v1"
   }
 }
