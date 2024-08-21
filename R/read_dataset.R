@@ -85,15 +85,13 @@ read_dataset <- function(id, tidy = FALSE, ...) {
         attr(series, "metadata") <- raw_series
         return(series)
       } else {
-        fields <- lapply(obs, function(x) names(x)) |>
-          unlist() |>
-          unique()
-        series <- lapply(fields, function(n) {
+        fields <- unique(unlist(lapply(obs, function(x) names(x))))
+        series <- 
+        as.data.frame(lapply(fields, function(n) {
           sapply(obs, function(x) {
             ifelse(is.null(x[[n]]), NA, x[[n]])
           })
-        }) |>
-          as.data.frame(col.names = fields)
+        }), col.names = fields)
         rownames(series) <- series$TIME_PERIOD
         series$TIME_PERIOD <- NULL
         attr(series, "metadata") <- raw_series
@@ -159,20 +157,18 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
       data_message <- content(response, type = "application/json")
       if (length(data_message$releases) != 0) {
         if (candidate_release == "latest") {
-          release <- head(data_message$releases, n = 1)[[1]]$release |>
-            as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
+          release <- as.POSIXct(head(data_message$releases, n = 1)[[1]]$release, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
           attr(release, "tzone") <- "Africa/Johannesburg"
           return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
         } else {
-          release <- sapply(data_message$releases, function(release) {
+          release <-
+          head(na.omit(sapply(data_message$releases, function(release) {
             if (candidate_release == release$description) {
               release$release
             } else {
               NA
             }
-          }) |>
-            na.omit() |>
-            head(n = 1)
+          })), n = 1)
           if (length(release) != 0) {
             release <- as.POSIXct(release,
                                   tz = "UTC",
@@ -181,8 +177,7 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
             return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
           } else {
             message("Release not found, returning latest release instead.")
-            release <- tail(data_message$releases, n = 1)[[1]]$release |>
-              as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
+            release <- as.POSIXct(tail(data_message$releases, n = 1)[[1]]$release, tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
             attr(release, "tzone") <- "Africa/Johannesburg"
             return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
           }
@@ -227,20 +222,16 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL, debug = FA
   } else {
     link_next <- links[grepl("rel=next", links)]
     link_match <- regexec("^(<)(.+)(>;rel=next)$", link_next)
-    link_parts <- regmatches(link_next, link_match)[[1]][3] |>
-      URLdecode() |>
-      strsplit("\\?") |>
-      unlist()
+    link_parts <- unlist(strsplit(URLdecode(regmatches(link_next, link_match)[[1]][3]), "\\?"))
     response <-
       GET(env$repository$url,
           path = link_parts[1],
-          query = strsplit(unlist(strsplit(link_parts[2], "&")), "=") |>
-            lapply(function(x) {
+          query =
+            unlist(lapply(strsplit(unlist(strsplit(link_parts[2], "&")), "="), function(x) {
               y <- list()
               y[[x[1]]] <- x[2]
               return(y)
-            }) |>
-            unlist(recursive = FALSE),
+            }), recursive = FALSE),
           add_headers(authorization = get("econdata_token", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
     if (debug == TRUE) {
