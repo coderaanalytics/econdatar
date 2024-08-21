@@ -34,7 +34,7 @@ No return value, called for side-effects - writes data to server.
 \code{\link{write_release}}
 }
 \examples{
-\donttest{
+\dontrun{
 x <- read_econdata("MINING")
 
 tmp <- tempdir()

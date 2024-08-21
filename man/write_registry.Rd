@@ -32,7 +32,7 @@ No return value, called for side-effects - writes data to server.
 \code{\link{read_registry}}
 }
 \examples{
-\donttest{
+\dontrun{
 x <- read_registry("codelist", id = "CL_FREQ")
 
 tmp <- tempdir()

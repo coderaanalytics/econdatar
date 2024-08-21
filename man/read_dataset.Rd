@@ -60,7 +60,7 @@ If \code{tidy = TRUE} and \code{wide = FALSE} and \code{compact = FALSE} (the de
 \code{\link{read_release}}
 }
 \examples{
-\donttest{
+\dontrun{
 # library(econdatar)
 
 # Electricity Generated

@@ -38,7 +38,7 @@ If \code{tidy = TRUE} a single \emph{data.table} is returned with columns for \c
 \code{\link{write_database}}
 }
 \examples{
-\donttest{
+\dontrun{
 # library(econdatar)
 
 # Mining production and sales

@@ -28,7 +28,7 @@ https://www.econdata.co.za
 https://econdata.co.za
 }
 \examples{
-\donttest{
+\dontrun{
 # library(econdatar)
 
 # Return all data sets (useful for browsing available data)

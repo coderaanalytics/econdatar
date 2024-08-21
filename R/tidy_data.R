@@ -34,6 +34,7 @@ add_version_names <- function(x, is_release = FALSE) {
 }
 
 tidy_wide <- function(x, codelabel = FALSE, prettymeta = TRUE, ...) {
+  time_period <- NULL
   if (is.null(names(x))) return(lapply(add_version_names(x),
                                        tidy_wide,
                                        codelabel,
@@ -77,6 +78,7 @@ extract_metadata <- function(x, meta, allmeta = FALSE, origmeta = FALSE) {
 }
 
 tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, prettymeta = TRUE, ...) {
+  time_period <- NULL
   if (is.null(names(x))) {
     res <- lapply(add_version_names(x),
                   tidy_long,

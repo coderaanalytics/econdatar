@@ -37,7 +37,7 @@ If \code{tidy = FALSE}, a list detailing at a minimum the structure's agencyid, 
 \code{\link{write_registry}}
 }
 \examples{
-\donttest{
+\dontrun{
 # library(econdatar)
 
 # Frequency codelist

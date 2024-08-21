@@ -41,7 +41,7 @@ If \code{tidy = FALSE}, a nested lists containing metadata and release desciptio
 \code{\link{read_econdata}}
 }
 \examples{
-\donttest{
+\dontrun{
 # library(econdatar)
 
 # Bank Balance Sheet (institutional)
