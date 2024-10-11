@@ -34,6 +34,7 @@ add_version_names <- function(x, is_release = FALSE) {
 }
 
 tidy_wide <- function(x, codelabel = FALSE, prettymeta = TRUE, ...) {
+  time_period <- NULL
   if (is.null(names(x))) return(lapply(add_version_names(x),
                                        tidy_wide,
                                        codelabel,
@@ -77,6 +78,7 @@ extract_metadata <- function(x, meta, allmeta = FALSE, origmeta = FALSE) {
 }
 
 tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, prettymeta = TRUE, ...) {
+  time_period <- NULL
   if (is.null(names(x))) {
     res <- lapply(add_version_names(x),
                   tidy_long,
@@ -87,10 +89,13 @@ tidy_long <- function(x, combine = FALSE, allmeta = FALSE, origmeta = FALSE, pre
     return(if (combine) rbindlist(res, use.names = TRUE, fill = TRUE) else res)
   }
   metadata <- if (prettymeta) get_metadata(x) else NULL
-  d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
-    fmutate(time_period = as.Date(time_period),
-            series_key = qF(series_key)) |>
-    frename(OBS_VALUE = "obs_value")
+  d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE)
+  if (nrow(d) != 0) {
+    d <- d |>
+      fmutate(time_period = as.Date(time_period),
+              series_key = qF(series_key)) |>
+      frename(OBS_VALUE = "obs_value")
+  }
   M <- attr(x, "metadata")
   meta4dataset <- extract_metadata(x,
                                    metadata$concepts,
