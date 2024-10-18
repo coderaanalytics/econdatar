@@ -101,12 +101,13 @@ write_dataset <- function(x, method = "stage", ...) {
       } else {
         error <- content(response, type = "application/json")
         if (response$status_code == 400) {
-          if (error$message == "Validation error") {
+          browser()
+          if (!is.null(error$message) && error$message == "Validation error") {
             stop(toJSON(error, pretty = TRUE))
           } else {
             stop(error)
           }
-        }  else {
+        } else {
           stop(error)
         }
       }
