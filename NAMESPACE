@@ -2,7 +2,7 @@ importFrom("collapse", "add_vars<-", "ckmatch", "dapply", "fmutate", "fnobs",
            "frename", "get_vars<-", "qDT", "qF", "ss", "unlist2d", "vlabels",
            "vlabels<-")
 importFrom("data.table", "dcast", "rbindlist", "setcolorder")
-importFrom("httr", "POST", "GET", "PUT", "accept", "add_headers", "accept_json",
+importFrom("httr", "POST", "GET", "PUT", "DELETE", "accept", "add_headers", "accept_json",
            "authenticate", "content", "content_type", "upload_file")
 importFrom("jose", "jwt_split")
 importFrom("jsonlite", "fromJSON", "toJSON", "unbox")

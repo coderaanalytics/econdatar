@@ -20,7 +20,7 @@ read_registry(structure, tidy = FALSE, \dots)
   \tabular{llll}{
     \code{agencyid} \tab\tab character. Defaults to \code{ECONDATA}. Agency responsible for the metadata creation/maintenance. \cr
     \code{version} \tab\tab character. Version(s) of the data (different versions will have different metadata), or 'all' to return all available versions. \cr
-    \code{file} \tab\tab character. File name for retrieving structures stored as JSON data from disk (output of \code{read_registry()}). \cr
+    \code{file} \tab\tab character. File name for retrieving structures stored as JSON data from disk (output of \code{write_registry()}). \cr
   }
 }
 

@@ -5,7 +5,7 @@ write_registry <- function(structure, x, method = "update", ...) {
 
   params <- list(...)
   stopifnot(length(method) == 1)
-  stopifnot(method %in% c("create", "update"))
+  stopifnot(method %in% c("delete", "create", "update"))
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
   params$env <- env
 
@@ -726,36 +726,43 @@ write_memberlist <- function(memberlist, method, params) {
 
 write_cons_agreement <- function(cons_agreement, method, params) {
   if(is.null(params$file)) {
-    cons_agreement_ref <- paste(cons_agreement$agencyid,
-                                cons_agreement$id,
-                                cons_agreement$version,
-                                sep = "-")
-    data_message <-
-      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
-           list(header = params$header,
-                structures =
-                  list("consumption-agreements" =
-                       list(
-                            list(unbox("#sdmx.infomodel.registry.ConsumptionAgreement"),
-                                 list(agencyid = unbox(cons_agreement$agencyid),
-                                      id = unbox(cons_agreement$id),
-                                      version = unbox(cons_agreement$version),
-                                      name = c("en", cons_agreement$name)))))))
-    if (!is.na(cons_agreement$description)) {
-      data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]]$description <-
-        c("en", cons_agreement$description)
+    if(!is.null(cons_agreement)) {
+      cons_agreement_ref <- paste(cons_agreement$agencyid,
+                                  cons_agreement$id,
+                                  cons_agreement$version,
+                                  sep = "-")
+      data_message <-
+        list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+             list(header = params$header,
+                  structures =
+                    list("consumption-agreements" =
+                         list(
+                              list(unbox("#sdmx.infomodel.registry.ConsumptionAgreement"),
+                                   list(agencyid = unbox(cons_agreement$agencyid),
+                                        id = unbox(cons_agreement$id),
+                                        version = unbox(cons_agreement$version),
+                                        name = c("en", cons_agreement$name)))))))
+      if (!is.na(cons_agreement$description)) {
+        data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]]$description <-
+          c("en", cons_agreement$description)
+      }
+      data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]][["dataflow"]] <-
+        list(unbox("#sdmx.infomodel.datastructure.DataflowRef"),
+             list(agencyid = unbox(cons_agreement$dataflow$agencyid),
+                  id = unbox(cons_agreement$dataflow$id),
+                  version = unbox(cons_agreement$dataflow$version)))
+      data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]][["data-consumer"]] <-
+        list(unbox("#sdmx.infomodel.base.DataConsumerRef"),
+             list(agencyid = unbox(cons_agreement$data_consumer$agencyid),
+                  parentid = unbox(cons_agreement$data_consumer$parentid),
+                  parentversion = unbox(cons_agreement$data_consumer$parentversion),
+                  id = unbox(cons_agreement$data_consumer$id)))
+    } else {
+      cons_agreement_ref <- paste(params$agencyid,
+                                  params$id,
+                                  params$version,
+                                  sep = "-")
     }
-    data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]][["dataflow"]] <-
-      list(unbox("#sdmx.infomodel.datastructure.DataflowRef"),
-           list(agencyid = unbox(cons_agreement$dataflow$agencyid),
-                id = unbox(cons_agreement$dataflow$id),
-                version = unbox(cons_agreement$dataflow$version)))
-    data_message[[2]]$structures[["consumption-agreements"]][[1]][[2]][["data-consumer"]] <-
-      list(unbox("#sdmx.infomodel.base.DataConsumerRef"),
-           list(agencyid = unbox(cons_agreement$data_consumer$agencyid),
-                parentid = unbox(cons_agreement$data_consumer$parentid),
-                parentversion = unbox(cons_agreement$data_consumer$parentversion),
-                id = unbox(cons_agreement$data_consumer$id)))
     if (method == "create") {
       message("Creating consumption agreement: ", cons_agreement_ref, "\n")
       response <- POST(params$env$repository$url,
@@ -791,7 +798,22 @@ write_cons_agreement <- function(cons_agreement, method, params) {
       } else {
         stop(content(response, type = "application/json"))
       }
-    } else {
+    } else if (method == "delete") {
+      message("Deleting consumption agreement: ", cons_agreement_ref, "\n")
+      response <- DELETE(params$env$repository$url,
+                         path = paste(params$env$repository$path,
+                                      "consumptionagreements",
+                                      cons_agreement_ref, sep = "/"),
+                         add_headers(authorization = get("econdata_token",
+                                                         envir = .pkgenv)),
+                         content_type("application/vnd.sdmx-codera.data+json"),
+                         accept_json())
+      if (response$status_code == 200) {
+        message(content(response, type = "application/json")$success)
+      } else {
+        stop(content(response, type = "application/json"))
+      }
+    }  else {
       stop("Method not implemented.")
     }
   } else {

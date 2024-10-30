@@ -101,7 +101,7 @@ write_database <- function(x, method = "update", ...) {
       } else {
         error <- content(response, type = "application/json")
         if (response$status_code == 400) {
-          if (error$message == "Validation error") {
+          if (!is.null(error$message) && error$message == "Validation error") {
             stop(toJSON(error, pretty = TRUE))
           } else {
             stop(error)
