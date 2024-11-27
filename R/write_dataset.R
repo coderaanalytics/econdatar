@@ -119,6 +119,7 @@ write_dataset <- function(x, method = "stage", ...) {
 }
 
 write_econdata <- function(x, create = FALSE, update = FALSE, stage = TRUE, ...) {
+  .Deprecated("write_dataset")
   if (create || update) {
     stop("Create and update no longer supported, please use 'write_dataset'")
   }

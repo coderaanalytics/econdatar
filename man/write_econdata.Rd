@@ -4,7 +4,9 @@
 write_econdata
 }
 \description{
-Saves the data set. Available data sets can be looked up from the web platform (http://www.econdata.co.za).
+This function is deprecated, in favour of \code{\link{write_dataset}}. During development, please replace this function with the newer function name.
+
+\strong{Stages} or saves the data set. Available data sets can be looked up from the \href{http://www.econdata.co.za}{web platform}.
 }
 \usage{
 write_econdata(x, create = FALSE, update = FALSE, stage = TRUE, \dots)
@@ -15,21 +17,22 @@ write_econdata(x, create = FALSE, update = FALSE, stage = TRUE, \dots)
   \item{update}{Should the time series metadata be updated.}
   \item{stage}{Should the time series data be staged for release (added to unreleased data).}
 
-\item{\dots}{Further \emph{Optional} arguments:
+\item{\dots}{Further \emph{optional} arguments:
   \tabular{llll}{
     \code{file} \tab\tab character. File name for saving data set as JSON data to disk. \cr
 }
 }
 }
 \details{
-An EconData account (http://econdata.co.za) is required to use this function. The user must provide an API token that can be found on the \emph{Account} page of the online portal, a GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
+An \href{http://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal. A GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
 
-The functionality provided by \emph{write_econdata} is to save the data set according to the function arguments. As this makes modifications to the database the user calling this function requires higher privileges than needed for other \emph{econdatar} functions - the user requires membership with the relevant data provider.
+The functionality provided by \emph{write_econdata} is to save the data set according to the function arguments. As this makes modifications to the database the user calling this function requires higher privileges than needed for other \emph{econdatar} functions---the user requires membership with the relevant data provider.
 }
 \value{
-No return value, called for side-effects - writes data to server.
+No return value, called for side-effects---writes data to server.
 }
 \seealso{
+\code{\line{write_dataset}}
 \code{\link{read_econdata}}
 \code{\link{write_release}}
 }
