@@ -5,7 +5,9 @@
 read_econdata
 }
 \description{
-Returns the data for the given data set - ECONDATA:id(version), as a list, or as tidy \emph{data.table}'s. Available data sets can be looked up from the web platform (http://www.econdata.co.za). Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{tidy_data()}.
+This function is deprecated, in favour of \code{\link{read_dataset}}. During development, please replace this function with the newer function name.
+
+Returns the data for the given data set - ECONDATA:id(version), as a list, or as tidy \emph{data.table}'s. Available data sets can be looked up from the \href{http://www.econdata.co.za/}{web platform}. Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{tidy_data()}.
 }
 \usage{
 read_econdata(id, tidy = FALSE, \dots)
@@ -16,7 +18,7 @@ tidy_data(x, \dots)
   \item{id}{Data identifier.}
   \item{x}{A raw API return object to be tidied. Can also be done directly in \code{read_econdata()} by setting \code{tidy = TRUE}. See \code{tidy} below for tidying options.}
 
-\item{\dots}{Further \emph{Optional} arguments:
+\item{\dots}{Further \emph{optional} arguments:
   \tabular{llll}{
     \code{agencyid} \tab\tab character. Defaults to \code{ECONDATA}. Agency responsible for the metadata creation/maintenance. \cr
     \code{version} \tab\tab character. Version(s) of the data (different versions will have different metadata), or 'all' to return all available versions. \cr
@@ -26,7 +28,8 @@ tidy_data(x, \dots)
   }
 }
 
-\item{tidy}{logical. Return data and metadata in tidy \emph{data.table}'s (see Value), by passing the result through \code{tidy_data}. If \code{TRUE}, \code{read_econdata()/tidy_data()} admit the following additional arguments:
+\item{tidy}{logical. Return data and metadata in tidy \emph{data.table}'s (see Value), by passing the result through \code{tidy_data}. If \code{TRUE}, \code{read_econdata()/tidy_data()} admit the following additional arguments:}
+\item{\dots}{
   \tabular{llll}{
     \code{wide} \tab\tab logical, default: \code{TRUE}. Returns data in a column-based format, with \code{"label"} and \code{"source_identifier"} attributes to columns (when available) and an overall "metadata" attribute to the table, otherwise a long-format is returned. See Value. \cr
 
@@ -45,7 +48,7 @@ tidy_data(x, \dots)
 }
 }
 \details{
-An EconData account (http://econdata.co.za) is required to use this function. The user must provide an API token that can be found on the \emph{Account} page of the online portal, a GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
+An \href{http://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal; a GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
 }
 \value{
 If \code{tidy = FALSE}, a list of data frames is returned, where the names of the list are the EconData series codes, and each data frame has a single column named 'OBS_VALUE' containing the data, with corresponding dates attached as rownames. Each data frame further has a \code{"metadata"} attribute providing information about the series. The entire list of data frames also has a \code{"metadata"} attribute, providing information about the dataset. If multiple datasets (or versions of a dataset if \code{version} is specified as 'all') are being queried, a list of such lists is returned.
@@ -55,6 +58,7 @@ If \code{tidy = TRUE} and \code{wide = TRUE} (the default), a single \emph{data.
 If \code{tidy = TRUE} and \code{wide = FALSE} and \code{compact = FALSE} (the default), a named list of two \emph{data.table}'s is returned. The first, \code{"data"}, has columns 'code', 'date' and 'value' providing the data in a long format. The second, \code{"metadata"}, provides dataset and series-level matadata, with one row for each series. If \code{compact = TRUE}, these two datasets are combined, where all repetitive content is converted to factors for more efficient storage. If multiple datasets (or versions of a dataset if \code{version} is specified as 'all') are being queried, \code{compact = FALSE} gives a nested list, whereas \code{compact = TRUE} binds everything together to a single long frame. In general, if \code{wide = FALSE}, no attributes are attached to the tables or columns in the tables.
 }
 \seealso{
+\code{\line{read_dataset}}
 \code{\link{write_econdata}}
 \code{\link{read_release}}
 }
