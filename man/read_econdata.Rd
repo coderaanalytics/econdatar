@@ -41,9 +41,7 @@ tidy_data(x, \dots)
 
     \code{allmeta} \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{allmeta = TRUE} always returns the full set of metadata fields, regardless of whether they are recorded for the given dataset. It is also possible that there are series with zero observations in a dataset. Such series are dropped in tidy output, but if \code{combine = FALSE}, \code{allmeta = TRUE} retains their metadata in the metadata table. \cr
 
-    \code{prettymeta} \tab\tab logical, default: \code{TRUE}. Attempts to make the returned metadata more human readable replacing each code category and enumeration with its name. It is advisable to leave this set to \code{TRUE}, in some cases, where speed is paramount you may want to set this flag to \code{FALSE}. If multiple datasets are being querioed this option is automatically set to \code{FALSE}. \cr
-
-   \code{release} \tab\tab logical, default: \code{FALSE}. \code{TRUE} allows you to apply \code{tidy_data()} to objects returned by \code{read_release()}. All other flags to \code{tidy_data()} are ignored.
+    \code{prettymeta} \tab\tab logical, default: \code{TRUE}. Attempts to make the returned metadata more human readable replacing each code category and enumeration with its name. It is advisable to leave this set to \code{TRUE}, in some cases, where speed is paramount you may want to set this flag to \code{FALSE}. If multiple datasets are being querioed this option is automatically set to \code{FALSE}.
 }
 }
 }
@@ -58,7 +56,7 @@ If \code{tidy = TRUE} and \code{wide = TRUE} (the default), a single \emph{data.
 If \code{tidy = TRUE} and \code{wide = FALSE} and \code{compact = FALSE} (the default), a named list of two \emph{data.table}'s is returned. The first, \code{"data"}, has columns 'code', 'date' and 'value' providing the data in a long format. The second, \code{"metadata"}, provides dataset and series-level matadata, with one row for each series. If \code{compact = TRUE}, these two datasets are combined, where all repetitive content is converted to factors for more efficient storage. If multiple datasets (or versions of a dataset if \code{version} is specified as 'all') are being queried, \code{compact = FALSE} gives a nested list, whereas \code{compact = TRUE} binds everything together to a single long frame. In general, if \code{wide = FALSE}, no attributes are attached to the tables or columns in the tables.
 }
 \seealso{
-\code{\line{read_dataset}}
+\code{\link{read_dataset}}
 \code{\link{write_econdata}}
 \code{\link{read_release}}
 }

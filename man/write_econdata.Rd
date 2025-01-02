@@ -32,7 +32,7 @@ The functionality provided by \emph{write_econdata} is to save the data set acco
 No return value, called for side-effects---writes data to server.
 }
 \seealso{
-\code{\line{write_dataset}}
+\code{\link{write_dataset}}
 \code{\link{read_econdata}}
 \code{\link{write_release}}
 }

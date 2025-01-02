@@ -7,7 +7,7 @@ write_release
 Release data set with identifier --- ECONDATA:id(version). Moves the staged dataset to a vintage.
 }
 \usage{
-write_release(id, version, providerid, description, method = "release", ...)
+write_release(id, version, description, method = "release", ...)
 }
 \arguments{
   \item{id}{character. Data identifier.}
