@@ -125,6 +125,7 @@ read_dataset <- function(id, tidy = FALSE, ...) {
 }
 
 read_econdata <- function(id, tidy = FALSE, ...) {
+  .Deprecated("read_dataset")
   read_dataset(id = id, tidy = tidy, ...)
 }
 
