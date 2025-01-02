@@ -29,8 +29,7 @@ tidy_data(x, \dots)
 }
 
 \item{tidy}{logical. Return data and metadata in tidy \emph{data.table}'s (see Value), by passing the result through \code{tidy_data}. If \code{TRUE}, \code{read_econdata()/tidy_data()} admit the following additional arguments:}
-\item{\dots}{
-  \tabular{llll}{
+\tabular{llll}{
     \code{wide} \tab\tab logical, default: \code{TRUE}. Returns data in a column-based format, with \code{"label"} and \code{"source_identifier"} attributes to columns (when available) and an overall "metadata" attribute to the table, otherwise a long-format is returned. See Value. \cr
 
     \code{codelabel} \tab\tab logical, default: \code{FALSE}. If \code{wide = TRUE}, setting \code{codelabel = TRUE} the data key will be used to generate the \code{"label"}, when available. \cr
@@ -42,7 +41,6 @@ tidy_data(x, \dots)
     \code{allmeta} \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{allmeta = TRUE} always returns the full set of metadata fields, regardless of whether they are recorded for the given dataset. It is also possible that there are series with zero observations in a dataset. Such series are dropped in tidy output, but if \code{combine = FALSE}, \code{allmeta = TRUE} retains their metadata in the metadata table. \cr
 
     \code{prettymeta} \tab\tab logical, default: \code{TRUE}. Attempts to make the returned metadata more human readable replacing each code category and enumeration with its name. It is advisable to leave this set to \code{TRUE}, in some cases, where speed is paramount you may want to set this flag to \code{FALSE}. If multiple datasets are being querioed this option is automatically set to \code{FALSE}.
-}
 }
 }
 \details{

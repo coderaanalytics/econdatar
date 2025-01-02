@@ -26,15 +26,14 @@ read_dataset(id, tidy = FALSE, \dots)
     \code{file} \tab\tab character. File name for retrieving data sets stored as JSON data from disk (output of \code{read_dataset()}. \cr
 }}
 \item{tidy}{logical. Return data and metadata in tidy \emph{data.table}'s (see Value), by passing the result through \code{tidy_data}. If \code{TRUE}, \code{read_dataset()/tidy_data()} admit the following additional arguments:}
-\item{\dots}{
-  \tabular{llll}{
+\tabular{llll}{
     \code{wide} \tab\tab logical, default: \code{TRUE}. Returns data in a column-based format, with \code{"label"} and \code{"source_identifier"} attributes to columns (when available) and an overall "metadata" attribute to the table, otherwise a long-format is returned. See Value. \cr
     \code{codelabel} \tab\tab logical, default: \code{FALSE}. If \code{wide = TRUE}, setting \code{codelabel = TRUE} the data key will be used to generate the \code{"label"}, when available. \cr
     \code{combine} \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{combine = TRUE} will combine all data and metadata into a single long table, whereas the default \code{FALSE} will return data and metadata in separate tables, for more efficient storage. \cr
     \code{origmeta}  \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{origmeta = TRUE} will combine all metadata fields attached to the series in the dataset as they are. The default is to construct a standardized set of metadata variables, and then drop those not observed. See also \code{allmeta}. \cr
     \code{allmeta} \tab\tab logical, default: \code{FALSE}. If \code{wide = FALSE}, setting \code{allmeta = TRUE} always returns the full set of metadata fields, regardless of whether they are recorded for the given dataset. It is also possible that there are series with zero observations in a dataset. Such series are dropped in tidy output, but if \code{combine = FALSE}, \code{allmeta = TRUE} retains their metadata in the metadata table. \cr
     \code{prettymeta} \tab\tab logical, default: \code{TRUE}. Attempts to make the returned metadata more human readable replacing each code category and enumeration with its name. It is advisable to leave this set to \code{TRUE}, in some cases, where speed is paramount you may want to set this flag to \code{FALSE}. If multiple datasets are being querioed this option is automatically set to \code{FALSE}.
-}}
+}
 }
 \details{
 An \href{http://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal; a GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
