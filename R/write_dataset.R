@@ -3,11 +3,17 @@ write_dataset <- function(x, method = "stage", ...) {
 
   # Parameters ----
 
-  env <- fromJSON(system.file("settings.json", package = "econdatar"))
   params <- list(...)
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("stage", "validate"))
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
+  if (nchar(Sys.getenv("ECONDATA_URL")) != 0) {
+    env$repository$url <- Sys.getenv("ECONDATA_URL")
+    env$registry$url <- Sys.getenv("ECONDATA_URL")
+  }
+  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
+    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
+  }
 
 
   # Push data message ----

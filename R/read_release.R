@@ -25,6 +25,13 @@ read_release <- function(id, tidy = FALSE, ...) {
     query_params$description <- params$description
   }
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
+  if (nchar(Sys.getenv("ECONDATA_URL")) != 0) {
+    env$repository$url <- Sys.getenv("ECONDATA_URL")
+    env$registry$url <- Sys.getenv("ECONDATA_URL")
+  }
+  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
+    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
+  }
 
 
   # Fetch release ----

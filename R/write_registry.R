@@ -7,6 +7,13 @@ write_registry <- function(structure, x, method = "update", ...) {
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("delete", "create", "update"))
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
+  if (nchar(Sys.getenv("ECONDATA_URL")) != 0) {
+    env$repository$url <- Sys.getenv("ECONDATA_URL")
+    env$registry$url <- Sys.getenv("ECONDATA_URL")
+  }
+  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
+    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
+  }
   params$env <- env
 
 
