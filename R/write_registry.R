@@ -40,11 +40,11 @@ write_registry <- function(structure, x, method = "update", ...) {
   }
   params$header <- header
   switch(structure,
-         #"agency-scheme" = write_agency_scheme(x, method, params),
+         "agency-scheme" = write_agency_scheme(x, method, params),
          "category-scheme" = write_category_scheme(x, method, params),
          "codelist" = write_codelist(x, method, params),
          "concept-scheme" = write_concept_scheme(x, method, params),
-         #"data-consumer-scheme" = write_data_consumer_scheme(x, method, params),
+         "data-consumer-scheme" = write_data_consumer_scheme(x, method, params),
          "data-provider-scheme" = write_data_provider_scheme(x, method, params),
          "dataflow" = write_dataflow(x, method, params),
          "data-structure" = write_data_structure(x, method, params),
@@ -53,6 +53,115 @@ write_registry <- function(structure, x, method = "update", ...) {
          "provision-agreement" = write_prov_agreement(x, method, params),
          stop("Specified structure, ", structure, ", is not supported."))
   return(invisible(NULL))
+}
+
+
+
+# Agency scheme ----
+
+
+write_agency_scheme <- function(agency_scheme, method, params) {
+  if (is.null(params$file)) {
+    agency_scheme_ref <- paste(agency_scheme$agencyid,
+                               agency_scheme$id,
+                               agency_scheme$version,
+                               sep = "-")
+    data_message <-
+      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+           list(header = params$header,
+                structures =
+                  list("agency-schemes" =
+                       list(
+                            list(unbox("#sdmx.infomodel.base.AgencyScheme"),
+                                 list(agencyid = unbox(agency_scheme$agencyid),
+                                      id = unbox(agency_scheme$id),
+                                      version = unbox(agency_scheme$version),
+                                      name = c("en", agency_scheme$name),
+                                      agencies = list()))))))
+    if (!is.na(agency_scheme$description)) {
+      data_message[[2]]$structures[["agency-schemes"]][[1]][[2]]$description <-
+        c("en", agency_scheme$description)
+    }
+    if (NROW(agency_scheme$agencies) > 0) {
+      ids <- unique(agency_scheme$agencies$id)
+      for (i in seq_len(length(ids))) {
+        id <- ids[i]
+        index <- agency_scheme$agencies$id == id
+        tmp <- as.list(agency_scheme$agencies[which(index)[1], ])
+        agency <- list(unbox("#sdmx.infomodel.base.Agency"),
+                       list(id = unbox(tmp$id),
+                            name = c("en", tmp$name)))
+        if (!is.na(tmp$description)) {
+          agency[[2]]$description <- c("en", tmp$description)
+        }
+        if (length(which(!is.na(agency_scheme$agencies[index, ]$contact_name))) != 0) {
+          contacts <- apply(agency_scheme$agencies[index, ], 1, function(contact) {
+            tmp <- as.list(contact)
+            contact <- list(name = c("en", tmp$contact_name))
+            if(!is.na(tmp$contact_department)) {
+              contact$department <- c("en", tmp$contact_department)
+            }
+            if(!is.na(tmp$contact_email)) {
+              contact$email <- unbox(tmp$contact_email)
+            }
+            contact
+          })
+          names(contacts) <- NULL
+        } else {
+          contacts <- list()
+        }
+        agency[[2]]$contacts <- contacts
+        data_message[[2]]$structures[["agency-schemes"]][[1]][[2]][["agency"]][[i]] <-
+          agency
+      }
+    }
+    if (method == "create") {
+      message("Creating agency scheme: ", agency_scheme_ref, "\n")
+      response <- POST(params$env$repository$url,
+                       path = paste(params$env$repository$path,
+                                    "agencyschemes", sep = "/"),
+                       body = toJSON(data_message,
+                                     na = "null",
+                                     always_decimal = TRUE),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
+                       content_type("application/vnd.sdmx-codera.data+json"),
+                       accept_json())
+      if (response$status_code == 201) {
+        message(content(response, type = "application/json")$success)
+      } else {
+        stop(content(response, type = "application/json"))
+      }
+    } else if (method == "update") {
+      message("Updating agency scheme: ", agency_scheme_ref, "\n")
+      response <- PUT(params$env$repository$url,
+                      path = paste(params$env$repository$path,
+                                   "agencyschemes",
+                                   agency_scheme_ref, sep = "/"),
+                      body = toJSON(data_message,
+                                    na = "null",
+                                    always_decimal = TRUE),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
+                      content_type("application/vnd.sdmx-codera.data+json"),
+                      accept_json())
+      if (response$status_code == 200) {
+        message(content(response, type = "application/json")$success)
+      } else {
+        stop(content(response, type = "application/json"))
+      }
+    } else {
+      stop("Method not implemented.")
+    }
+  } else {
+    agencies <- agency_scheme$agencies
+    agency_scheme$agencies <- NULL
+    write_ods(as.data.frame(agency_scheme),
+              path = params$file,
+              sheet = "agency_scheme")
+    write_ods(agencies, path = params$file, sheet = "agencies", append = TRUE)
+    message("Agency scheme successfully written to: ", params$file, "\n")
+  }
 }
 
 
@@ -335,6 +444,115 @@ write_concept_scheme <- function(concept_scheme, method, params) {
               sheet = "concept_scheme")
     write_ods(concepts, path = params$file, sheet = "concepts", append = TRUE)
     message("Concept scheme successfully written to: ", params$file, "\n")
+  }
+}
+
+
+
+# Data consumer scheme ----
+
+
+write_data_consumer_scheme <- function(data_consumer_scheme, method, params) {
+  if (is.null(params$file)) {
+    data_consumer_scheme_ref <- paste(data_consumer_scheme$agencyid,
+                                      data_consumer_scheme$id,
+                                      data_consumer_scheme$version,
+                                      sep = "-")
+    data_message <-
+      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+           list(header = params$header,
+                structures =
+                  list("data-consumer-schemes" =
+                       list(
+                            list(unbox("#sdmx.infomodel.base.DataConsumerScheme"),
+                                 list(agencyid = unbox(data_consumer_scheme$agencyid),
+                                      id = unbox(data_consumer_scheme$id),
+                                      version = unbox(data_consumer_scheme$version),
+                                      name = c("en", data_consumer_scheme$name),
+                                      "data-consumers" = list()))))))
+    if (!is.na(data_consumer_scheme$description)) {
+      data_message[[2]]$structures[["data-consumer-schemes"]][[1]][[2]]$description <-
+        c("en", data_consumer_scheme$description)
+    }
+    if (NROW(data_consumer_scheme$data_consumers) > 0) {
+      ids <- unique(data_consumer_scheme$data_consumers$id)
+      for (i in seq_len(length(ids))) {
+        id <- ids[i]
+        index <- data_consumer_scheme$data_consumers$id == id
+        tmp <- as.list(data_consumer_scheme$data_consumers[which(index)[1], ])
+        data_consumer <- list(unbox("#sdmx.infomodel.base.DataConsumer"),
+                              list(id = unbox(tmp$id),
+                                   name = c("en", tmp$name)))
+        if (!is.na(tmp$description)) {
+          data_consumer[[2]]$description <- c("en", tmp$description)
+        }
+        if (length(which(!is.na(data_consumer_scheme$data_consumers[index, ]$contact_name))) != 0) {
+          contacts <- apply(data_consumer_scheme$data_consumers[index, ], 1, function(contact) {
+            tmp <- as.list(contact)
+            contact <- list(name = c("en", tmp$contact_name))
+            if(!is.na(tmp$contact_department)) {
+              contact$department <- c("en", tmp$contact_department)
+            }
+            if(!is.na(tmp$contact_email)) {
+              contact$email <- unbox(tmp$contact_email)
+            }
+            contact
+          })
+          names(contacts) <- NULL
+        } else {
+          contacts <- list()
+        }
+        data_consumer[[2]]$contacts <- contacts
+        data_message[[2]]$structures[["data-consumer-schemes"]][[1]][[2]][["data-consumers"]][[i]] <-
+          data_consumer
+      }
+    }
+    if (method == "create") {
+      message("Creating data consumer scheme: ", data_consumer_scheme_ref, "\n")
+      response <- POST(params$env$repository$url,
+                       path = paste(params$env$repository$path,
+                                    "dataconsumerschemes", sep = "/"),
+                       body = toJSON(data_message,
+                                     na = "null",
+                                     always_decimal = TRUE),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
+                       content_type("application/vnd.sdmx-codera.data+json"),
+                       accept_json())
+      if (response$status_code == 201) {
+        message(content(response, type = "application/json")$success)
+      } else {
+        stop(content(response, type = "application/json"))
+      }
+    } else if (method == "update") {
+      message("Updating data consumer scheme: ", data_consumer_scheme_ref, "\n")
+      response <- PUT(params$env$repository$url,
+                      path = paste(params$env$repository$path,
+                                   "dataconsumerschemes",
+                                   data_consumer_scheme_ref, sep = "/"),
+                      body = toJSON(data_message,
+                                    na = "null",
+                                    always_decimal = TRUE),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
+                      content_type("application/vnd.sdmx-codera.data+json"),
+                      accept_json())
+      if (response$status_code == 200) {
+        message(content(response, type = "application/json")$success)
+      } else {
+        stop(content(response, type = "application/json"))
+      }
+    } else {
+      stop("Method not implemented.")
+    }
+  } else {
+    data_consumers <- data_consumer_scheme$data_consumers
+    data_consumer_scheme$data_consumers <- NULL
+    write_ods(as.data.frame(data_consumer_scheme),
+              path = params$file,
+              sheet = "data_consumer_scheme")
+    write_ods(data_consumers, path = params$file, sheet = "data_consumers", append = TRUE)
+    message("Data consumer scheme successfully written to: ", params$file, "\n")
   }
 }
 
