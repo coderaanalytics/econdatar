@@ -40,9 +40,12 @@ write_registry <- function(structure, x, method = "update", ...) {
   }
   params$header <- header
   switch(structure,
+         #"agency-scheme" = write_agency_scheme(x, method, params),
          "category-scheme" = write_category_scheme(x, method, params),
          "codelist" = write_codelist(x, method, params),
          "concept-scheme" = write_concept_scheme(x, method, params),
+         #"data-consumer-scheme" = write_data_consumer_scheme(x, method, params),
+         "data-provider-scheme" = write_data_provider_scheme(x, method, params),
          "dataflow" = write_dataflow(x, method, params),
          "data-structure" = write_data_structure(x, method, params),
          "memberlist" = write_memberlist(x, method, params),
@@ -332,6 +335,115 @@ write_concept_scheme <- function(concept_scheme, method, params) {
               sheet = "concept_scheme")
     write_ods(concepts, path = params$file, sheet = "concepts", append = TRUE)
     message("Concept scheme successfully written to: ", params$file, "\n")
+  }
+}
+
+
+
+# Data provider scheme ----
+
+
+write_data_provider_scheme <- function(data_provider_scheme, method, params) {
+  if (is.null(params$file)) {
+    data_provider_scheme_ref <- paste(data_provider_scheme$agencyid,
+                                      data_provider_scheme$id,
+                                      data_provider_scheme$version,
+                                      sep = "-")
+    data_message <-
+      list(unbox("#sdmx.infomodel.message.SDMXMessage"),
+           list(header = params$header,
+                structures =
+                  list("data-provider-schemes" =
+                       list(
+                            list(unbox("#sdmx.infomodel.base.DataProviderScheme"),
+                                 list(agencyid = unbox(data_provider_scheme$agencyid),
+                                      id = unbox(data_provider_scheme$id),
+                                      version = unbox(data_provider_scheme$version),
+                                      name = c("en", data_provider_scheme$name),
+                                      "data-providers" = list()))))))
+    if (!is.na(data_provider_scheme$description)) {
+      data_message[[2]]$structures[["data-provider-schemes"]][[1]][[2]]$description <-
+        c("en", data_provider_scheme$description)
+    }
+    if (NROW(data_provider_scheme$data_providers) > 0) {
+      ids <- unique(data_provider_scheme$data_providers$id)
+      for (i in seq_len(length(ids))) {
+        id <- ids[i]
+        index <- data_provider_scheme$data_providers$id == id
+        tmp <- as.list(data_provider_scheme$data_providers[which(index)[1], ])
+        data_provider <- list(unbox("#sdmx.infomodel.base.DataProvider"),
+                              list(id = unbox(tmp$id),
+                                   name = c("en", tmp$name)))
+        if (!is.na(tmp$description)) {
+          data_provider[[2]]$description <- c("en", tmp$description)
+        }
+        if (length(which(!is.na(data_provider_scheme$data_providers[index, ]$contact_name))) != 0) {
+          contacts <- apply(data_provider_scheme$data_providers[index, ], 1, function(contact) {
+            tmp <- as.list(contact)
+            contact <- list(name = c("en", tmp$contact_name))
+            if(!is.na(tmp$contact_department)) {
+              contact$department <- c("en", tmp$contact_department)
+            }
+            if(!is.na(tmp$contact_email)) {
+              contact$email <- unbox(tmp$contact_email)
+            }
+            contact
+          })
+          names(contacts) <- NULL
+        } else {
+          contacts <- list()
+        }
+        data_provider[[2]]$contacts <- contacts
+        data_message[[2]]$structures[["data-provider-schemes"]][[1]][[2]][["data-providers"]][[i]] <-
+          data_provider
+      }
+    }
+    if (method == "create") {
+      message("Creating data provider scheme: ", data_provider_scheme_ref, "\n")
+      response <- POST(params$env$repository$url,
+                       path = paste(params$env$repository$path,
+                                    "dataproviderschemes", sep = "/"),
+                       body = toJSON(data_message,
+                                     na = "null",
+                                     always_decimal = TRUE),
+                       add_headers(authorization = get("econdata_token",
+                                                       envir = .pkgenv)),
+                       content_type("application/vnd.sdmx-codera.data+json"),
+                       accept_json())
+      if (response$status_code == 201) {
+        message(content(response, type = "application/json")$success)
+      } else {
+        stop(content(response, type = "application/json"))
+      }
+    } else if (method == "update") {
+      message("Updating data provider scheme: ", data_provider_scheme_ref, "\n")
+      response <- PUT(params$env$repository$url,
+                      path = paste(params$env$repository$path,
+                                   "dataproviderschemes",
+                                   data_provider_scheme_ref, sep = "/"),
+                      body = toJSON(data_message,
+                                    na = "null",
+                                    always_decimal = TRUE),
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
+                      content_type("application/vnd.sdmx-codera.data+json"),
+                      accept_json())
+      if (response$status_code == 200) {
+        message(content(response, type = "application/json")$success)
+      } else {
+        stop(content(response, type = "application/json"))
+      }
+    } else {
+      stop("Method not implemented.")
+    }
+  } else {
+    data_providers <- data_provider_scheme$data_providers
+    data_provider_scheme$data_providers <- NULL
+    write_ods(as.data.frame(data_provider_scheme),
+              path = params$file,
+              sheet = "data_provider_scheme")
+    write_ods(data_providers, path = params$file, sheet = "data_providers", append = TRUE)
+    message("Data provider scheme successfully written to: ", params$file, "\n")
   }
 }
 

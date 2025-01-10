@@ -51,14 +51,20 @@ read_registry <- function(structure, tidy = FALSE, ...) {
   versions <- paste(version, collapse = ",")
   structure_data <-
     switch(structure,
+           "agency-scheme" =
+           read_agency_schemes(agencyids, ids, versions, params),
            "category-scheme" =
            read_category_schemes(agencyids, ids, versions, params),
            "codelist" =
            read_codelists(agencyids, ids, versions, params),
            "concept-scheme" =
            read_concept_schemes(agencyids, ids, versions, params),
+           "data-consumer-scheme" =
+           read_data_consumer_schemes(agencyids, ids, versions, params),
+           "data-provider-scheme" =
+           read_data_provider_schemes(agencyids, ids, versions, params),
            "dataflow" =
-           read_dataflow(agencyids, ids, versions, params),
+           read_dataflows(agencyids, ids, versions, params),
            "data-structure" =
            read_data_structures(agencyids, ids, versions, params),
            "memberlist" =
@@ -74,9 +80,12 @@ read_registry <- function(structure, tidy = FALSE, ...) {
 
   structures <- lapply(structure_data, function(x) {
     switch(structure,
+           "agency-scheme" = process_agency_scheme(x, params),
            "category-scheme" = process_category_scheme(x, params),
            "codelist" = process_codelist(x, params),
            "concept-scheme" = process_concept_scheme(x, params),
+           "data-consumer-scheme" = process_data_consumer_scheme(x, params),
+           "data-provider-scheme" = process_data_provider_scheme(x, params),
            "dataflow" = process_dataflow(x, params),
            "data-structure" = process_data_structure(x, params),
            "memberlist" = process_memberlist(x, params),
@@ -88,6 +97,109 @@ read_registry <- function(structure, tidy = FALSE, ...) {
     return(structures[[1]])
   } else {
     return(structures)
+  }
+}
+
+
+
+# Agency schemes ----
+
+
+read_agency_schemes <- function(agencyids, ids, versions, params) {
+  if (is.null(params$file)) {
+    message(paste("\nFetching agency scheme(s) -",
+                  paste(ids, collapse = ", "), "\n"))
+    response <- GET(params$env$registry$url,
+                    path = paste(c(params$env$registry$path, "agencyschemes"),
+                                 collapse = "/"),
+                    query = list(agencyids = agencyids,
+                                 ids = ids,
+                                 versions = versions),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
+    if (response$status_code != 200) {
+      stop(content(response, type = "application/json"))
+    }
+    data_message <- content(response, type = "application/json")
+    agency_schemes <- data_message[[2]][["structures"]][["agency-schemes"]]
+    return(agency_schemes)
+  } else {
+    message(paste("\nFetching agency scheme(s) -", params$file, "\n"))
+    na <- c("", "NA", "#N/A")
+    agencies <- read_ods(path = params$file,
+                         sheet = "agencies",
+                         na = na,
+                         as_tibble = FALSE)
+    agency_scheme <- as.list(read_ods(path = params$file,
+                                      sheet = "agency_scheme",
+                                      na = na,
+                                      as_tibble = FALSE))
+    agency_scheme$agencies <- agencies
+    return(list(agency_scheme))
+  }
+}
+
+process_agency_scheme <- function(structure, params) {
+  if (is.null(params$file)) {
+    structure_ref <- paste(structure[[2]]$agencyid,
+                           structure[[2]]$id,
+                           structure[[2]]$version,
+                           sep = "-")
+    message("Processing agency scheme: ", structure_ref, "\n")
+    description <- if (is.null(structure[[2]]$description[[2]])) {
+      NA
+    } else {
+      structure[[2]]$description[[2]]
+    }
+    agency_scheme <- list(agencyid = structure[[2]]$agencyid,
+                          id = structure[[2]]$id,
+                          version = structure[[2]]$version,
+                          name = structure[[2]]$name[[2]],
+                          description = description)
+    agencies <- lapply(structure[[2]]$agencies, function(agency) {
+      description <- if (is.null(agency[[2]]$description[[2]])) {
+        NA
+      } else {
+        agency[[2]]$description[[2]]
+      }
+      if (length(agency[[2]]$contacts) == 0) {
+        list(id = agency[[2]]$id,
+             name = agency[[2]]$name[[2]],
+             description = description,
+             contact_name = NA,
+             contact_department = NA,
+             contact_email = NA)
+      } else {
+        lapply(agency[[2]]$contacts, function(contact) {
+          department <- if (is.null(contact$department[[2]])) {
+            NA
+          } else {
+            contact$department[[2]]
+          }
+          email <- if (is.null(contact$email)) {
+            NA
+          } else {
+            contact$email
+          }
+          list(id = agency[[2]]$id,
+               name = agency[[2]]$name[[2]],
+               description = description,
+               contact_name = contact$name[[2]],
+               contact_department = department,
+               contact_email = email)
+        }) |>
+          do.call(rbind.data.frame, args = _)
+      }
+    }) |>
+    do.call(rbind.data.frame, args = _)
+  agency_scheme$agencies <- agencies
+  class(agency_scheme) <- c(class(agency_scheme), "eds_agency_scheme")
+  return(agency_scheme)
+  } else {
+    message("Processing agency scheme: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_agency_scheme")
+    return(structure)
   }
 }
 
@@ -347,10 +459,218 @@ process_concept_scheme <- function(structure, params) {
 
 
 
+# Data consumer schemes ----
+
+
+read_data_consumer_schemes <- function(agencyids, ids, versions, params) {
+  if (is.null(params$file)) {
+    message(paste("\nFetching data consumer scheme(s) -",
+                  paste(ids, collapse = ", "), "\n"))
+    response <- GET(params$env$registry$url,
+                    path = paste(c(params$env$registry$path, "dataconsumerschemes"),
+                                 collapse = "/"),
+                    query = list(agencyids = agencyids,
+                                 ids = ids,
+                                 versions = versions),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
+    if (response$status_code != 200) {
+      stop(content(response, type = "application/json"))
+    }
+    data_message <- content(response, type = "application/json")
+    data_consumer_schemes <- data_message[[2]][["structures"]][["data-consumer-schemes"]]
+    return(data_consumer_schemes)
+  } else {
+    message(paste("\nFetching data consumer scheme(s) -", params$file, "\n"))
+    na <- c("", "NA", "#N/A")
+    data_consumers <- read_ods(path = params$file,
+                               sheet = "data_consumers",
+                               na = na,
+                               as_tibble = FALSE)
+    data_consumer_scheme <- as.list(read_ods(path = params$file,
+                                             sheet = "data_consumer_scheme",
+                                             na = na,
+                                             as_tibble = FALSE))
+    data_consumer_scheme$data_consumers <- data_consumers
+    return(list(data_consumer_scheme))
+  }
+}
+
+process_data_consumer_scheme <- function(structure, params) {
+  if (is.null(params$file)) {
+    structure_ref <- paste(structure[[2]]$agencyid,
+                           structure[[2]]$id,
+                           structure[[2]]$version,
+                           sep = "-")
+    message("Processing data consumer scheme: ", structure_ref, "\n")
+    description <- if (is.null(structure[[2]]$description[[2]])) {
+      NA
+    } else {
+      structure[[2]]$description[[2]]
+    }
+    data_consumer_scheme <- list(agencyid = structure[[2]]$agencyid,
+                                 id = structure[[2]]$id,
+                                 version = structure[[2]]$version,
+                                 name = structure[[2]]$name[[2]],
+                                 description = description)
+    data_consumers <- lapply(structure[[2]][["data-consumers"]], function(data_consumer) {
+      description <- if (is.null(data_consumer[[2]]$description[[2]])) {
+        NA
+      } else {
+        data_consumer[[2]]$description[[2]]
+      }
+      if (length(data_consumer[[2]]$contacts) == 0) {
+        list(id = data_consumer[[2]]$id,
+             name = data_consumer[[2]]$name[[2]],
+             description = description,
+             contact_name = NA,
+             contact_department = NA,
+             contact_email = NA)
+      } else {
+        lapply(data_consumer[[2]]$contacts, function(contact) {
+          department <- if (is.null(contact$department[[2]])) {
+            NA
+          } else {
+            contact$department[[2]]
+          }
+          email <- if (is.null(contact$email)) {
+            NA
+          } else {
+            contact$email
+          }
+          list(id = data_consumer[[2]]$id,
+               name = data_consumer[[2]]$name[[2]],
+               description = description,
+               contact_name = contact$name[[2]],
+               contact_department = department,
+               contact_email = email)
+        }) |>
+          do.call(rbind.data.frame, args = _)
+      }
+    }) |>
+      do.call(rbind.data.frame, args = _)
+    data_consumer_scheme$data_consumers <- data_consumers
+    class(data_consumer_scheme) <-
+      c(class(data_consumer_scheme), "eds_data_consumer_scheme")
+    return(data_consumer_scheme)
+  } else {
+    message("Processing data consumer scheme: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_data_consumer_scheme")
+    return(structure)
+  }
+}
+
+
+
+# Data provider schemes ----
+
+
+read_data_provider_schemes <- function(agencyids, ids, versions, params) {
+  if (is.null(params$file)) {
+    message(paste("\nFetching data provider scheme(s) -",
+                  paste(ids, collapse = ", "), "\n"))
+    response <- GET(params$env$registry$url,
+                    path = paste(c(params$env$registry$path, "dataproviderschemes"),
+                                 collapse = "/"),
+                    query = list(agencyids = agencyids,
+                                 ids = ids,
+                                 versions = versions),
+                    add_headers(authorization = get("econdata_token",
+                                                    envir = .pkgenv)),
+                    accept("application/vnd.sdmx-codera.data+json"))
+    if (response$status_code != 200) {
+      stop(content(response, type = "application/json"))
+    }
+    data_message <- content(response, type = "application/json")
+    data_provider_schemes <- data_message[[2]][["structures"]][["data-provider-schemes"]]
+    return(data_provider_schemes)
+  } else {
+    message(paste("\nFetching data provider scheme(s) -", params$file, "\n"))
+    na <- c("", "NA", "#N/A")
+    data_providers <- read_ods(path = params$file,
+                               sheet = "data_providers",
+                               na = na,
+                               as_tibble = FALSE)
+    data_provider_scheme <- as.list(read_ods(path = params$file,
+                                             sheet = "data_provider_scheme",
+                                             na = na,
+                                             as_tibble = FALSE))
+    data_provider_scheme$data_providers <- data_providers
+    return(list(data_provider_scheme))
+  }
+}
+
+process_data_provider_scheme <- function(structure, params) {
+  if (is.null(params$file)) {
+    structure_ref <- paste(structure[[2]]$agencyid,
+                           structure[[2]]$id,
+                           structure[[2]]$version,
+                           sep = "-")
+    message("Processing data provider scheme: ", structure_ref, "\n")
+    description <- if (is.null(structure[[2]]$description[[2]])) {
+      NA
+    } else {
+      structure[[2]]$description[[2]]
+    }
+    data_provider_scheme <- list(agencyid = structure[[2]]$agencyid,
+                                 id = structure[[2]]$id,
+                                 version = structure[[2]]$version,
+                                 name = structure[[2]]$name[[2]],
+                                 description = description)
+    data_providers <- lapply(structure[[2]][["data-providers"]], function(data_provider) {
+      description <- if (is.null(data_provider[[2]]$description[[2]])) {
+        NA
+      } else {
+        data_provider[[2]]$description[[2]]
+      }
+      if (length(data_provider[[2]]$contacts) == 0) {
+        list(id = data_provider[[2]]$id,
+             name = data_provider[[2]]$name[[2]],
+             description = description,
+             contact_name = NA,
+             contact_department = NA,
+             contact_email = NA)
+      } else {
+        lapply(data_provider[[2]]$contacts, function(contact) {
+          department <- if (is.null(contact$department[[2]])) {
+            NA
+          } else {
+            contact$department[[2]]
+          }
+          email <- if (is.null(contact$email)) {
+            NA
+          } else {
+            contact$email
+          }
+          list(id = data_provider[[2]]$id,
+               name = data_provider[[2]]$name[[2]],
+               description = description,
+               contact_name = contact$name[[2]],
+               contact_department = department,
+               contact_email = email)
+        }) |>
+          do.call(rbind.data.frame, args = _)
+      }
+    }) |>
+      do.call(rbind.data.frame, args = _)
+    data_provider_scheme$data_providers <- data_providers
+    class(data_provider_scheme) <-
+      c(class(data_provider_scheme), "eds_data_provider_scheme")
+    return(data_provider_scheme)
+  } else {
+    message("Processing data provider scheme: ", params$file, "\n")
+    class(structure) <- c(class(structure), "eds_data_provider_scheme")
+    return(structure)
+  }
+}
+
+
+
 # Dataflow ----
 
 
-read_dataflow <- function(agencyids, ids, versions, params) {
+read_dataflows <- function(agencyids, ids, versions, params) {
   if (is.null(params$file)) {
     message(paste("\nFetching dataflow(s) -",
                   paste(ids, collapse = ", "), "\n"))
