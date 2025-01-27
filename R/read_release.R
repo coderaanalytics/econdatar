@@ -1,4 +1,4 @@
-read_release <- function(id, tidy = FALSE, ...) {
+read_release <- function(id, tidy = TRUE, ...) {
 
 
   # Parameters ----

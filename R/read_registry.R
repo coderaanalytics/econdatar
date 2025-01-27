@@ -1,4 +1,4 @@
-read_registry <- function(structure, tidy = FALSE, ...) {
+read_registry <- function(structure, tidy = TRUE, ...) {
 
 
   # Parameters ----

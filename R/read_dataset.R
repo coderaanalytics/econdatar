@@ -1,4 +1,4 @@
-read_dataset <- function(id, tidy = FALSE, ...) {
+read_dataset <- function(id, tidy = TRUE, ...) {
 
 
   # Parameters ----
@@ -78,6 +78,12 @@ read_dataset <- function(id, tidy = FALSE, ...) {
       if (!is.null(params$series_key)) {
         query_params[["series-key"]] <- params$series_key
       }
+      if (!is.null(params$start_date)) {
+        query_params[["start"]] <- as.character(format(as.Date(params$start_date), "%Y-%m-%d"))
+      }
+      if (!is.null(params$end_date)) {
+        query_params[["end"]] <- as.character(format(as.Date(params$end_date), "%Y-%m-%d"))
+      }
       tmp_data_set <- get_data(env, data_set_ref, query_params, debug = params$debug)
     }
     series_names <- sapply(tmp_data_set$series, function(raw_series) {
@@ -111,29 +117,19 @@ read_dataset <- function(id, tidy = FALSE, ...) {
     tmp_data_set$series <- NULL
     attr(data_set, "metadata") <- tmp_data_set
     class(data_set) <- "eds_dataset"
-    if (tidy) {
-      tidy_data(data_set, ...)
-    } else {
-      return(data_set)
-    }
+    return(data_set)
   })
   class(database) <- "eds_database"
   if (length(database) == 1) {
-    return(database[[1]])
+    return(if (tidy) tidy_data(database[[1]], ...) else database[[1]])
   } else {
-    if (tidy) {
-      versions <- sapply(database, function(x) attr(x, "metadata")$version)
-      names(database) <- paste0("v", versions)
-      return(database)
-    } else {
-      return(database)
-    }
+    return(if (tidy) tidy_data(database, ...) else database)
   }
 }
 
 read_econdata <- function(id, tidy = FALSE, ...) {
   .Deprecated("read_dataset")
-  read_dataset(id = id, tidy = tidy, ...)
+  read_dataset(id, tidy = tidy, ...)
 }
 
 get_release <- function(env, ref, candidate_release, debug = FALSE) {
@@ -206,31 +202,73 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
   return(final_release)
 }
 
-get_data <- function(env, ref, params, links = NULL, data_set = NULL, debug = FALSE) {
+get_data <- function(env, ref, params, series_key = NULL, links = NULL, data_set = NULL, debug = FALSE) {
   if (is.null(links)) {
-    response <- GET(env$repository$url,
-                    path = paste(env$repository$path,
-                                 "datasets",
-                                 ref, sep = "/"),
-                    query = params,
-                    add_headers(authorization = get("econdata_token",
-                                                    envir = .pkgenv)),
-                    accept("application/vnd.sdmx-codera.data+json"))
-    if (debug == TRUE) {
-      message("Request URL: ", response$request$url, "\n")
-    }
-    if (response$status_code == 200) {
-      message("Processing data set: ", ref, "\n")
+    if (is.null(series_key)) {
+      if (!is.null(params[["series-key"]]) && length(params[["series-key"]]) > 0) {
+        series_key <- params[["series-key"]]
+        params[["series-key"]] <- series_key[1]
+        series_key <- if (length(series_key) > 1) series_key[-1L] else NULL
+      }
+      response <- GET(env$repository$url,
+                      path = paste(env$repository$path,
+                                   "datasets",
+                                   ref, sep = "/"),
+                      query = params,
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
+                      accept("application/vnd.sdmx-codera.data+json"))
+      if (debug == TRUE) {
+        message("Request URL: ", response$request$url, "\n")
+      }
+      if (response$status_code == 200) {
+        message("Processing data set: ", ref, "\n")
+      } else {
+        stop(content(response, type = "application/json"))
+      }
+      links <- unlist(strsplit(response$headers$link, ","))
+      data_message <- content(response, type = "application/json")
+      data_set <- data_message[[2]][["data-sets"]][[1]][[2]]
+      if (is.null(series_key) && !any(grepl("rel=next", links))) {
+        # Done
+        return(data_set)
+      } else if (!is.null(series_key) && !any(grepl("rel=next", links))) {
+        # Go to next in series_key
+        return(get_data(env, ref, params, series_key, NULL, data_set, debug))
+      } else {
+        # Go to next link
+        return(get_data(env, ref, params, series_key, links, data_set, debug))
+      }
     } else {
-      stop(content(response, type = "application/json"))
-    }
-    links <- unlist(strsplit(response$headers$link, ","))
-    data_message <- content(response, type = "application/json")
-    data_set <- data_message[[2]][["data-sets"]][[1]][[2]]
-    if (!any(grepl("rel=next", links))) {
-      return(data_set)
-    } else {
-      return(get_data(env, ref, params, links, data_set, debug))
+      params[["series-key"]] <- series_key[1]
+      series_key <- if (length(series_key) > 1) series_key[-1L] else NULL
+      response <- GET(env$repository$url,
+                      path = paste(env$repository$path,
+                                   "datasets",
+                                   ref, sep = "/"),
+                      query = params,
+                      add_headers(authorization = get("econdata_token",
+                                                      envir = .pkgenv)),
+                      accept("application/vnd.sdmx-codera.data+json"))
+      if (debug == TRUE) {
+        message("Request URL: ", response$request$url, "\n")
+      }
+      if (response$status_code != 200) {
+        stop(content(response, type = "application/json"))
+      }
+      data_message <- content(response, type = "application/json")
+      data_set$series <- c(data_set$series,
+                           data_message[[2]][["data-sets"]][[1]][[2]]$series)
+      if (is.null(series_key) && !any(grepl("rel=next", links))) {
+        # Done
+        return(data_set)
+      } else if (!is.null(series_key) && !any(grepl("rel=next", links))) {
+        # Go to next in series_key
+        return(get_data(env, ref, params, series_key, NULL, data_set, debug))
+      } else {
+        # Go to next link
+        return(get_data(env, ref, params, series_key, links, data_set, debug))
+      }
     }
   } else {
     link_next <- links[grepl("rel=next", links)]
@@ -261,10 +299,15 @@ get_data <- function(env, ref, params, links = NULL, data_set = NULL, debug = FA
     data_message <- content(response, type = "application/json")
     data_set$series <- c(data_set$series,
                          data_message[[2]][["data-sets"]][[1]][[2]]$series)
-    if (!any(grepl("rel=next", links))) {
+    if (is.null(series_key) && !any(grepl("rel=next", links))) {
+      # Done
       return(data_set)
+    } else if (!is.null(series_key) && !any(grepl("rel=next", links))) {
+      # Go to next in series_key
+      return(get_data(env, ref, params, series_key, NULL, data_set, debug))
     } else {
-      return(get_data(env, ref, params, links, data_set, debug))
+      # Go to next link
+      return(get_data(env, ref, params, series_key, links, data_set, debug))
     }
   }
 }

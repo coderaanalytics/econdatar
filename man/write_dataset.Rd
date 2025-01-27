@@ -4,7 +4,7 @@
 write_dataset
 }
 \description{
-\strong{Stages} or saves the data set. Available data sets can be looked up from the \href{http://www.econdata.co.za/}{web platform}.
+\strong{Stages} or saves the data set. Available data sets can be looked up from the \href{https://www.econdata.co.za/}{web platform}.
 }
 \usage{
 write_dataset(x, method = "stage", \dots)
@@ -20,7 +20,7 @@ write_dataset(x, method = "stage", \dots)
 }
 }
 \details{
-An \href{http://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal. A GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
+An \href{https://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal. A GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
 
 The functionality provided by \emph{write_dataset} is to save the data set according to the function arguments. As this makes modifications to the database, the user calling this function requires higher privileges than needed for other \emph{econdatar} functions---the user requires \emph{membership} with the relevant data provider. When the dataset is very large, the engineer may need to stage it in batches of series keys, as the API has a limit for how much it can accept in one go. It is also highly advisable to \code{Sys.sleep(0.8)} in-between each looped batch.
 }

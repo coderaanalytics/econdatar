@@ -1,0 +1,7 @@
+2025-01-27  Byron Botha  <byron@codera.co.za>
+
+	- argument tidy = TRUE set as default throughout API
+	- start_date added as an arg to read_dataset
+	- end_date added as an arg to read_dataset
+	- series_key arg can now take a char vector in read_dataset
+	- changed tidy_data.eds_dataset optional args

@@ -11,6 +11,7 @@ get_metadata <- function(x) {
 
   # Fetch data structure definition (metadata) ----
 
+  # Provision agreement
   attrs <- attr(x, "metadata")
   provision_agreement_ref <- paste(attrs[["provision-agreement"]][[2]]$agencyid,
                                    attrs[["provision-agreement"]][[2]]$id,
@@ -29,8 +30,8 @@ get_metadata <- function(x) {
   data_message <- content(response,
                           type = "application/json",
                           encoding = "UTF-8")
-  provision_agreement <-
-    data_message[[2]]$structures[["provision-agreements"]][[1]]
+  provision_agreement <- data_message[[2]]$structures[["provision-agreements"]][[1]]
+  # Dataflow
   dataflow_ref <- paste(provision_agreement[[2]][["dataflow"]][[2]]$agencyid,
                         provision_agreement[[2]][["dataflow"]][[2]]$id,
                         provision_agreement[[2]][["dataflow"]][[2]]$version,
@@ -49,6 +50,7 @@ get_metadata <- function(x) {
                           type = "application/json",
                           encoding = "UTF-8")
   dataflow <- data_message[[2]]$structures[["dataflows"]][[1]]
+  # Data structure definition
   data_structure_ref <- paste(dataflow[[2]][["data-structure"]][[2]]$agencyid,
                               dataflow[[2]][["data-structure"]][[2]]$id,
                               dataflow[[2]][["data-structure"]][[2]]$version,

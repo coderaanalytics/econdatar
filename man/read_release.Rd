@@ -8,7 +8,7 @@ read_release
 Returns the releases data for the given data set - ECONDATA:id(version), as a list, or as tidy \emph{data.table}'s. Tidying can be done directly within \code{read_econdata()}, or ex-post using \code{econdata_tidy()}.
 }
 \usage{
-read_release(id, tidy = FALSE, \dots)
+read_release(id, tidy = TRUE, \dots)
 \method{tidy_data}{eds_release}(x, \dots)
 }
 \arguments{
@@ -31,7 +31,7 @@ read_release(id, tidy = FALSE, \dots)
 \details{
 Specifying the full dataflow and data provider details (as opposed to only using the data id) allows more fine-grained control over the data set being queried. This is not necessary if there is only a single definition of the data and a single provider, which is typically the case.
 
-An \href{http://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal. A GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
+An \href{https://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal. A GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
 }
 \value{
 If \code{tidy = FALSE}, a nested lists containing metadata and release desciption and dates. If \code{tidy = TRUE}, a (list of) \emph{data.table}(s) providing release information, with metadata attached as an attribute.
@@ -44,13 +44,13 @@ If \code{tidy = FALSE}, a nested lists containing metadata and release desciptio
 \dontrun{
 # library(econdatar)
 
-# Bank Balance Sheet (institutional)
-MINING_RELEASE <- read_release(id = "MINING")
-# Same as: read_release(id = "BA900", tidy = TRUE)
-econdata_tidy(MINING_RELEASE, is_release = TRUE) # No further options supported.
+# Mining production and sales
+MINING_RELEASE <- read_release(id = "MINING", tidy = FALSE)
+# Same as: read_release(id = "MINING", tidy = TRUE)
+tidy_data(MINING_RELEASE) # No further options supported.
 
-# Releases for all CPI Revisions
-read_release(id = "CPI_ANL_SERIES", version = "all", tidy = TRUE)
+# Releases for all data set versions
+read_release(id = "CPI_ANL_SERIES", version = "all")
 }
 }
 \keyword{ release }

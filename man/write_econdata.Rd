@@ -6,7 +6,7 @@ write_econdata
 \description{
 This function is deprecated, in favour of \code{\link{write_dataset}}. During development, please replace this function with the newer function name.
 
-\strong{Stages} or saves the data set. Available data sets can be looked up from the \href{http://www.econdata.co.za}{web platform}.
+\strong{Stages} or saves the data set. Available data sets can be looked up from the \href{https://www.econdata.co.za}{web platform}.
 }
 \usage{
 write_econdata(x, create = FALSE, update = FALSE, stage = TRUE, \dots)
@@ -24,7 +24,7 @@ write_econdata(x, create = FALSE, update = FALSE, stage = TRUE, \dots)
 }
 }
 \details{
-An \href{http://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal. A GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
+An \href{https://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal. A GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
 
 The functionality provided by \emph{write_econdata} is to save the data set according to the function arguments. As this makes modifications to the database the user calling this function requires higher privileges than needed for other \emph{econdatar} functions---the user requires membership with the relevant data provider.
 }

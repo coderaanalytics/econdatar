@@ -8,7 +8,7 @@ read_database
 Returns the data sets for the given reference - agencyid:id(version), as a list, or as a tidy \emph{data.table}. A collection of data sets in \emph{econdatar} is referred to as a database. Tidying can be done directly within \code{read_database()}, or ex-post using \code{tidy_data()}.
 }
 \usage{
-read_database(id, include_series = FALSE, tidy = FALSE, \dots)
+read_database(id, include_series = FALSE, tidy = TRUE, \dots)
 
 \method{tidy_data}{eds_database}(x, \dots)
 }
@@ -42,17 +42,19 @@ If \code{tidy = TRUE} a single \emph{data.table} is returned with columns for \c
 # library(econdatar)
 
 # Mining production and sales
-MINING <- read_database(id = "MINING")
+read_database(id = "MINING")
 
 # Include previous versions
-MINING <- read_database(id = "MINING", versions = "all")
+read_database(id = "MINING", versions = "all")
 
 # Return series without obervations (empty data set)
-MINING <- read_database(id = "MINING", include_series = TRUE)
+read_database(id = "MINING", include_series = TRUE)
+
+# Mining production and sales not tidied
+read_database(id = "MINING", tidy = FALSE)
 
 # Return all data sets (useful for browsing available data)
-CATALOGUE <- read_database(id = "all")
-tidy_data(CATALOGUE)
+read_database(id = "all")
 }
 }
 \keyword{ load }

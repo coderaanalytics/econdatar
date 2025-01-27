@@ -1,4 +1,4 @@
-read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
+read_database <- function(id, include_series = FALSE, tidy = TRUE, ...) {
 
 
   # Parameters ----
@@ -94,18 +94,17 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
         tmp_data_set <- raw_data_set[[2]]
       }
     }
-    data_set <- list()
     series_names <- sapply(tmp_data_set$series, function(raw_series) {
       return(raw_series[["series-key"]])
     })
-    data_set$series <- lapply(tmp_data_set$series, function(raw_series) {
+    data_set <- lapply(tmp_data_set$series, function(raw_series) {
       raw_series[["series-key"]] <- NULL
       raw_series[["obs"]] <- NULL
       series <- data.frame()
       attr(series, "metadata") <- raw_series
       return(series)
     })
-    names(data_set$series) <- series_names
+    names(data_set) <- series_names
     tmp_data_set$series <- NULL
     attr(data_set, "metadata") <- tmp_data_set
     class(data_set) <- "eds_dataset"
@@ -113,7 +112,7 @@ read_database <- function(id, include_series = FALSE, tidy = FALSE, ...) {
   })
   class(database) <- "eds_database"
   if (tidy) {
-    tidy_data(database, ...)
+    tidy_data(database, include_series, ...)
   } else {
     if (length(database) == 1) {
       return(database[[1]])
