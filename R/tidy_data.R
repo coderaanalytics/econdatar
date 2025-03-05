@@ -78,9 +78,13 @@ tidy_wide <- function(x, prettify = TRUE, ...) {
     return(result)
   }
   # Construct wide data.table
-  d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
-    dcast(time_period ~ series_key, value.var = "OBS_VALUE") |>
-    fmutate(time_period = as.Date(time_period))
+  if (all(sapply(x, function (y) nrow(y) == 0))) {
+    stop("No observations returned, unable to format data tidy = TRUE")
+  } else {
+    d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
+      dcast(time_period ~ series_key, value.var = "OBS_VALUE") |>
+      fmutate(time_period = as.Date(time_period))
+  }
   # Construct and append metadata
   metadata <- if (prettify) get_metadata(x) else NULL
   labs <- sapply(x, make_label, metadata$concepts)
@@ -105,10 +109,14 @@ tidy_long <- function(x, prettify = TRUE, combine = FALSE, ...) {
     }
   }
   # Construct long data.table
-  d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
-    fmutate(time_period = as.Date(time_period),
-            series_key = qF(series_key)) |>
-    frename(OBS_VALUE = "obs_value")
+  if (all(sapply(x, function (y) nrow(y) == 0))) {
+    stop("No observations returned, unable to format data tidy = TRUE")
+  } else {
+    d <- unlist2d(x, "series_key", row.names = "time_period", DT = TRUE) |>
+      fmutate(time_period = as.Date(time_period),
+              series_key = qF(series_key)) |>
+      frename(OBS_VALUE = "obs_value")
+  }
   # Construct and append metadata
   data_set_name <- attr(x, "metadata")$name[[2]]
   data_set_description <- attr(x, "metadata")$description[[2]]
