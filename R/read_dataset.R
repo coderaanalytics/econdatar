@@ -32,6 +32,12 @@ read_dataset <- function(id, tidy = TRUE, ...) {
   message(paste("\nFetching data set(s) -", id, "\n"))
   if (!is.null(params$file)) {
     data_message <- fromJSON(params$file, simplifyVector = FALSE)
+    data_message[[2]]$`data-sets` <-
+      lapply(data_message[[2]]$`data-sets`, function(x) {
+        x[[2]]$name <- lapply(x[[2]]$name, unlist)
+        x[[2]]$description <- lapply(x[[2]]$name, unlist)
+        return(x)
+      })
     message("Data set(s) successfully retrieved from local storage.\n")
   } else {
     if (exists("econdata_token", envir = .pkgenv)) {

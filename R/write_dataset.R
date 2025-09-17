@@ -3,6 +3,7 @@ write_dataset <- function(x, method = "stage", ...) {
 
   # Parameters ----
 
+  stopifnot(isa(x, "eds_dataset"))
   params <- list(...)
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("stage", "validate"))
@@ -69,7 +70,8 @@ write_dataset <- function(x, method = "stage", ...) {
                                     "stage", sep = "/"),
                        body = toJSON(data_message,
                                      na = "null",
-                                     always_decimal = TRUE),
+                                     always_decimal = TRUE,
+                                     auto_unbox = TRUE),
                        add_headers(authorization = get("econdata_token",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
@@ -107,7 +109,6 @@ write_dataset <- function(x, method = "stage", ...) {
       } else {
         error <- content(response, type = "application/json")
         if (response$status_code == 400) {
-          browser()
           if (!is.null(error$message) && error$message == "Validation error") {
             stop(toJSON(error, pretty = TRUE))
           } else {
@@ -140,6 +141,9 @@ validate_series <- function(data_set_ref, data_set) {
               function(x) if (length(x) == 1) unbox(x) else x)
   d$series <- lapply(seq_len(length(data_set)), function(index) {
     series <- lapply(attr(data_set[[index]], "metadata"), unbox)
+    if (!is.null(names(data_set)[index])) {
+      series[["series-key"]] <- names(data_set)[index]
+    }
     freq <- series$FREQ
     x <- data_set[[index]]
     y <- rownames(x)
