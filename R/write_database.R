@@ -3,6 +3,7 @@ write_database <- function(x, method = "update", ...) {
 
   # Parameters ----
 
+  stopifnot(isa(x, "eds_dataset"))
   params <- list(...)
   stopifnot(length(method) == 1)
   stopifnot(method %in% c("create", "update"))
@@ -50,7 +51,7 @@ write_database <- function(x, method = "update", ...) {
                          attr(dataset, "metadata")$id,
                          attr(dataset, "metadata")$version, sep = "-")
     d <- lapply(attr(dataset, "metadata"), function(x) {
-      if (length(x) == 1) unbox(x) else return(x)
+      if (length(x) == 1) unbox(x) else x
     })
     d$series <- list()
     for (index in seq_len(length(dataset))) {
@@ -61,7 +62,6 @@ write_database <- function(x, method = "update", ...) {
     datasets <- list(list(unbox("#sdmx.infomodel.dataset.DataSet"), d))
     data_message <- list(unbox("#sdmx.infomodel.message.SDMXMessage"),
                          list("header" = header,
-                              "structures" = NULL,
                               "data-sets" = datasets))
     if (!is.null(params$file)) {
       write(toJSON(data_message, na = "null", always_decimal = TRUE),
@@ -72,8 +72,10 @@ write_database <- function(x, method = "update", ...) {
       response <- POST(env$repository$url,
                        path = paste(env$repository$path,
                                     "datasets", sep = "/"),
-                       body = toJSON(data_message, na = "null",
-                                     always_decimal = TRUE),
+                       body = toJSON(data_message,
+                                     na = "null",
+                                     always_decimal = TRUE,
+                                     auto_unbox = TRUE),
                        add_headers(authorization = get("econdata_token",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
