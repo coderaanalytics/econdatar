@@ -164,7 +164,7 @@ read_econdata <- function(id, tidy = FALSE, ...) {
 
 get_release <- function(env, ref, candidate_release, debug = FALSE) {
   if (candidate_release != "unreleased") {
-    final_release <- tryCatch({
+    chosen_release <- tryCatch({
       if (grepl("^\\d{4}-\\d{1,2}-\\d{1,2}(T\\d{1,2}:\\d{1,2}:\\d{1,2})?$",
                 candidate_release,
                 perl = TRUE)) {
@@ -194,7 +194,7 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
       if (length(data_message$releases) != 0) {
         if (candidate_release == "latest") {
           release <- head(data_message$releases, n = 1)[[1]]$release |>
-            as.POSIXct(format = "%Y-%m-%dT%H:%M:%S")
+            as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
           return(strftime(release,
                           format = "%Y-%m-%dT%H:%M:%S",
                           tz = "Africa/Johannesburg"))
@@ -209,14 +209,16 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
             na.omit() |>
             head(n = 1)
           if (length(release) != 0) {
-            release <- as.POSIXct(release, format = "%Y-%m-%dT%H:%M:%S")
+            release <- as.POSIXct(release,
+                                  tz = "UTC",
+                                  format = "%Y-%m-%dT%H:%M:%S")
             return(strftime(release,
                             format = "%Y-%m-%dT%H:%M:%S",
                             tz = "Africa/Johannesburg"))
           } else {
             message("Release not found, returning latest release instead.")
             release <- tail(data_message$releases, n = 1)[[1]]$release |>
-              as.POSIXct(format = "%Y-%m-%dT%H:%M:%S")
+              as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
             return(strftime(release,
                             format = "%Y-%m-%dT%H:%M:%S",
                             tz = "Africa/Johannesburg"))
@@ -228,9 +230,9 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
       }
     })
   } else {
-    final_release <- NULL
+    chosen_release <- NULL
   }
-  return(final_release)
+  return(chosen_release)
 }
 
 get_data <- function(
