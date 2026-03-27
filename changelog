@@ -1,3 +1,7 @@
+2026-03-27  Byron Botha  <byron@codera.co.za>
+
+	- Added tz information to the use of strftime in read_dataset
+
 2025-10-01  Byron Botha  <byron@codera.co.za>
 
 	- corrected the use of strftime in read_dataset

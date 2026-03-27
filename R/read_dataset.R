@@ -17,6 +17,11 @@ read_dataset <- function(id, tidy = TRUE, ...) {
   } else {
     version <- "latest"
   }
+  if (!is.null(params$release)) {
+    release <- params$release
+  } else {
+    release <- "latest"
+  }
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
   if (nchar(Sys.getenv("ECONDATA_URL")) != 0) {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
@@ -82,7 +87,8 @@ read_dataset <- function(id, tidy = TRUE, ...) {
       query_params <- list()
       query_params$release <- get_release(env,
                                           data_set_ref,
-                                          params$release, params$debug)
+                                          release,
+                                          params$debug)
       if (!is.null(params$series_key)) {
         query_params[["series-key"]] <- params$series_key
       }
@@ -157,18 +163,15 @@ read_econdata <- function(id, tidy = FALSE, ...) {
 }
 
 get_release <- function(env, ref, candidate_release, debug = FALSE) {
-  if (is.null(candidate_release)) {
-    candidate_release <- "latest"
-  }
   if (candidate_release != "unreleased") {
     final_release <- tryCatch({
       if (grepl("^\\d{4}-\\d{1,2}-\\d{1,2}(T\\d{1,2}:\\d{1,2}:\\d{1,2})?$",
                 candidate_release,
                 perl = TRUE)) {
-        release <- as.POSIXct(candidate_release,
-                              tz = "Africa/Johannesburg",
-                              format = "%Y-%m-%dT%H:%M:%S")
-        return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
+        release <- as.POSIXct(candidate_release, format = "%Y-%m-%dT%H:%M:%S")
+        return(strftime(release,
+                        format = "%Y-%m-%dT%H:%M:%S",
+                        tz = "Africa/Johannesburg"))
       } else {
         stop("Unacceptable proposed time/date format")
       }
@@ -191,9 +194,10 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
       if (length(data_message$releases) != 0) {
         if (candidate_release == "latest") {
           release <- head(data_message$releases, n = 1)[[1]]$release |>
-            as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
-          attr(release, "tzone") <- "Africa/Johannesburg"
-          return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
+            as.POSIXct(format = "%Y-%m-%dT%H:%M:%S")
+          return(strftime(release,
+                          format = "%Y-%m-%dT%H:%M:%S",
+                          tz = "Africa/Johannesburg"))
         } else {
           release <- sapply(data_message$releases, function(release) {
             if (candidate_release == release$description) {
@@ -205,17 +209,17 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
             na.omit() |>
             head(n = 1)
           if (length(release) != 0) {
-            release <- as.POSIXct(release,
-                                  tz = "UTC",
-                                  format = "%Y-%m-%dT%H:%M:%SZ")
-            attr(release, "tzone") <- "Africa/Johannesburg"
-            return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
+            release <- as.POSIXct(release, format = "%Y-%m-%dT%H:%M:%S")
+            return(strftime(release,
+                            format = "%Y-%m-%dT%H:%M:%S",
+                            tz = "Africa/Johannesburg"))
           } else {
             message("Release not found, returning latest release instead.")
             release <- tail(data_message$releases, n = 1)[[1]]$release |>
-              as.POSIXct(tz = "UTC", format = "%Y-%m-%dT%H:%M:%SZ")
-            attr(release, "tzone") <- "Africa/Johannesburg"
-            return(strftime(release, "%Y-%m-%dT%H:%M:%S"))
+              as.POSIXct(format = "%Y-%m-%dT%H:%M:%S")
+            return(strftime(release,
+                            format = "%Y-%m-%dT%H:%M:%S",
+                            tz = "Africa/Johannesburg"))
           }
         }
       } else {
@@ -229,7 +233,15 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
   return(final_release)
 }
 
-get_data <- function(env, ref, params, series_key = NULL, links = NULL, data_set = NULL, debug = FALSE) {
+get_data <- function(
+  env,
+  ref,
+  params,
+  series_key = NULL,
+  links = NULL,
+  data_set = NULL,
+  debug = FALSE
+) {
   if (is.null(links)) {
     if (is.null(series_key)) {
       if (!is.null(params[["series-key"]]) &&

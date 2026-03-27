@@ -16,10 +16,14 @@ read_release <- function(id, tidy = TRUE, ...) {
   }
   query_params <- list()
   if (!is.null(params$before)) {
-    query_params$before <- strftime(params$before, "%Y-%m-%dT%H:%M:%S")
+    query_params$before <- strftime(params$before,
+                                    format = "%Y-%m-%dT%H:%M:%S",
+                                    tz = "Africa/Johannesburg")
   }
   if (!is.null(params$after)) {
-    query_params$after <- strftime(params$after, "%Y-%m-%dT%H:%M:%S")
+    query_params$after <- strftime(params$after,
+                                   format = "%Y-%m-%dT%H:%M:%S",
+                                   tz = "Africa/Johannesburg")
   }
   if (!is.null(params$description)) {
     query_params$description <- params$description
