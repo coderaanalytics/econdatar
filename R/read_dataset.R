@@ -165,7 +165,7 @@ read_econdata <- function(id, tidy = FALSE, ...) {
 get_release <- function(env, ref, candidate_release, debug = FALSE) {
   if (candidate_release != "unreleased") {
     chosen_release <- tryCatch({
-      if (grepl("^\\d{4}-\\d{1,2}-\\d{1,2}(T\\d{1,2}:\\d{1,2}:\\d{1,2})?$",
+      if (grepl("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{1,2}:\\d{1,2}$",
                 candidate_release,
                 perl = TRUE)) {
         release <- as.POSIXct(candidate_release, format = "%Y-%m-%dT%H:%M:%S")
