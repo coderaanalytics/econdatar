@@ -124,11 +124,11 @@ tidy_long <- function(x, prettify = TRUE, combine = FALSE, ...) {
                           attr(x, "metadata")$agencyid,
                           attr(x, "metadata")$id,
                           attr(x, "metadata")$version)
-  provision_agreement_ref <-
+  dataflow_ref <-
     sprintf("%s:%s(%s)",
-            attr(x, "metadata")[["provision-agreement"]][[2]]$agencyid,
-            attr(x, "metadata")[["provision-agreement"]][[2]]$id,
-            attr(x, "metadata")[["provision-agreement"]][[2]]$version)
+            attr(x, "metadata")[["dataflow"]][[2]]$agencyid,
+            attr(x, "metadata")[["dataflow"]][[2]]$id,
+            attr(x, "metadata")[["dataflow"]][[2]]$version)
   if (prettify) {
     metadata <- get_metadata(x)
     meta <- extract_metadata(x, metadata$concepts)
@@ -137,14 +137,10 @@ tidy_long <- function(x, prettify = TRUE, combine = FALSE, ...) {
       meta$data_set_description <- data_set_description
     }
     meta$data_set_ref <- data_set_ref
-    meta$provision_agreement_ref <- provision_agreement_ref
-    meta$data_provider_ref <- metadata$data_provider_ref
     col_order <- c("data_set_name",
-                  "data_set_ref",
-                  "provision_agreement_ref",
-                  "data_provider_ref",
-                  "series_key")
-    if(combine) {
+                   "data_set_ref",
+                   "series_key")
+    if (combine) {
       meta$series_key <- names(x)[names(x) %in% levels(d$series_key)]
       nseries <- length(meta$series_key)
       meta <- lapply(x, extract_metadata, metadata$concepts) |>
@@ -177,14 +173,14 @@ tidy_long <- function(x, prettify = TRUE, combine = FALSE, ...) {
                "agencyid",
                "id",
                "version",
-               "provision-agreement")) <- NULL
+               "dataflow")) <- NULL
     meta$data_set_name <- data_set_name
     if (!is.null(data_set_description)) {
       meta$description <- NULL
       meta$data_set_description <- data_set_description
     }
     meta$data_set_ref <- data_set_ref
-    meta$provision_agreement_ref <- provision_agreement_ref
+    meta$dataflow_ref <- dataflow_ref
     col_order <- c("data_set_name",
                    "data_set_ref",
                    "series_key")

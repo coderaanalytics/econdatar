@@ -8,30 +8,11 @@ get_metadata <- function(x) {
 
   # Fetch data structure definition (metadata) ----
 
-  # Provision agreement
   attrs <- attr(x, "metadata")
-  provision_agreement_ref <- paste(attrs[["provision-agreement"]][[2]]$agencyid,
-                                   attrs[["provision-agreement"]][[2]]$id,
-                                   attrs[["provision-agreement"]][[2]]$version,
-                                   sep = "-")
-  response <- GET(env$registry$url,
-                  path = paste(c(env$registry$path,
-                                 "provisionagreements",
-                                 provision_agreement_ref), collapse = "/"),
-                  add_headers(authorization = get("econdata_apikey",
-                                                  envir = .pkgenv)),
-                  accept("application/vnd.sdmx-codera.data+json"))
-  if (response$status_code != 200) {
-    stop(content(response, type = "application/json", encoding = "UTF-8"))
-  }
-  data_message <- content(response,
-                          type = "application/json",
-                          encoding = "UTF-8")
-  provision_agreement <- data_message[[2]]$structures[["provision-agreements"]][[1]]
   # Dataflow
-  dataflow_ref <- paste(provision_agreement[[2]][["dataflow"]][[2]]$agencyid,
-                        provision_agreement[[2]][["dataflow"]][[2]]$id,
-                        provision_agreement[[2]][["dataflow"]][[2]]$version,
+  dataflow_ref <- paste(attrs[[2]][["dataflow"]][[2]]$agencyid,
+                        attrs[[2]][["dataflow"]][[2]]$id,
+                        attrs[[2]][["dataflow"]][[2]]$version,
                         sep = "-")
   response <- GET(env$registry$url,
                   path = paste(c(env$registry$path,
@@ -101,14 +82,11 @@ get_metadata <- function(x) {
       }
     }
   }
-  data_provider_ref <- provision_agreement[[2]][["data-provider"]][[2]] |>
-    (function(x) do.call(sprintf, c("%s:%s(%s):%s", x)))(x = _)
-  dataflow_ref <- provision_agreement[[2]][["dataflow"]][[2]] |>
+  dataflow_ref <- attrs[[2]][["dataflow"]][[2]] |>
     (function(x) do.call(sprintf, c("%s:%s(%s)", x)))(x = _)
   data_structure_ref <- dataflow[[2]][["data-structure"]][[2]] |>
     (function(x) do.call(sprintf, c("%s:%s(%s)", x)))(x = _)
-  metadata <- list(data_provider_ref = data_provider_ref,
-                   dataflow_ref = dataflow_ref,
+  metadata <- list(dataflow_ref = dataflow_ref,
                    data_structure_ref = data_structure_ref,
                    concepts = concepts)
   return(metadata)
