@@ -12,22 +12,13 @@ write_dataset <- function(x, method = "stage", ...) {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
     env$registry$url <- Sys.getenv("ECONDATA_URL")
   }
-  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
-    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
-  }
 
 
   # Push data message ----
 
   if (is.null(params$file)) {
-    if (exists("econdata_token", envir = .pkgenv)) {
-      token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
-      payload <- jwt_split(token)$payload
-      if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
-        login_helper(env$auth)
-      }
-    } else {
-      login_helper(env$auth)
+    if (!exists("econdata_apikey", envir = .pkgenv)) {
+      login_helper()
     }
   }
   header <- list()
@@ -72,7 +63,7 @@ write_dataset <- function(x, method = "stage", ...) {
                                      na = "null",
                                      always_decimal = TRUE,
                                      auto_unbox = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -100,7 +91,7 @@ write_dataset <- function(x, method = "stage", ...) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())

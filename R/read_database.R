@@ -19,9 +19,6 @@ read_database <- function(id, include_series = FALSE, tidy = TRUE, ...) {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
     env$registry$url <- Sys.getenv("ECONDATA_URL")
   }
-  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
-    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
-  }
 
 
   # Fetch data set(s) ----
@@ -32,14 +29,8 @@ read_database <- function(id, include_series = FALSE, tidy = TRUE, ...) {
     message("Data set(s) successfully retrieved from local storage.\n")
   } else {
     if (is.null(params$file)) {
-      if (exists("econdata_token", envir = .pkgenv)) {
-        token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
-        payload <- jwt_split(token)$payload
-        if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
-          login_helper(env$auth)
-        }
-      } else {
-        login_helper(env$auth)
+      if (!exists("econdata_apikey", envir = .pkgenv)) {
+        login_helper()
       }
     }
     query_params <- list()
@@ -49,7 +40,7 @@ read_database <- function(id, include_series = FALSE, tidy = TRUE, ...) {
     response <- GET(env$repository$url,
                     path = c(env$repository$path, "/datasets"),
                     query = query_params,
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
@@ -80,7 +71,7 @@ read_database <- function(id, include_series = FALSE, tidy = TRUE, ...) {
                                      data_set_ref,
                                      "series", sep = "/"),
                         query = query_params,
-                        add_headers(authorization = get("econdata_token",
+                        add_headers(authorization = get("econdata_apikey",
                                                         envir = .pkgenv)),
                         accept("application/vnd.sdmx-codera.data+json"))
         if (response$status_code == 200) {

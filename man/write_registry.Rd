@@ -21,7 +21,7 @@ write_registry(structure, x, method = "update", \dots)
 }
 }
 \details{
-An \href{https://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal. A GUI dialog will prompt the user for their API token.
+An EconData account is required to use this function. The user must provide an API key, which can be found on the landing page of the online portal. A GUI dialog will prompt the user for their API key. The API key can also be supplied by setting the ECONDATA_APIKEY environment variable.
 
 The functionality provided by \emph{write_registry} is to save the registry structure according to the function arguments. As this makes modifications to the registry, the user calling this function requires \strong{admin} privileges.
 }

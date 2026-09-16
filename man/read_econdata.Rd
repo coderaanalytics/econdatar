@@ -36,7 +36,7 @@ tidy_data(x, \dots)
 }
 }
 \details{
-An \href{https://econdata.co.za/}{EconData} account is required to use this function. The user must provide an API token, which can be found on the \emph{Account} page of the online portal; a GUI dialog will prompt the user for their API token. Credentials can also be supplied by setting the ECONDATA_CREDENTIALS environment variable using the syntax: "client_id;client_secret", e.g. \code{Sys.setenv(ECONDATA_CREDENTIALS="client_id;client_secret")}, when available.
+An EconData account is required to use this function. The user must provide an API key, which can be found on the landing page of the online portal. A GUI dialog will prompt the user for their API key. The API key can also be supplied by setting the ECONDATA_APIKEY environment variable.
 }
 \value{
 If \code{tidy = FALSE}, a list of data frames is returned, where the names of the list are the EconData series codes, and each data frame has a single column named 'OBS_VALUE' containing the data, with corresponding dates attached as rownames. Each data frame further has a \code{"metadata"} attribute providing information about the series. The entire list of data frames also has a \code{"metadata"} attribute, providing information about the dataset. If multiple datasets (or versions of a dataset if \code{version} is specified as 'all') are being queried, a list of such lists is returned.

@@ -11,23 +11,14 @@ write_registry <- function(structure, x, method = "update", ...) {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
     env$registry$url <- Sys.getenv("ECONDATA_URL")
   }
-  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
-    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
-  }
   params$env <- env
 
 
   # Fetch structure(s) ----
 
   if (is.null(params$file)) {
-    if (exists("econdata_token", envir = .pkgenv)) {
-      token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
-      payload <- jwt_split(token)$payload
-      if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
-        login_helper(env$auth)
-      }
-    } else {
-      login_helper(env$auth)
+    if (!exists("econdata_apikey", envir = .pkgenv)) {
+      login_helper()
     }
   }
   header <- list()
@@ -123,7 +114,7 @@ write_agency_scheme <- function(agency_scheme, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -141,7 +132,7 @@ write_agency_scheme <- function(agency_scheme, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -224,7 +215,7 @@ write_category_scheme <- function(category_scheme, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -242,7 +233,7 @@ write_category_scheme <- function(category_scheme, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -313,7 +304,7 @@ write_codelist <- function(codelist, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -331,7 +322,7 @@ write_codelist <- function(codelist, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -406,7 +397,7 @@ write_concept_scheme <- function(concept_scheme, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -424,7 +415,7 @@ write_concept_scheme <- function(concept_scheme, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -515,7 +506,7 @@ write_data_consumer_scheme <- function(data_consumer_scheme, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -533,7 +524,7 @@ write_data_consumer_scheme <- function(data_consumer_scheme, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -624,7 +615,7 @@ write_data_provider_scheme <- function(data_provider_scheme, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -642,7 +633,7 @@ write_data_provider_scheme <- function(data_provider_scheme, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -704,7 +695,7 @@ write_dataflow <- function(dataflow, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -721,7 +712,7 @@ write_dataflow <- function(dataflow, method, params) {
                                    dataflow_ref, sep = "/"),
                       body = toJSON(data_message, na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -891,7 +882,7 @@ write_data_structure <- function(data_structure, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -909,7 +900,7 @@ write_data_structure <- function(data_structure, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -1017,7 +1008,7 @@ write_memberlist <- function(memberlist, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -1035,7 +1026,7 @@ write_memberlist <- function(memberlist, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -1108,7 +1099,7 @@ write_cons_agreement <- function(cons_agreement, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -1126,7 +1117,7 @@ write_cons_agreement <- function(cons_agreement, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())
@@ -1141,7 +1132,7 @@ write_cons_agreement <- function(cons_agreement, method, params) {
                          path = paste(params$env$repository$path,
                                       "consumptionagreements",
                                       cons_agreement_ref, sep = "/"),
-                         add_headers(authorization = get("econdata_token",
+                         add_headers(authorization = get("econdata_apikey",
                                                          envir = .pkgenv)),
                          content_type("application/vnd.sdmx-codera.data+json"),
                          accept_json())
@@ -1217,7 +1208,7 @@ write_prov_agreement <- function(prov_agreement, method, params) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE),
-                       add_headers(authorization = get("econdata_token",
+                       add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
                        accept_json())
@@ -1235,7 +1226,7 @@ write_prov_agreement <- function(prov_agreement, method, params) {
                       body = toJSON(data_message,
                                     na = "null",
                                     always_decimal = TRUE),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),
                       accept_json())

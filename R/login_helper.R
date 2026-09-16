@@ -1,20 +1,14 @@
 .pkgenv <- new.env(parent = emptyenv())
 
-login_helper <- function(auth) {
-  if (Sys.getenv("ECONDATA_CREDENTIALS") != "") {
-    creds <- unlist(strsplit(Sys.getenv("ECONDATA_CREDENTIALS"), ";"))
-    response <- POST(auth$url,
-                     path = auth$path,
-                     body = list(grant_type = "client_credentials",
-                                 client_id = creds[1],
-                                 client_secret = creds[2]),
-                     encode = "form",
-                     accept_json())
-    if (response$status_code != 200)
-      stop(content(response))
-    token <- content(response)$access_token
+login_helper <- function() {
+  if (Sys.getenv("ECONDATA_APIKEY") != "") {
+    apikey <- Sys.getenv("ECONDATA_APIKEY")
+  } else if (Sys.getenv("ECONDATA_CREDENTIALS") != "") {
+    stop("Credentials login has been deprecated. ",
+         "Please obtain an API key from econdata.co.za, ",
+         "and set the environment var ECONDATA_APIKEY=your_key")
   } else {
-    token <- econdata_credentials()
+    apikey <- econdata_apikey()
   }
-  assign("econdata_token", paste("Bearer", token), envir = .pkgenv)
+  assign("econdata_apikey", paste("Bearer", apikey), envir = .pkgenv)
 }

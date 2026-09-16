@@ -35,16 +35,16 @@ install_github("coderaanalytics/econdatar", ref = "4.0.4")
 
 ## Connecting to econdata.co.za
 
-In most cases reading and writing data from econdata.co.za requires you to authenticate yourself. This usually requires you to enter an API token which you can get from the web application. Log in to the web application and go to the *Account* page, click on *Show key* and copy the API token by clicking anywhere on the token itself. Paste this token into the dialogue box that appears when running `read_dataset` for example and click *Submit*.
+In most cases reading and writing data from econdata.co.za requires you to authenticate yourself. This usually requires you to enter an API key which you can get from the web application. Log in to the web application and click on the  *API key* button on the top left of the page. Paste this key into the dialogue box that appears when running `read_dataset` for example and click *Submit*.
 
-If you are using a service account you can set the `ECONDATA_CREDENTIALS` env variable with the format `client_id;client_secret` in order to automate the above process.
+Alternatively, you can set the `ECONDATA_APIKEY` environment variable in order to automate the above process.
 
-If you are connecting to econdata.co.za through a portal other that the main site (someportal.econdata.co.za rather than www.econdata.co.za) you will need to set the `ECONDATA_URL` and `ECONDATA_AUTH_URL` env variables, please contact econdata@codera.co.za for further details.
+If you are connecting to econdata.co.za through a portal other that the main site (someportal.econdata.co.za rather than www.econdata.co.za) you will need to set the `ECONDATA_URL` environment variable, please contact econdata@codera.co.za for further details.
 
-Please see the [EconData blog](https://econdata.co.za) for in depth tutorials
+Please see the [EconData user guide](https://www.econdata.co.za/user-guide) for in depth tutorials
 
 ## License
 
-Copyright © 2025 Codera Pty Ltd
+Copyright © 2026 Codera Pty Ltd
 
 Available under the terms of the MIT License, see `LICENSE`.

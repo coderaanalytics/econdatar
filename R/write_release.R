@@ -25,21 +25,12 @@ write_release <- function(id, version, description, method = "release", ...)  {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
     env$registry$url <- Sys.getenv("ECONDATA_URL")
   }
-  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
-    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
-  }
 
 
   # Commit data set release ----
 
-  if (exists("econdata_token", envir = .pkgenv)) {
-    token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
-    payload <- jwt_split(token)$payload
-    if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
-      login_helper(env$auth)
-    }
-  } else {
-    login_helper(env$auth)
+  if (!exists("econdata_apikey", envir = .pkgenv)) {
+    login_helper()
   }
   dataset_ref <- paste(agencyid, id, version, sep = "-")
   if (method == "release") {
@@ -50,7 +41,7 @@ write_release <- function(id, version, description, method = "release", ...)  {
                                   dataset_ref,
                                   "commit", sep = "/"),
                      query = query_params,
-                     add_headers(authorization = get("econdata_token",
+                     add_headers(authorization = get("econdata_apikey",
                                                      envir = .pkgenv)),
                      accept_json())
     if (response$status_code == 200) {
@@ -65,7 +56,7 @@ write_release <- function(id, version, description, method = "release", ...)  {
                                   "datasets",
                                   dataset_ref,
                                   "reset", sep = "/"),
-                     add_headers(authorization = get("econdata_token",
+                     add_headers(authorization = get("econdata_apikey",
                                                      envir = .pkgenv)),
                      accept_json())
     if (response$status_code == 200) {
@@ -80,7 +71,7 @@ write_release <- function(id, version, description, method = "release", ...)  {
                                   "datasets",
                                   dataset_ref,
                                   "rollback", sep = "/"),
-                     add_headers(authorization = get("econdata_token",
+                     add_headers(authorization = get("econdata_apikey",
                                                      envir = .pkgenv)),
                      accept_json())
     if (response$status_code == 200) {

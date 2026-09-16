@@ -27,23 +27,14 @@ read_registry <- function(structure, tidy = TRUE, ...) {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
     env$registry$url <- Sys.getenv("ECONDATA_URL")
   }
-  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
-    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
-  }
   params$env <- env
 
 
   # Fetch structure(s) ----
 
   if (is.null(params$file)) {
-    if (exists("econdata_token", envir = .pkgenv)) {
-      token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
-      payload <- jwt_split(token)$payload
-      if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
-        login_helper(env$auth)
-      }
-    } else {
-      login_helper(env$auth)
+    if (!exists("econdata_apikey", envir = .pkgenv)) {
+      login_helper()
     }
   }
   agencyids <- paste(agencyid, collapse = ",")
@@ -115,7 +106,7 @@ read_agency_schemes <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
@@ -218,7 +209,7 @@ read_category_schemes <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
@@ -302,7 +293,7 @@ read_codelists <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
 
@@ -381,7 +372,7 @@ read_concept_schemes <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
@@ -472,7 +463,7 @@ read_data_consumer_schemes <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
@@ -576,7 +567,7 @@ read_data_provider_schemes <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
@@ -680,7 +671,7 @@ read_dataflows <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
 
@@ -751,7 +742,7 @@ read_data_structures <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
@@ -925,7 +916,7 @@ read_memberlist <- function(agencyids, ids, versions, params) {
                     query = list(agencyids = agencyids,
                                  ids = ids,
                                  versions = versions),
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code != 200) {
@@ -1018,7 +1009,7 @@ read_cons_agreement <- function(agencyids, ids, versions, params) {
           query = list(agencyids = agencyids,
                        ids = ids,
                        versions = versions),
-          add_headers(authorization = get("econdata_token", envir = .pkgenv)),
+          add_headers(authorization = get("econdata_apikey", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {
@@ -1103,7 +1094,7 @@ read_prov_agreement <- function(agencyids, ids, versions, params) {
           query = list(agencyids = agencyids,
                        ids = ids,
                        versions = versions),
-          add_headers(authorization = get("econdata_token", envir = .pkgenv)),
+          add_headers(authorization = get("econdata_apikey", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
 
     if (response$status_code != 200) {

@@ -33,28 +33,19 @@ read_release <- function(id, tidy = TRUE, ...) {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
     env$registry$url <- Sys.getenv("ECONDATA_URL")
   }
-  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
-    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
-  }
 
 
   # Fetch release ----
 
-  if (exists("econdata_token", envir = .pkgenv)) {
-    token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
-    payload <- jwt_split(token)$payload
-    if (Sys.time() > as.POSIXct(payload$exp, origin="1970-01-01")) {
-      login_helper(env$auth)
-    }
-  } else {
-    login_helper(env$auth)
+  if (!exists("econdata_apikey", envir = .pkgenv)) {
+    login_helper()
   }
   response <- GET(env$repository$url,
                   path = c(env$repository$path, "/datasets"),
                   query = list(agencyids = paste(agencyid, collapse = ","),
                                ids = paste(id, collapse = ","),
                                versions = paste(version, collapse = ",")),
-                  add_headers(authorization = get("econdata_token",
+                  add_headers(authorization = get("econdata_apikey",
                                                   envir = .pkgenv)),
                   accept_json())
   if (response$status_code != 200)
@@ -69,7 +60,7 @@ read_release <- function(id, tidy = TRUE, ...) {
                                  "datasets", dataset_ref,
                                  "release", sep = "/"),
                     query = query_params,
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (response$status_code == 200) {

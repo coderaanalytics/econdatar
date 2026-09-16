@@ -4,9 +4,6 @@ get_metadata <- function(x) {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
     env$registry$url <- Sys.getenv("ECONDATA_URL")
   }
-  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
-    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
-  }
 
 
   # Fetch data structure definition (metadata) ----
@@ -21,7 +18,7 @@ get_metadata <- function(x) {
                   path = paste(c(env$registry$path,
                                  "provisionagreements",
                                  provision_agreement_ref), collapse = "/"),
-                  add_headers(authorization = get("econdata_token",
+                  add_headers(authorization = get("econdata_apikey",
                                                   envir = .pkgenv)),
                   accept("application/vnd.sdmx-codera.data+json"))
   if (response$status_code != 200) {
@@ -40,7 +37,7 @@ get_metadata <- function(x) {
                   path = paste(c(env$registry$path,
                                  "dataflows",
                                  dataflow_ref), collapse = "/"),
-                  add_headers(authorization = get("econdata_token",
+                  add_headers(authorization = get("econdata_apikey",
                                                   envir = .pkgenv)),
                   accept("application/vnd.sdmx-codera.data+json"))
   if (response$status_code != 200) {
@@ -60,7 +57,7 @@ get_metadata <- function(x) {
                                  "datastructures",
                                  data_structure_ref), collapse = "/"),
                   query = list(relations = "references"),
-                  add_headers(authorization = get("econdata_token",
+                  add_headers(authorization = get("econdata_apikey",
                                                   envir = .pkgenv)),
                   accept("application/vnd.sdmx-codera.data+json"))
   if (response$status_code != 200) {

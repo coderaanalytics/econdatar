@@ -10,7 +10,7 @@
 }
 \details{
 
-This package provides an interface to \href{https://codera.co.za/}{Codera Analytics'} econometric data service and the \href{https://www.econdata.co.za/}{EconData} database in particular.
+This package provides an interface to \href{https://codera.co.za/}{Codera Analytics'} econometric data service and the EconData database in particular.
 
 EconData enables automation of analytical workflows that depend on public domain or third-party data. It is also a leading-edge forecast management system, enabling data and model automation and best practice data and model governance. EconData supports data-sharing across databases and within institutions, codifies modelling process flows and provides user-level access control. EconData makes it easy to securely manage and share model scenarios and forecast vintages.
 
@@ -24,8 +24,7 @@ Maintainer: \packageMaintainer{econdatar}
 }
 \keyword{ package }
 \seealso{
-\href{https://www.econdata.co.za}{https://www.econdata.co.za}
-\href{https://econdata.co.za}{https://econdata.co.za}
+\href{https://www.econdata.co.za/user-guide}{https://www.econdata.co.za/user-guide}
 }
 \examples{
 \dontrun{

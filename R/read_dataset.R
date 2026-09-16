@@ -27,9 +27,6 @@ read_dataset <- function(id, tidy = TRUE, ...) {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
     env$registry$url <- Sys.getenv("ECONDATA_URL")
   }
-  if (nchar(Sys.getenv("ECONDATA_AUTH_URL")) != 0) {
-    env$auth$url <- Sys.getenv("ECONDATA_AUTH_URL")
-  }
 
 
   # Fetch data set(s) ----
@@ -45,14 +42,8 @@ read_dataset <- function(id, tidy = TRUE, ...) {
       })
     message("Data set(s) successfully retrieved from local storage.\n")
   } else {
-    if (exists("econdata_token", envir = .pkgenv)) {
-      token <- unlist(strsplit(get("econdata_token", envir = .pkgenv), " "))[2]
-      payload <- jwt_split(token)$payload
-      if (Sys.time() > as.POSIXct(payload$exp, origin = "1970-01-01")) {
-        login_helper(env$auth)
-      }
-    } else {
-      login_helper(env$auth)
+    if (!exists("econdata_apikey", envir = .pkgenv)) {
+      login_helper()
     }
     query_params <- list()
     query_params$agencyids <- paste(agencyid, collapse = ",")
@@ -61,7 +52,7 @@ read_dataset <- function(id, tidy = TRUE, ...) {
     response <- GET(env$repository$url,
                     path = c(env$repository$path, "/datasets"),
                     query = query_params,
-                    add_headers(authorization = get("econdata_token",
+                    add_headers(authorization = get("econdata_apikey",
                                                     envir = .pkgenv)),
                     accept("application/vnd.sdmx-codera.data+json"))
     if (params$debug) {
@@ -181,7 +172,7 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
                                    "datasets",
                                    ref,
                                    "release", sep = "/"),
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       accept_json())
       if (debug) {
@@ -257,7 +248,7 @@ get_data <- function(
                                    "datasets",
                                    ref, sep = "/"),
                       query = params,
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       accept("application/vnd.sdmx-codera.data+json"))
       if (debug) {
@@ -289,7 +280,7 @@ get_data <- function(
                                    "datasets",
                                    ref, sep = "/"),
                       query = params,
-                      add_headers(authorization = get("econdata_token",
+                      add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       accept("application/vnd.sdmx-codera.data+json"))
       if (debug) {
@@ -329,7 +320,7 @@ get_data <- function(
               return(y)
             }) |>
             unlist(recursive = FALSE),
-          add_headers(authorization = get("econdata_token", envir = .pkgenv)),
+          add_headers(authorization = get("econdata_apikey", envir = .pkgenv)),
           accept("application/vnd.sdmx-codera.data+json"))
     if (debug) {
       message("Request URL: ", response$request$url, "\n")
