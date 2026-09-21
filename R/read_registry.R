@@ -258,7 +258,17 @@ process_category_scheme <- function(structure, params) {
         category[[2]]$description[[2]]
       }
       lapply(category[[2]]$references, function(reference) {
-        list(id = category[[2]]$id,
+        type <- if (reference[[1]] == "#sdmx.infomodel.datastructure.DataflowRef") {
+          "Dataflow"
+        } else if (reference[[1]] == "#sdmx.infomodel.registry.ProvisionAgreementRef") {
+          "ProvisionAgreement"
+        } else {
+          warning("Illegal category scheme reference: ", reference[[1]])
+          "Unknown"
+        }
+
+        list(type = type,
+             id = category[[2]]$id,
              name = category[[2]]$name[[2]],
              description = description,
              reference_agencyid = reference[[2]]$agencyid,

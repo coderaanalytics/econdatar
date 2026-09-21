@@ -187,7 +187,7 @@ write_category_scheme <- function(category_scheme, method, params) {
       for (i in seq_len(length(ids))) {
         id <- ids[i]
         index <- category_scheme$categories$id == id
-        tmp <- as.list(category_scheme$categories[which(index)[1],])
+        tmp <- as.list(category_scheme$categories[which(index)[1], ])
         category <- list(unbox("#sdmx.infomodel.categoryscheme.Category"),
                          list(id = unbox(tmp$id),
                               name = c("en", tmp$name)))
@@ -196,7 +196,16 @@ write_category_scheme <- function(category_scheme, method, params) {
         }
         references <- apply(category_scheme$categories[index, ], 1, function(reference) {
           tmp <- as.list(reference)
-          list(unbox("#sdmx.infomodel.registry.ProvisionAgreementRef"),
+
+          type <- if (tmp$type == "Dataflow") {
+            unbox("#sdmx.infomodel.datastructure.DataflowRef")
+          } else if (tmp$type == "ProvisionAgreement") {
+            unbox("#sdmx.infomodel.registry.ProvisionAgreementRef")
+          } else {
+            stop("Illegal category scheme reference: ", reference$type)
+          }
+
+          list(type,
                list(agencyid = unbox(tmp$reference_agencyid),
                     id = unbox(tmp$reference_id),
                     version = unbox(tmp$reference_version)))
