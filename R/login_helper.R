@@ -10,5 +10,6 @@ login_helper <- function() {
   } else {
     apikey <- econdata_apikey()
   }
-  assign("econdata_apikey", paste("Bearer", apikey), envir = .pkgenv)
+  if (!is.null(apikey) && nchar(apikey) != 0)
+    assign("econdata_apikey", paste("Bearer", apikey), envir = .pkgenv)
 }
