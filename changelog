@@ -1,3 +1,8 @@
+2026-10-29  Aidan Horn  <aidanhorn@gmail.com>
+
+	- added metadata_only = TRUE option to read_dataset() and tidy_data(), returning the series metadata table without downloading observations
+	- the "metadata" element returned by read_dataset(wide = FALSE) is now a data.table (previously a plain list)
+
 2026-03-27  Byron Botha  <byron@codera.co.za>
 
 	- Added tz information to the use of strftime in read_dataset

@@ -4,7 +4,9 @@ tidy_data <- function(x, ...) UseMethod("tidy_data", x)
 
 tidy_data.eds_database <- function(x, ...) {
   dots <- list(...)
-  if (all(sapply(x, function(x) length(x) == 0))) {
+  if (isTRUE(dots$metadata_only)) {
+    tidy_metadata(x)
+  } else if (all(sapply(x, function(x) length(x) == 0))) {
     lapply(x, function(y) {
       m <- attr(y, "metadata")
       m$name <- m$name[[2]]
@@ -31,7 +33,9 @@ tidy_data.eds_database <- function(x, ...) {
 }
 
 tidy_data.eds_dataset <- function(x, wide = TRUE, ...) {
-  if (wide) {
+  if (isTRUE(list(...)$metadata_only)) {
+    tidy_metadata(x, ...)
+  } else if (wide) {
     tidy_wide(x, ...)
   } else {
     tidy_long(x, ...)
@@ -118,6 +122,10 @@ tidy_long <- function(x, prettify = TRUE, combine = FALSE, ...) {
       frename(OBS_VALUE = "obs_value")
   }
   # Construct and append metadata
+  if (!combine) {
+    names(d) <- tolower(names(d))
+    return(list(data = d, metadata = tidy_metadata(x, prettify)))
+  }
   data_set_name <- attr(x, "metadata")$name[[2]]
   data_set_description <- attr(x, "metadata")$description[[2]]
   data_set_ref <- sprintf("%s:%s(%s)",
@@ -129,6 +137,9 @@ tidy_long <- function(x, prettify = TRUE, combine = FALSE, ...) {
             attr(x, "metadata")[["dataflow"]][[2]]$agencyid,
             attr(x, "metadata")[["dataflow"]][[2]]$id,
             attr(x, "metadata")[["dataflow"]][[2]]$version)
+  col_order <- c("data_set_name",
+                 "data_set_ref",
+                 "series_key")
   if (prettify) {
     metadata <- get_metadata(x)
     meta <- extract_metadata(x, metadata$concepts)
@@ -137,43 +148,13 @@ tidy_long <- function(x, prettify = TRUE, combine = FALSE, ...) {
       meta$data_set_description <- data_set_description
     }
     meta$data_set_ref <- data_set_ref
-    col_order <- c("data_set_name",
-                   "data_set_ref",
-                   "series_key")
-    if (combine) {
-      meta$series_key <- names(x)[names(x) %in% levels(d$series_key)]
-      nseries <- length(meta$series_key)
-      meta <- lapply(x, extract_metadata, metadata$concepts) |>
-        rbindlist(use.names = TRUE, fill = TRUE) |>
-        c(lapply(meta, function(x) if (length(x) == 1) rep(x, nseries) else x))
-      meta_fct <- dapply(meta, qF, drop = FALSE)
-      series_key <- d$series_key
-      d$series_key <- NULL
-      add_vars(d, "front") <- ss(meta_fct,
-                                 ckmatch(series_key, meta_fct$series_key),
-                                 check = FALSE)
-      names(d) <- tolower(names(d))
-      setcolorder(d, col_order)
-      result <- d
-    } else {
-      meta$series_key <- names(x)
-      meta <- lapply(x, extract_metadata, metadata$concepts, FALSE) |>
-        rbindlist(use.names = TRUE, fill = TRUE) |>
-        c(meta)
-      get_vars(meta, fnobs(meta) == 0L) <- NULL
-      names(meta) <- tolower(names(meta))
-      names(d) <- tolower(names(d))
-      setcolorder(meta, col_order)
-      result <- list(data = d, metadata = meta)
-    }
+    meta$series_key <- names(x)[names(x) %in% levels(d$series_key)]
+    nseries <- length(meta$series_key)
+    meta <- lapply(x, extract_metadata, metadata$concepts) |>
+      rbindlist(use.names = TRUE, fill = TRUE) |>
+      c(lapply(meta, function(x) if (length(x) == 1) rep(x, nseries) else x))
   } else {
-    meta <- attr(x, "metadata")
-    get_vars(meta,
-             c("name",
-               "agencyid",
-               "id",
-               "version",
-               "dataflow")) <- NULL
+    meta <- raw_data_set_metadata(x)
     meta$data_set_name <- data_set_name
     if (!is.null(data_set_description)) {
       meta$description <- NULL
@@ -181,37 +162,86 @@ tidy_long <- function(x, prettify = TRUE, combine = FALSE, ...) {
     }
     meta$data_set_ref <- data_set_ref
     meta$dataflow_ref <- dataflow_ref
-    col_order <- c("data_set_name",
-                   "data_set_ref",
-                   "series_key")
-    if (combine) {
-      meta$series_key <- names(x)[names(x) %in% levels(d$series_key)]
-      nseries <- length(meta$series_key)
-      meta <- lapply(x, function(x) if (length(x) != 0) attr(x, "metadata") else NULL) |>
-        rbindlist(use.names = TRUE, fill = TRUE) |>
-        c(lapply(meta, function(x) if (length(x) == 1) rep(x, nseries) else x))
-      meta_fct <- dapply(meta, qF, drop = FALSE)
-      series_key <- d$series_key
-      d$series_key <- NULL
-      add_vars(d, "front") <- ss(meta_fct,
-                                 ckmatch(series_key, meta_fct$series_key),
-                                 check = FALSE)
-      names(d) <- tolower(names(d))
-      setcolorder(d, col_order)
-      result <- d
-    } else {
-      meta$series_key <- names(x)
-      meta <- lapply(x, function(x) attr(x, "metadata")) |>
-        rbindlist(use.names = TRUE, fill = TRUE) |>
-        c(meta)
-      get_vars(meta, fnobs(meta) == 0L) <- NULL
-      names(meta) <- tolower(names(meta))
-      names(d) <- tolower(names(d))
-      setcolorder(meta, col_order)
-      result <- list(data = d, metadata = meta)
-    }
+    meta$series_key <- names(x)[names(x) %in% levels(d$series_key)]
+    nseries <- length(meta$series_key)
+    meta <- lapply(x, function(x) if (length(x) != 0) attr(x, "metadata") else NULL) |>
+      rbindlist(use.names = TRUE, fill = TRUE) |>
+      c(lapply(meta, function(x) if (length(x) == 1) rep(x, nseries) else x))
   }
-  return(result)
+  meta_fct <- dapply(meta, qF, drop = FALSE)
+  series_key <- d$series_key
+  d$series_key <- NULL
+  add_vars(d, "front") <- ss(meta_fct,
+                             ckmatch(series_key, meta_fct$series_key),
+                             check = FALSE)
+  names(d) <- tolower(names(d))
+  setcolorder(d, col_order)
+  return(d)
+}
+
+tidy_metadata <- function(x, prettify = TRUE, ...) {
+  # Construct a metadata data.table with one row per series, without requiring
+  # any observations (also used for metadata_only = TRUE)
+  if (inherits(x, "eds_database")) {
+    names(x) <- collect_version_names(x)
+    return(lapply(x, tidy_metadata, FALSE))
+  }
+  data_set_name <- attr(x, "metadata")$name[[2]]
+  data_set_description <- attr(x, "metadata")$description[[2]]
+  data_set_ref <- sprintf("%s:%s(%s)",
+                          attr(x, "metadata")$agencyid,
+                          attr(x, "metadata")$id,
+                          attr(x, "metadata")$version)
+  col_order <- c("data_set_name",
+                 "data_set_ref",
+                 "series_key")
+  if (prettify) {
+    metadata <- get_metadata(x)
+    meta <- extract_metadata(x, metadata$concepts)
+    meta$data_set_name <- data_set_name
+    if (!is.null(data_set_description)) {
+      meta$data_set_description <- data_set_description
+    }
+    meta$data_set_ref <- data_set_ref
+    meta$series_key <- names(x)
+    meta <- lapply(x, extract_metadata, metadata$concepts, FALSE) |>
+      rbindlist(use.names = TRUE, fill = TRUE) |>
+      c(meta)
+  } else {
+    dataflow_ref <-
+      sprintf("%s:%s(%s)",
+              attr(x, "metadata")[["dataflow"]][[2]]$agencyid,
+              attr(x, "metadata")[["dataflow"]][[2]]$id,
+              attr(x, "metadata")[["dataflow"]][[2]]$version)
+    meta <- raw_data_set_metadata(x)
+    meta$data_set_name <- data_set_name
+    if (!is.null(data_set_description)) {
+      meta$description <- NULL
+      meta$data_set_description <- data_set_description
+    }
+    meta$data_set_ref <- data_set_ref
+    meta$dataflow_ref <- dataflow_ref
+    meta$series_key <- names(x)
+    meta <- lapply(x, function(x) attr(x, "metadata")) |>
+      rbindlist(use.names = TRUE, fill = TRUE) |>
+      c(meta)
+  }
+  nseries <- length(x)
+  meta <- lapply(meta, function(x) if (length(x) == 1) rep(x, nseries) else x)
+  get_vars(meta, fnobs(meta) == 0L) <- NULL
+  names(meta) <- tolower(names(meta))
+  setcolorder(meta, col_order)
+  return(qDT(meta))
+}
+
+raw_data_set_metadata <- function(x) {
+  # Data set level metadata as returned by the API, with the structural
+  # references and any non-atomic elements (e.g. annotations) dropped
+  meta <- attr(x, "metadata")
+  meta <- meta[setdiff(names(meta),
+                       c("name", "agencyid", "id", "version", "dataflow",
+                         "provision-agreement", "annotations"))]
+  return(meta[vapply(meta, is.atomic, logical(1))])
 }
 
 collect_version_names <- function(x, is_release = FALSE) {

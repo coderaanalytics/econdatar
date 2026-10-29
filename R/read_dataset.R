@@ -7,6 +7,7 @@ read_dataset <- function(id, tidy = TRUE, ...) {
   if (is.null(params$debug)) {
     params$debug <- FALSE
   }
+  metadata_only <- isTRUE(params$metadata_only)
   if (!is.null(params$agencyid)) {
     agencyid  <- params$agencyid
   } else {
@@ -80,36 +81,56 @@ read_dataset <- function(id, tidy = TRUE, ...) {
                                           data_set_ref,
                                           release,
                                           params$debug)
-      if (!is.null(params$series_key)) {
-        query_params[["series-key"]] <- params$series_key
-      }
-      if (!is.null(params$start_date)) {
-        query_params[["start"]] <- as.Date(params$start_date) |>
-          format("%Y-%m-%d") |>
-          as.character()
-      }
-      if (!is.null(params$end_date)) {
-        query_params[["end"]] <- as.Date(params$end_date) |>
-          format("%Y-%m-%d") |>
-          as.character()
-      }
-      if (!is.null(params$hist_obs)) {
-        if (tidy && params$hist_obs) {
-          warning("tidy = TRUE, hist_obs = TRUE incompatible, set tidy = FALSE")
-          tidy <- FALSE
+      if (metadata_only) {
+        # Series metadata only: the /series endpoint omits observations, but
+        # does not filter on series-key, so that is applied client-side.
+        tmp_data_set <- get_series(env,
+                                   data_set_ref,
+                                   query_params,
+                                   debug = params$debug)
+        if (!is.null(params$series_key)) {
+          keys <- sapply(tmp_data_set$series, function(raw_series) {
+            return(raw_series[["series-key"]])
+          })
+          keep <- match_series_key(keys, params$series_key)
+          if (!any(keep)) {
+            stop("No series match series_key: ",
+                 paste(params$series_key, collapse = ", "))
+          }
+          tmp_data_set$series <- tmp_data_set$series[keep]
         }
-        query_params[["hist-obs"]] <- if (params$hist_obs) "true" else "false"
+      } else {
+        if (!is.null(params$series_key)) {
+          query_params[["series-key"]] <- params$series_key
+        }
+        if (!is.null(params$start_date)) {
+          query_params[["start"]] <- as.Date(params$start_date) |>
+            format("%Y-%m-%d") |>
+            as.character()
+        }
+        if (!is.null(params$end_date)) {
+          query_params[["end"]] <- as.Date(params$end_date) |>
+            format("%Y-%m-%d") |>
+            as.character()
+        }
+        if (!is.null(params$hist_obs)) {
+          if (tidy && params$hist_obs) {
+            warning("tidy = TRUE, hist_obs = TRUE incompatible, set tidy = FALSE")
+            tidy <- FALSE
+          }
+          query_params[["hist-obs"]] <- if (params$hist_obs) "true" else "false"
+        }
+        tmp_data_set <- get_data(env,
+                                 data_set_ref,
+                                 query_params,
+                                 debug = params$debug)
       }
-      tmp_data_set <- get_data(env,
-                               data_set_ref,
-                               query_params,
-                               debug = params$debug)
     }
     series_names <- sapply(tmp_data_set$series, function(raw_series) {
       return(raw_series[["series-key"]])
     })
     data_set <- lapply(tmp_data_set$series, function(raw_series) {
-      obs <- raw_series$obs
+      obs <- if (metadata_only) NULL else raw_series$obs
       raw_series[["series-key"]] <- NULL
       raw_series[["obs"]] <- NULL
       if (length(obs) == 0) {
@@ -224,6 +245,53 @@ get_release <- function(env, ref, candidate_release, debug = FALSE) {
     chosen_release <- NULL
   }
   return(chosen_release)
+}
+
+get_series <- function(env, ref, params, debug = FALSE) {
+  # Fetch series (and their metadata) without observations
+  response <- GET(env$repository$url,
+                  path = paste(env$repository$path,
+                               "datasets",
+                               ref,
+                               "series", sep = "/"),
+                  query = params[intersect("release", names(params))],
+                  add_headers(authorization = get("econdata_apikey",
+                                                  envir = .pkgenv)),
+                  accept("application/vnd.sdmx-codera.data+json"))
+  if (debug) {
+    message("Request URL: ", response$request$url, "\n")
+  }
+  if (response$status_code == 200) {
+    message("Processing data set: ", ref, "\n")
+  } else {
+    stop(content(response, type = "application/json"))
+  }
+  data_message <- content(response, type = "application/json")
+  return(data_message[[2]][["data-sets"]][[1]][[2]])
+}
+
+match_series_key <- function(keys, series_key) {
+  # Match series keys against series-key patterns, following the API: groups
+  # are separated by ".", alternatives within a group by "+", an empty group
+  # matches anything, and trailing omitted groups are unconstrained.
+  key_parts <- strsplit(keys, ".", fixed = TRUE)
+  matched <- rep(FALSE, length(keys))
+  for (pattern in series_key) {
+    pattern_parts <- strsplit(pattern, ".", fixed = TRUE)[[1]]
+    matched <- matched | vapply(key_parts, function(parts) {
+      for (i in seq_along(pattern_parts)) {
+        if (nchar(pattern_parts[i]) == 0) {
+          next
+        }
+        alternatives <- strsplit(pattern_parts[i], "+", fixed = TRUE)[[1]]
+        if (i > length(parts) || !(parts[i] %in% alternatives)) {
+          return(FALSE)
+        }
+      }
+      return(TRUE)
+    }, logical(1))
+  }
+  return(matched)
 }
 
 get_data <- function(

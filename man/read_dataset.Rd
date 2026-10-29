@@ -26,6 +26,7 @@ read_dataset(id, tidy = TRUE, \dots)
     \code{end_date} \tab\tab any object that can be coerced with as.Date(). The last observation returned by the query.\cr
     \code{release} \tab\tab character (optionally with format \%Y-\%m-\%dT\%H:\%M:\%S, to be coerced to a date/time). The release description, which will return the data associated with that release (if the given description matches an existsing release); or a date/time which will return the data as it was at the given time; or 'latest' which will return the latest release; or 'unreleased' which will return any unreleased data (useful for data that is updated more often than it is released, e.g. daily data).\cr
     \code{hist_obs} \tab\tab logical, default: \code{FALSE}. May only be \code{TRUE} when \code{tidy = FALSE}. Returns a list of data tables, named by the series key, with columns \code{TIME_PERIOD}, \code{created} and \code{OBS_VALUE}. These data are the distinct values across all \strong{vintages} of the version of the dataset, where \code{created} represents the latest vintage date for that value.\cr
+    \code{metadata_only} \tab\tab logical, default: \code{FALSE}. If \code{TRUE}, only the series metadata is retrieved (no observations are downloaded), which is considerably faster for large data sets. \code{series_key}, \code{release}, \code{version} and \code{prettify} are honoured; \code{start_date}, \code{end_date}, \code{hist_obs}, \code{wide} and \code{combine} have no effect. Also accepted by \code{tidy_data()}. See Value.\cr
     \code{file} \tab\tab character. File name for retrieving data sets stored as JSON data from disk (output of \code{read_dataset()}.\cr
 }}
 \item{tidy}{logical. Return data and metadata in tidy \emph{data.table}'s (see Value), by passing the result through \code{tidy_data}. If \code{TRUE}, \code{read_dataset()/tidy_data()} admit the following additional arguments:}
@@ -44,6 +45,8 @@ If \code{tidy = FALSE}, a list of data frames is returned, where the names of th
 If \code{tidy = TRUE} and \code{wide = TRUE} (the default), a single \emph{data.table} is returned where the first column is the date, and the remaining columns are series named by their EconData codes. Each series has two attributes: \code{"label"} provides a variable label combining important metadata from the \code{"metadata"} attribute in the non-tidy format, and \code{"source_identifier"} gives the series code assigned by the original data provider where available. The table has the same dataset-level \code{"metadata"} attribute as the list of data frames if \code{tidy = FALSE}. If multiple datasets are being queried, a list of such \emph{data.table}'s is returned.
 
 If \code{tidy = TRUE} and \code{wide = FALSE} and \code{combine = FALSE} (the default), a named list of two \emph{data.table}'s is returned. The first, \code{"data"}, has columns 'series_key', 'time_period' and 'obs_value' providing the data in a long format. The second, \code{"metadata"}, provides dataset and series-level matadata, with one row for each series. If \code{combine = TRUE}, these two datasets are combined, where all repetitive content is converted to factors for more efficient storage. If multiple datasets are being queried, \code{combine = FALSE} gives a nested list, whereas \code{combine = TRUE} binds everything together to a single long frame. 
+
+If \code{metadata_only = TRUE} and \code{tidy = TRUE}, a single \emph{data.table} of dataset and series-level metadata is returned, with one row for each series: the same table as the \code{"metadata"} element described above, obtained without downloading any observations. If \code{tidy = FALSE}, the list of data frames described above is returned, but each data frame is empty (only the \code{"metadata"} attributes are populated). If multiple datasets are being queried, a named list of such tables (or lists) is returned.
 }
 \seealso{
 \code{\link{write_dataset}}
@@ -70,6 +73,12 @@ read_dataset(id = "MINING", version = "1.0.0")
 # Using the series key
 read_dataset(id = "MINING", series_key = "MIN001+MIN002..S")
 read_dataset(id = "MINING", series_key = c("MIN001+MIN002..S", "MIN009.I.N"))
+
+# Series metadata only (no observations are downloaded)
+read_dataset(id = "MINING", metadata_only = TRUE)
+read_dataset(id = "MINING", metadata_only = TRUE, series_key = "MIN001+MIN002..S")
+# Same as: tidy_data(read_dataset(id = "MINING", tidy = FALSE, metadata_only = TRUE),
+#                    metadata_only = TRUE)
 
 # Using start and end dates
 read_dataset(id = "MINING",

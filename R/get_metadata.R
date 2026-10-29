@@ -10,9 +10,9 @@ get_metadata <- function(x) {
 
   attrs <- attr(x, "metadata")
   # Dataflow
-  dataflow_ref <- paste(attrs[[2]][["dataflow"]][[2]]$agencyid,
-                        attrs[[2]][["dataflow"]][[2]]$id,
-                        attrs[[2]][["dataflow"]][[2]]$version,
+  dataflow_ref <- paste(attrs[["dataflow"]][[2]]$agencyid,
+                        attrs[["dataflow"]][[2]]$id,
+                        attrs[["dataflow"]][[2]]$version,
                         sep = "-")
   response <- GET(env$registry$url,
                   path = paste(c(env$registry$path,
@@ -82,7 +82,7 @@ get_metadata <- function(x) {
       }
     }
   }
-  dataflow_ref <- attrs[[2]][["dataflow"]][[2]] |>
+  dataflow_ref <- attrs[["dataflow"]][[2]] |>
     (function(x) do.call(sprintf, c("%s:%s(%s)", x)))(x = _)
   data_structure_ref <- dataflow[[2]][["data-structure"]][[2]] |>
     (function(x) do.call(sprintf, c("%s:%s(%s)", x)))(x = _)
