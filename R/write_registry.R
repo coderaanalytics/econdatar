@@ -992,8 +992,8 @@ write_memberlist <- function(memberlist, method, params) {
                             email = unbox(tmp$email),
                             firstname = unbox(tmp$firstname),
                             lastname = unbox(tmp$lastname),
-                            annotations = lapply(fromJSON(tmp$annotations),
-                                                 unbox)))
+                            annotations = structure(tmp$annotations,
+                                                    class = "json")))
         memberships <- apply(memberlist$members[index, ], 1, function(membership) {
           tmp <- as.list(membership)
           if (tmp$membership_type == "data consumer") {
@@ -1021,7 +1021,8 @@ write_memberlist <- function(memberlist, method, params) {
                                     "memberlists", sep = "/"),
                        body = toJSON(data_message,
                                      na = "null",
-                                     always_decimal = TRUE),
+                                     always_decimal = TRUE,
+                                     json_verbatim = TRUE),
                        add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
@@ -1039,7 +1040,8 @@ write_memberlist <- function(memberlist, method, params) {
                                    memberlist_ref, sep = "/"),
                       body = toJSON(data_message,
                                     na = "null",
-                                    always_decimal = TRUE),
+                                    always_decimal = TRUE,
+                                    json_verbatim = TRUE),
                       add_headers(authorization = get("econdata_apikey",
                                                       envir = .pkgenv)),
                       content_type("application/vnd.sdmx-codera.data+json"),

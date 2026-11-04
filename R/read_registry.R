@@ -983,7 +983,9 @@ process_memberlist <- function(structure, params) {
     members <- lapply(structure[[2]]$members, function(member) {
       lapply(member[[2]]$memberships, function(membership) {
         m <- list(id = member[[2]]$id,
-                  annotations = toJSON(lapply(member[[2]]$annotations, unbox)))
+                  annotations = as.character(toJSON(member[[2]]$annotations,
+                                                    auto_unbox = TRUE,
+                                                    null = "null")))
         if (membership[[1]] == "#sdmx.infomodel.base.DataConsumerRef") {
           c(m,
             list(membership_type = "data consumer",
