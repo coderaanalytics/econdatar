@@ -1,6 +1,12 @@
 2026-11-04  Byron Botha  <byron@codera.co.za>
 
 	- added citation column to data providers in read_registry/write_registry, stored as a "citation" annotation on each data provider
+	- fixed write_registry for agency schemes, which sent agencies under the wrong key
+	- fixed read_registry/write_registry for memberlists failing on member annotations
+	- memberlists now support agency memberships (membership_type "agency")
+	- memberlists now round-trip members without memberships and optional email/firstname/lastname
+	- write_registry method = "delete" now supported for all registry structures
+	- write_database method = "delete" deletes data sets, or individual series via series_key
 
 2026-03-27  Byron Botha  <byron@codera.co.za>
 
