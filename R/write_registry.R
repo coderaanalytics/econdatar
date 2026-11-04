@@ -996,13 +996,11 @@ write_memberlist <- function(memberlist, method, params) {
                                                     class = "json")))
         memberships <- apply(memberlist$members[index, ], 1, function(membership) {
           tmp <- as.list(membership)
-          if (tmp$membership_type == "data consumer") {
-            type <- "#sdmx.infomodel.base.DataConsumerRef"
-          } else if (tmp$membership_type == "data provider") {
-            type <- "#sdmx.infomodel.base.DataProviderRef"
-          } else {
-            stop("Unable to parse membership type: ", tmp$membership_type)
-          }
+          type <- switch(tmp$membership_type,
+            "agency" = "#sdmx.infomodel.base.AgencyRef",
+            "data consumer" = "#sdmx.infomodel.base.DataConsumerRef",
+            "data provider" = "#sdmx.infomodel.base.DataProviderRef",
+            stop("Unable to parse membership type: ", tmp$membership_type))
           list(unbox(type),
                list(agencyid = unbox(tmp$membership_agencyid),
                     parentid = unbox(tmp$membership_parentid),

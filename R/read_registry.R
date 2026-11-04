@@ -986,23 +986,17 @@ process_memberlist <- function(structure, params) {
                   annotations = as.character(toJSON(member[[2]]$annotations,
                                                     auto_unbox = TRUE,
                                                     null = "null")))
-        if (membership[[1]] == "#sdmx.infomodel.base.DataConsumerRef") {
-          c(m,
-            list(membership_type = "data consumer",
-                 membership_agencyid = membership[[2]]$agencyid,
-                 membership_parentid = membership[[2]]$parentid,
-                 membership_parentversion = membership[[2]]$parentversion,
-                 membership_id = membership[[2]]$id))
-        } else if (membership[[1]] == "#sdmx.infomodel.base.DataProviderRef") {
-          c(m,
-            list(membership_type = "data provider",
-                 membership_agencyid = membership[[2]]$agencyid,
-                 membership_parentid = membership[[2]]$parentid,
-                 membership_parentversion = membership[[2]]$parentversion,
-                 membership_id = membership[[2]]$id))
-        } else {
-          stop("Unable to parse reference type: ", membership[[1]])
-        }
+        membership_type <- switch(membership[[1]],
+          "#sdmx.infomodel.base.AgencyRef" = "agency",
+          "#sdmx.infomodel.base.DataConsumerRef" = "data consumer",
+          "#sdmx.infomodel.base.DataProviderRef" = "data provider",
+          stop("Unable to parse reference type: ", membership[[1]]))
+        c(m,
+          list(membership_type = membership_type,
+               membership_agencyid = membership[[2]]$agencyid,
+               membership_parentid = membership[[2]]$parentid,
+               membership_parentversion = membership[[2]]$parentversion,
+               membership_id = membership[[2]]$id))
       }) |>
         do.call(rbind.data.frame, args = _)
     }) |>
