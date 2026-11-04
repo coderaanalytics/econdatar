@@ -102,7 +102,7 @@ write_agency_scheme <- function(agency_scheme, method, params) {
           contacts <- list()
         }
         agency[[2]]$contacts <- contacts
-        data_message[[2]]$structures[["agency-schemes"]][[1]][[2]][["agency"]][[i]] <-
+        data_message[[2]]$structures[["agency-schemes"]][[1]][[2]]$agencies[[i]] <-
           agency
       }
     }
