@@ -12,11 +12,14 @@ write_registry(structure, x, method = "update", \dots)
 \arguments{
   \item{structure}{character. (Metadata structure type.) One of \code{"category-scheme"}, \code{"codelist"}, \code{"concept-scheme"}, \code{"dataflow"}, \code{"data-structure"}, \code{"memberlist"}, \code{"consumption-agreement"}, or \code{"provision-agreement"}.}
   \item{x}{list. Registry structure to upload.}
-  \item{method}{Desired method. One of \code{create} or \code{update}. \code{create} will create a new registry structure with the provided metadata. \code{update} (default) will update an existing structure in the registry.}
+  \item{method}{Desired method. One of \code{create}, \code{update} or \code{delete}. \code{create} will create a new registry structure with the provided metadata. \code{update} (default) will update an existing structure in the registry. \code{delete} will delete the structure identified by the \code{agencyid}, \code{id} and \code{version} of \code{x}; if \code{x} is \code{NULL} these are taken from \dots instead.}
 
 \item{\dots}{Further \emph{optional} arguments:
   \tabular{llll}{
     \code{file} \tab\tab character. File name for saving data set as ODS spreadsheet to disk. \cr
+    \code{agencyid} \tab\tab character. Agency ID of the structure to delete when \code{x} is \code{NULL}. \cr
+    \code{id} \tab\tab character. ID of the structure to delete when \code{x} is \code{NULL}. \cr
+    \code{version} \tab\tab character. Version of the structure to delete when \code{x} is \code{NULL}. \cr
 }
 }
 }
