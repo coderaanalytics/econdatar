@@ -988,14 +988,19 @@ write_memberlist <- function(memberlist, method, params) {
         index <- memberlist$members$id == id
         tmp <- as.list(memberlist$members[which(index)[1], ])
         member <- list(unbox("#sdmx.infomodel.memberlist.Member"),
-                       list(id = unbox(tmp$id),
-                            email = unbox(tmp$email),
-                            firstname = unbox(tmp$firstname),
-                            lastname = unbox(tmp$lastname),
-                            annotations = structure(tmp$annotations,
-                                                    class = "json")))
-        memberships <- apply(memberlist$members[index, ], 1, function(membership) {
-          tmp <- as.list(membership)
+                       list(id = unbox(tmp$id)))
+        for (field in c("email", "firstname", "lastname")) {
+          if (!is.null(tmp[[field]]) && !is.na(tmp[[field]])) {
+            member[[2]][[field]] <- unbox(tmp[[field]])
+          }
+        }
+        if (!is.null(tmp$annotations) && !is.na(tmp$annotations)) {
+          member[[2]]$annotations <- structure(tmp$annotations, class = "json")
+        }
+        # Rows with no membership type represent members without memberships
+        index <- index & !is.na(memberlist$members$membership_type)
+        memberships <- lapply(which(index), function(j) {
+          tmp <- as.list(memberlist$members[j, ])
           type <- switch(tmp$membership_type,
             "agency" = "#sdmx.infomodel.base.AgencyRef",
             "data consumer" = "#sdmx.infomodel.base.DataConsumerRef",

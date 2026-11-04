@@ -24,6 +24,8 @@ write_registry(structure, x, method = "update", \dots)
 An EconData account is required to use this function. The user must provide an API key, which can be found on the landing page of the online portal. A GUI dialog will prompt the user for their API key. The API key can also be supplied by setting the ECONDATA_APIKEY environment variable.
 
 The functionality provided by \emph{write_registry} is to save the registry structure according to the function arguments. As this makes modifications to the registry, the user calling this function requires \strong{admin} privileges.
+
+Memberlists are read as one row per membership; a member without memberships is a single row whose \code{membership_*} columns are \code{NA}. \code{membership_type} is one of \code{"agency"}, \code{"data consumer"} or \code{"data provider"}. Updating a memberlist replaces it in full, and the server updates members' annotations as they use the service, so a read-modify-write may overwrite concurrent changes---keep the interval between \code{read_registry} and \code{write_registry} short.
 }
 \value{
 No return value, called for side-effects---writes data to server.

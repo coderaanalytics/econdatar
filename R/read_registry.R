@@ -981,11 +981,28 @@ process_memberlist <- function(structure, params) {
                        name = structure[[2]]$name[[2]],
                        description = description)
     members <- lapply(structure[[2]]$members, function(member) {
+      annotations <- if (is.null(member[[2]]$annotations)) {
+        "[]"
+      } else {
+        as.character(toJSON(member[[2]]$annotations,
+                            auto_unbox = TRUE,
+                            null = "null"))
+      }
+      m <- list(id = member[[2]]$id,
+                email = if (is.null(member[[2]]$email)) NA else member[[2]]$email,
+                firstname = if (is.null(member[[2]]$firstname)) NA else member[[2]]$firstname,
+                lastname = if (is.null(member[[2]]$lastname)) NA else member[[2]]$lastname,
+                annotations = annotations)
+      # Members without memberships are kept as a single row of NAs
+      if (length(member[[2]]$memberships) == 0) {
+        return(as.data.frame(c(m,
+                               list(membership_type = NA,
+                                    membership_agencyid = NA,
+                                    membership_parentid = NA,
+                                    membership_parentversion = NA,
+                                    membership_id = NA))))
+      }
       lapply(member[[2]]$memberships, function(membership) {
-        m <- list(id = member[[2]]$id,
-                  annotations = as.character(toJSON(member[[2]]$annotations,
-                                                    auto_unbox = TRUE,
-                                                    null = "null")))
         membership_type <- switch(membership[[1]],
           "#sdmx.infomodel.base.AgencyRef" = "agency",
           "#sdmx.infomodel.base.DataConsumerRef" = "data consumer",
