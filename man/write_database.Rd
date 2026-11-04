@@ -4,18 +4,22 @@
 write_database
 }
 \description{
-Create or update a data set (metadata including series and their metadata).
+Create, update or delete a data set (metadata including series and their metadata).
 }
 \usage{
 write_database(x, method = "update", \dots)
 }
 \arguments{
-  \item{x}{Data set to upload.}
-  \item{method}{Desired method. One of \code{create} or \code{update}. \code{create} will create a new data set with the provided metadata. \code{update} (default) will update an existing data set in the database.}
+  \item{x}{Data set to upload. May be \code{NULL} when \code{method = "delete"}, in which case the data set is identified by \code{agencyid}, \code{id} and \code{version} in \dots.}
+  \item{method}{Desired method. One of \code{create}, \code{update} or \code{delete}. \code{create} will create a new data set with the provided metadata. \code{update} (default) will update an existing data set in the database. \code{delete} will delete the data set, or only the series given by \code{series_key}.}
 
 \item{\dots}{Further \emph{optional} arguments:
   \tabular{llll}{
     \code{file} \tab\tab character. File name for saving data set as JSON data to disk. \cr
+    \code{series_key} \tab\tab character vector. Series keys to delete when \code{method = "delete"}; if omitted the whole data set is deleted. \cr
+    \code{agencyid} \tab\tab character. Agency ID of the data set to delete when \code{x} is \code{NULL}. \cr
+    \code{id} \tab\tab character. ID of the data set to delete when \code{x} is \code{NULL}. \cr
+    \code{version} \tab\tab character. Version of the data set to delete when \code{x} is \code{NULL}. \cr
 }
 }
 }

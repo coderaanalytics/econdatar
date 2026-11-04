@@ -3,14 +3,18 @@ write_database <- function(x, method = "update", ...) {
 
   # Parameters ----
 
-  stopifnot(isa(x, "eds_dataset"))
   params <- list(...)
   stopifnot(length(method) == 1)
-  stopifnot(method %in% c("create", "update"))
+  stopifnot(method %in% c("create", "update", "delete"))
+  stopifnot(isa(x, "eds_dataset") || (method == "delete" && is.null(x)))
   env <- fromJSON(system.file("settings.json", package = "econdatar"))
   if (nchar(Sys.getenv("ECONDATA_URL")) != 0) {
     env$repository$url <- Sys.getenv("ECONDATA_URL")
     env$registry$url <- Sys.getenv("ECONDATA_URL")
+  }
+  if (method == "delete") {
+    delete_database(x, env, params)
+    return(invisible(NULL))
   }
 
 
@@ -115,4 +119,52 @@ write_database <- function(x, method = "update", ...) {
     }
   })
   return(invisible(NULL))
+}
+
+delete_database <- function(x, env, params) {
+  if (!is.null(params$file)) {
+    stop("Method delete is not supported when writing to a file.")
+  }
+  if (!exists("econdata_apikey", envir = .pkgenv)) {
+    login_helper()
+  }
+  if (is.null(x)) {
+    metadata <- list(params[c("agencyid", "id", "version")])
+  } else if (any(names(x) == "data-sets")) {
+    metadata <- lapply(x[["data-sets"]], attr, "metadata")
+  } else {
+    metadata <- list(attr(x, "metadata"))
+  }
+  lapply(metadata, function(m) {
+    if (is.null(m$agencyid) || is.null(m$id) || is.null(m$version)) {
+      stop("agencyid, id and version are required to delete a data set")
+    }
+    dataset_ref <- paste(m$agencyid, m$id, m$version, sep = "-")
+    if (is.null(params$series_key)) {
+      paths <- paste(env$repository$path, "datasets", dataset_ref, sep = "/")
+      targets <- paste("data set:", dataset_ref)
+    } else {
+      paths <- paste(env$repository$path,
+                     "datasets",
+                     dataset_ref,
+                     "series",
+                     vapply(params$series_key, URLencode, character(1),
+                            reserved = TRUE, USE.NAMES = FALSE),
+                     sep = "/")
+      targets <- paste0("series: ", dataset_ref, " ", params$series_key)
+    }
+    for (i in seq_along(paths)) {
+      message("Deleting ", targets[i], "\n")
+      response <- DELETE(env$repository$url,
+                         path = paths[i],
+                         add_headers(authorization = get("econdata_apikey",
+                                                         envir = .pkgenv)),
+                         accept_json())
+      if (response$status_code == 200) {
+        message(content(response, type = "application/json")$success)
+      } else {
+        stop(content(response, type = "application/json"))
+      }
+    }
+  })
 }

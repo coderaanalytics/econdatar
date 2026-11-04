@@ -7,7 +7,7 @@ importFrom("httr", "POST", "GET", "PUT", "DELETE", "accept", "add_headers", "acc
 importFrom("jsonlite", "fromJSON", "toJSON", "unbox")
 importFrom("readODS", "write_ods", "read_ods")
 importFrom("stats", "na.omit")
-importFrom("utils", "URLdecode", "head", "tail")
+importFrom("utils", "URLdecode", "URLencode", "head", "tail")
 
 export(read_dataset)
 export(read_database)
