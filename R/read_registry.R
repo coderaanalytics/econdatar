@@ -625,10 +625,21 @@ process_data_provider_scheme <- function(structure, params) {
       } else {
         data_provider[[2]]$description[[2]]
       }
+      citation <- NA
+      for (annotation in data_provider[[2]]$annotations) {
+        if (identical(annotation$type, "citation")) {
+          en <- Filter(function(text) identical(text[[1]], "en"), annotation$text)
+          if (length(en) > 0) {
+            citation <- en[[1]][[2]]
+            break
+          }
+        }
+      }
       if (length(data_provider[[2]]$contacts) == 0) {
         list(id = data_provider[[2]]$id,
              name = data_provider[[2]]$name[[2]],
              description = description,
+             citation = citation,
              contact_name = NA,
              contact_department = NA,
              contact_email = NA)
@@ -647,6 +658,7 @@ process_data_provider_scheme <- function(structure, params) {
           list(id = data_provider[[2]]$id,
                name = data_provider[[2]]$name[[2]],
                description = description,
+               citation = citation,
                contact_name = contact$name[[2]],
                contact_department = department,
                contact_email = email)

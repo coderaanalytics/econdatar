@@ -595,6 +595,11 @@ write_data_provider_scheme <- function(data_provider_scheme, method, params) {
         if (!is.na(tmp$description)) {
           data_provider[[2]]$description <- c("en", tmp$description)
         }
+        if (!is.null(tmp$citation) && !is.na(tmp$citation)) {
+          data_provider[[2]]$annotations <-
+            list(list(type = unbox("citation"),
+                      text = list(c("en", tmp$citation))))
+        }
         if (length(which(!is.na(data_provider_scheme$data_providers[index, ]$contact_name))) != 0) {
           contacts <- apply(data_provider_scheme$data_providers[index, ], 1, function(contact) {
             tmp <- as.list(contact)

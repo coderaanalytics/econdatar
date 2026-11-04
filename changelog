@@ -1,3 +1,7 @@
+2026-11-04  Byron Botha  <byron@codera.co.za>
+
+	- added citation column to data providers in read_registry/write_registry, stored as a "citation" annotation on each data provider
+
 2026-03-27  Byron Botha  <byron@codera.co.za>
 
 	- Added tz information to the use of strftime in read_dataset
