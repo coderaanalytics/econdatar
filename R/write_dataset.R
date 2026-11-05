@@ -49,7 +49,7 @@ write_dataset <- function(x, method = "stage", ...) {
                   list(list(unbox("#sdmx.infomodel.dataset.DataSet"),
                             validate_series(data_set_ref, data_set)))))
     if (!is.null(params$file)) {
-      write(toJSON(data_message, na = "null", always_decimal = TRUE),
+      write(toJSON(data_message, na = "null", always_decimal = TRUE, digits = NA),
             file = params$file)
       message("Data set saved to local storage.\n")
     } else if (method == "stage") {
@@ -62,6 +62,7 @@ write_dataset <- function(x, method = "stage", ...) {
                        body = toJSON(data_message,
                                      na = "null",
                                      always_decimal = TRUE,
+                                     digits = NA,
                                      auto_unbox = TRUE),
                        add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
@@ -73,7 +74,7 @@ write_dataset <- function(x, method = "stage", ...) {
         error <- content(response, type = "application/json")
         if (response$status_code == 400) {
           if (!is.null(error$message) && error$message == "Validation error") {
-            stop(toJSON(error, pretty = TRUE))
+            stop(toJSON(error, pretty = TRUE, digits = NA))
           } else {
             stop(error)
           }
@@ -90,7 +91,8 @@ write_dataset <- function(x, method = "stage", ...) {
                                     "validate", sep = "/"),
                        body = toJSON(data_message,
                                      na = "null",
-                                     always_decimal = TRUE),
+                                     always_decimal = TRUE,
+                                     digits = NA),
                        add_headers(authorization = get("econdata_apikey",
                                                        envir = .pkgenv)),
                        content_type("application/vnd.sdmx-codera.data+json"),
@@ -101,7 +103,7 @@ write_dataset <- function(x, method = "stage", ...) {
         error <- content(response, type = "application/json")
         if (response$status_code == 400) {
           if (!is.null(error$message) && error$message == "Validation error") {
-            stop(toJSON(error, pretty = TRUE))
+            stop(toJSON(error, pretty = TRUE, digits = NA))
           } else {
             stop(error)
           }

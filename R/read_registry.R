@@ -986,6 +986,7 @@ process_memberlist <- function(structure, params) {
       } else {
         as.character(toJSON(member[[2]]$annotations,
                             auto_unbox = TRUE,
+                            digits = NA,
                             null = "null"))
       }
       m <- list(id = member[[2]]$id,

@@ -7,6 +7,7 @@
 	- memberlists now round-trip members without memberships and optional email/firstname/lastname
 	- write_registry method = "delete" now supported for all registry structures
 	- write_database method = "delete" deletes data sets, or individual series via series_key
+	- JSON is now written at full precision (digits = NA); previously values were rounded to 4 decimal places
 
 2026-03-27  Byron Botha  <byron@codera.co.za>
 
