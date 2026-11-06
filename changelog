@@ -1,6 +1,7 @@
 2026-11-06  Byron Botha  <byron@codera.co.za>
 
 	- read_registry, read_database and read_dataset now stop with an error naming each requested id that is not found; previously read_registry returned list() and read_database/read_dataset returned an empty result
+	- read_registry now gives memberlists and provision agreements read from the API the classes "eds_memberlist" and "eds_provision_agreement" (previously "memberlist" and "eds_provsion_agreement"), as for reads from file
 
 2026-11-04  Byron Botha  <byron@codera.co.za>
 

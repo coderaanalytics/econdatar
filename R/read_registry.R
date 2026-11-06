@@ -1023,7 +1023,7 @@ process_memberlist <- function(structure, params) {
     }) |>
       do.call(rbind.data.frame, args = _)
     memberlist$members <- members
-    class(memberlist) <- c(class(memberlist), "memberlist")
+    class(memberlist) <- c(class(memberlist), "eds_memberlist")
     return(memberlist)
   } else {
     message("Processing memberlist: ", params$file, "\n")
@@ -1192,7 +1192,7 @@ process_prov_agreement <- function(structure, params) {
            id = structure[[2]][["data-provider"]][[2]]$id)
     prov_agreement$dataflow <- dataflow
     prov_agreement$data_provider <- data_provider
-    class(prov_agreement) <- c(class(prov_agreement), "eds_provsion_agreement")
+    class(prov_agreement) <- c(class(prov_agreement), "eds_provision_agreement")
     return(prov_agreement)
   } else {
     message("Processing provision agreement: ", params$file, "\n")
