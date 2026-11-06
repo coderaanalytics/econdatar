@@ -42,6 +42,8 @@ The "dataflow" structure returns the latest data on the version, name, and data 
 }
 \value{
 If \code{tidy = FALSE}, a list detailing at a minimum the structure's agencyid, id, version, name, and description, as well as a data.frame with rows containing the data of any child structures.
+
+Stops with an error if a requested \code{id} is not found.
 }
 \seealso{
 \code{\link{write_registry}}

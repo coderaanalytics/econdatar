@@ -44,6 +44,8 @@ If \code{tidy = FALSE}, a list of data frames is returned, where the names of th
 If \code{tidy = TRUE} and \code{wide = TRUE} (the default), a single \emph{data.table} is returned where the first column is the date, and the remaining columns are series named by their EconData codes. Each series has two attributes: \code{"label"} provides a variable label combining important metadata from the \code{"metadata"} attribute in the non-tidy format, and \code{"source_identifier"} gives the series code assigned by the original data provider where available. The table has the same dataset-level \code{"metadata"} attribute as the list of data frames if \code{tidy = FALSE}. If multiple datasets are being queried, a list of such \emph{data.table}'s is returned.
 
 If \code{tidy = TRUE} and \code{wide = FALSE} and \code{combine = FALSE} (the default), a named list of two \emph{data.table}'s is returned. The first, \code{"data"}, has columns 'series_key', 'time_period' and 'obs_value' providing the data in a long format. The second, \code{"metadata"}, provides dataset and series-level matadata, with one row for each series. If \code{combine = TRUE}, these two datasets are combined, where all repetitive content is converted to factors for more efficient storage. If multiple datasets are being queried, \code{combine = FALSE} gives a nested list, whereas \code{combine = TRUE} binds everything together to a single long frame. 
+
+Stops with an error if a requested \code{id} is not found.
 }
 \seealso{
 \code{\link{write_dataset}}

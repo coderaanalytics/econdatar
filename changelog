@@ -1,3 +1,7 @@
+2026-11-06  Byron Botha  <byron@codera.co.za>
+
+	- read_registry, read_database and read_dataset now stop with an error naming each requested id that is not found; previously read_registry returned list() and read_database/read_dataset returned an empty result
+
 2026-11-04  Byron Botha  <byron@codera.co.za>
 
 	- added citation column to data providers in read_registry/write_registry, stored as a "citation" annotation on each data provider

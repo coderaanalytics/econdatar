@@ -33,6 +33,8 @@ An EconData account is required to use this function. The user must provide an A
 If \code{tidy = FALSE}, an unnamed list of data frames is returned. Each data frame further has a \code{"metadata"} attribute providing information about the data set.
 
 If \code{tidy = TRUE} a single \emph{data.table} is returned with columns for \code{"agencyid"}, \code{"id"}, \code{"version"}, \code{"name"}, and \code{"description"}.
+
+Stops with an error if a requested \code{id} is not found.
 }
 \seealso{
 \code{\link{write_database}}

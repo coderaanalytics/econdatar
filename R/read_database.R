@@ -47,6 +47,8 @@ read_database <- function(id, include_series = FALSE, tidy = TRUE, ...) {
       stop(content(response, type = "application/json"))
     }
     data_message <- content(response, type = "application/json")
+    check_found(data_message[[2]][["data-sets"]], agencyid, id, version,
+                "data set")
   }
 
 

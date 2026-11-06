@@ -65,6 +65,9 @@ read_registry <- function(structure, tidy = TRUE, ...) {
            "provision-agreement" =
            read_prov_agreement(agencyids, ids, versions, params),
            stop("Specified structure, ", structure, ", is not supported."))
+  if (is.null(params$file)) {
+    check_found(structure_data, agencyid, id, version, structure)
+  }
 
 
   # Process structures ----
